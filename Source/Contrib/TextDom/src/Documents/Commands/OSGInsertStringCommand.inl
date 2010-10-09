@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------*\
- *                     OpenSG ToolBox UserInterface                          *
+ *                                OpenSG                                     *
  *                                                                           *
  *                                                                           *
+ *               Copyright (C) 2000-2006 by the OpenSG Forum                 *
  *                                                                           *
+ *                            www.opensg.org                                 *
  *                                                                           *
- *   Authors: David Kabala, Alden Peterson, Lee Zaniewski, Jonathan Flory    *
+ *   contact:  David Kabala (djkabala@gmail.com)                             *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*\
@@ -24,23 +26,36 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*\
- *                                Changes                                    *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
-\*---------------------------------------------------------------------------*/
-
-//---------------------------------------------------------------------------
-//  Includes
-//---------------------------------------------------------------------------
-
-#include <OSGConfig.h>
+#include "OSGConfig.h"
 
 OSG_BEGIN_NAMESPACE
 
-OSG_END_NAMESPACE
+inline
+InsertStringCommand::InsertStringCommand(FixedHeightLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString) : Inherited(),
+_Manager(Manager),
+_TheDocumentModel(DocumentModel),
+_TheOriginalCaretPosition(theCaretPosition),
+_StringToBeInserted(theString),
+_theOriginalCaretLine(0),
+_theOriginalCaretIndex(0)
+{
+}
 
+inline
+InsertStringCommand::InsertStringCommand(const InsertStringCommand& source) : Inherited(source),
+_Manager(source._Manager),
+_TheDocumentModel(source._TheDocumentModel),
+_TheOriginalCaretPosition(source._TheOriginalCaretPosition),
+_StringToBeInserted(source._StringToBeInserted),
+_theOriginalCaretLine(source._theOriginalCaretLine),
+_theOriginalCaretIndex(source._theOriginalCaretIndex)
+{
+}
+
+inline 
+const CommandType &InsertStringCommand::getClassType(void)
+{
+	return _Type;
+}
+
+OSG_END_NAMESPACE

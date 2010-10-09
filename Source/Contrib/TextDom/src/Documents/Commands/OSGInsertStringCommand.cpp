@@ -44,108 +44,103 @@
 
 #include "OSGConfig.h"
 
-#include "OSGSyntaxHighlighter.h"
+#include "OSGInsertStringCommand.h"
+
+#include "OSGNameAttachment.h"
 
 
-#include "OSGSingletonHolder.ins"
-
-OSG_BEGIN_NAMESPACE
+OSG_USING_NAMESPACE
 
 /***************************************************************************\
  *                            Description                                  *
 \***************************************************************************/
 
-/*! \class osg::SyntaxHighlighterBase
-A SyntaxHighlighterBase. 
+/*! \class OSG::InsertStringCommand
+A InsertStringCommand. 
 */
 
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
 
-OSG_SINGLETON_INST(SyntaxHighlighterBase, addPostFactoryExitFunction)
-
-template class SingletonHolder<SyntaxHighlighterBase>;
+CommandType InsertStringCommand::_Type("InsertStringCommand", "UndoableCommand");
 
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/
 
-
-std::vector<UInt32> SyntaxHighlighterBase::processInput(std::string inputString)
+InsertStringCommandPtr InsertStringCommand::create(FixedHeightLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString)
 {
-	std::vector<UInt32> indices;
-	UInt32 index = 0;
-	std::istringstream iss(inputString);
-	std::string theString;
-	while(iss>>theString)
-	{
-		if(dictionary[theString])
-		{
-			UInt32 loc = inputString.find( theString, index );
-			indices.push_back(loc);
-			index = loc + theString.size();
-			indices.push_back(index);
-		}
-	};
-	return indices;
+	return RefPtr(new InsertStringCommand(Manager,DocumentModel,theCaretPosition,theString));
 }
 
-void SyntaxHighlighterBase::loadDictionary(void)
-{
-	std::ifstream input("dictionary.txt");
-	if(!input)
-	{
-		SWARNING << "void SyntaxHighlighterBase::loadDictionary(void) : error loading dictionary" <<std::endl;
-		return;
-	}
-	std::string keyword;
-	while(input>>keyword)dictionary[keyword] = 1;
+/***************************************************************************\
+ *                           Instance methods                              *
+\***************************************************************************/
 
-	//displayDictionary();
+void InsertStringCommand::execute(void)
+{
+	_theOriginalCaretLine= _Manager->getCaretLine();
+	_theOriginalCaretIndex = _Manager->getCaretIndex();
+
+	TextWithProps temp;
+	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
+
+	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
+
+	_HasBeenDone = true;
 }
 
-void SyntaxHighlighterBase::displayDictionary(void)
+std::string InsertStringCommand::getCommandDescription(void) const
 {
-	std::cout<<"Displaying dictionary..."<<std::endl;
-
-	for(dictionary_it=dictionary.begin();dictionary_it!=dictionary.end();dictionary_it++)
-		std::cout<<dictionary_it->first<<std::endl;
+	return std::string("Insert String ");
 }
+
+std::string InsertStringCommand::getPresentationName(void) const
+{
+	return getCommandDescription();
+}
+
+void InsertStringCommand::redo(void)
+{
+	TextWithProps temp;
+	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
+
+	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
+
+	Inherited::redo();
+}
+
+void InsertStringCommand::undo(void)
+{
+	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
+
+	_Manager->deleteSelected();
+
+	Inherited::undo();
+}
+
+const CommandType &InsertStringCommand::getType(void) const
+{
+	return _Type;
+}
+/*-------------------------------------------------------------------------*\
+ -  private                                                                 -
+\*-------------------------------------------------------------------------*/
+
 /*----------------------- constructors & destructors ----------------------*/
 
-SyntaxHighlighterBase::SyntaxHighlighterBase(void) :
-inputFile(NULL),
-outputFile(NULL)
-{
-	loadDictionary();
-}
-
-SyntaxHighlighterBase::SyntaxHighlighterBase(const SyntaxHighlighterBase &obj)
-{
-	SWARNING << "In SyntaxHighlighterBase copy constructor" << std::endl;
-}
-
-SyntaxHighlighterBase::~SyntaxHighlighterBase(void)
+InsertStringCommand::~InsertStringCommand(void)
 {
 }
 
 /*----------------------------- class specific ----------------------------*/
 
-/*------------------------------------------------------------------------*/
-/*                              cvs id's                                  */
-
-#ifdef OSG_SGI_CC
-#pragma set woff 1174
-#endif
-
-#ifdef OSG_LINUX_ICC
-#pragma warning( disable : 177 )
-#endif
-
-#ifdef __sgi
-#pragma reset woff 1174
-#endif
-
-OSG_END_NAMESPACE
+void InsertStringCommand::operator =(const InsertStringCommand& source)
+{
+    if(this != &source)
+    {
+	    Inherited::operator=(source);
+    }
+}
 

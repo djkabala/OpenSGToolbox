@@ -79,6 +79,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	  bool _IsMousePressed;
 	  void drawHighlightBG(const GraphicsWeakPtr Graphics, Real32 Opacity) const;
 	  void drawLineHighlight(const GraphicsWeakPtr Graphics, Real32 Opacity) const;
+	  void drawBookmarkHighlight(const GraphicsWeakPtr Graphics, Real32 Opacity) const;
 	  void drawBraceHighlight(const GraphicsWeakPtr Graphics, Real32 Opacity) const;
 	  void drawTheCaret(const GraphicsWeakPtr Graphics, Real32 Opacity) const;
 	  void drawHighlightBGInternal(const GraphicsWeakPtr Graphics, Real32 Opacity,UInt32 lesserLine,UInt32 lesserIndex,UInt32 greaterLine,UInt32 greaterIndex) const;
@@ -146,8 +147,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	UInt32 getLinesToBeDisplayed(void);
 	Real32 getHeightOfLine(void);
 	void tabHandler(bool isShiftPressed);
-	bool searchForStringInDocument(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked);
-
+	bool searchForStringInDocument(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked,bool toBeBookMarked,bool searchUp,bool wrapAround);
+	void bookmarkAll(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked);
 	void disconnect(void);
 
 	/*---------------------------------------------------------------------*/

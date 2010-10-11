@@ -263,16 +263,22 @@ SearchWindowUnrecPtr SearchWindow::createDialog(const std::string& Title,
 	
 	GridBagLayoutRefPtr CheckBoxLayout = OSG::GridBagLayout::create();
     CheckBoxLayout->setColumns(1);
-    CheckBoxLayout->setRows(3);
+    CheckBoxLayout->setRows(5);
 	GridBagLayoutConstraintsRefPtr CheckBox1Constraints = OSG::GridBagLayoutConstraints::create();
     GridBagLayoutConstraintsRefPtr CheckBox2Constraints = OSG::GridBagLayoutConstraints::create();
 	GridBagLayoutConstraintsRefPtr CheckBox3Constraints = OSG::GridBagLayoutConstraints::create();
+	GridBagLayoutConstraintsRefPtr CheckBox4Constraints = OSG::GridBagLayoutConstraints::create();
+	GridBagLayoutConstraintsRefPtr CheckBox5Constraints = OSG::GridBagLayoutConstraints::create();
     CheckBox1Constraints->setGridX(0);
     CheckBox1Constraints->setGridY(0);
 	CheckBox2Constraints->setGridX(0);
     CheckBox2Constraints->setGridY(1);
 	CheckBox3Constraints->setGridX(0);
     CheckBox3Constraints->setGridY(2);
+	CheckBox4Constraints->setGridX(0);
+    CheckBox4Constraints->setGridY(3);
+	CheckBox5Constraints->setGridX(0);
+    CheckBox5Constraints->setGridY(4);
 
 	TheDialog->_MatchCaseCheckboxButton = OSG::CheckboxButton::create();
     TheDialog->_MatchCaseCheckboxButton->setMinSize(Vec2f(50, 20));
@@ -301,13 +307,33 @@ SearchWindowUnrecPtr SearchWindow::createDialog(const std::string& Title,
     TheDialog->_MatchUseRegExCheckboxButton->setSelected(false);
 	TheDialog->_MatchUseRegExCheckboxButton->setConstraints(CheckBox3Constraints);
 
+	TheDialog->_SearchUpCheckboxButton = OSG::CheckboxButton::create();
+    TheDialog->_SearchUpCheckboxButton->setMinSize(Vec2f(50, 20));
+    TheDialog->_SearchUpCheckboxButton->setPreferredSize(Vec2f(100, 20));
+    TheDialog->_SearchUpCheckboxButton->setEnabled(true);
+    TheDialog->_SearchUpCheckboxButton->setText("Search Up");
+    TheDialog->_SearchUpCheckboxButton->setAlignment(Vec2f(0.0,0.5));
+    TheDialog->_SearchUpCheckboxButton->setSelected(false);
+	TheDialog->_SearchUpCheckboxButton->setConstraints(CheckBox4Constraints);
+
+	TheDialog->_WrapAroundCheckboxButton = OSG::CheckboxButton::create();
+    TheDialog->_WrapAroundCheckboxButton->setMinSize(Vec2f(50, 20));
+    TheDialog->_WrapAroundCheckboxButton->setPreferredSize(Vec2f(100, 20));
+    TheDialog->_WrapAroundCheckboxButton->setEnabled(true);
+    TheDialog->_WrapAroundCheckboxButton->setText("Wrap Around");
+    TheDialog->_WrapAroundCheckboxButton->setAlignment(Vec2f(0.0,0.5));
+    TheDialog->_WrapAroundCheckboxButton->setSelected(false);
+	TheDialog->_WrapAroundCheckboxButton->setConstraints(CheckBox5Constraints);
+
 	PanelRefPtr CheckBoxPanel;
 	CheckBoxPanel = Panel::create();
 	CheckBoxPanel->pushToChildren(TheDialog->_MatchCaseCheckboxButton);
 	CheckBoxPanel->pushToChildren(TheDialog->_MatchWholeWordCheckboxButton);
 	CheckBoxPanel->pushToChildren(TheDialog->_MatchUseRegExCheckboxButton);
+	CheckBoxPanel->pushToChildren(TheDialog->_SearchUpCheckboxButton);
+	CheckBoxPanel->pushToChildren(TheDialog->_WrapAroundCheckboxButton);
     CheckBoxPanel->setLayout(CheckBoxLayout);
-    CheckBoxPanel->setPreferredSize(Vec2f(150,60));
+    CheckBoxPanel->setPreferredSize(Vec2f(150,100));
 
 
     //Dialog Window
@@ -318,7 +344,7 @@ SearchWindowUnrecPtr SearchWindow::createDialog(const std::string& Title,
 	TheDialog->pushToChildren(ReplaceLabel);
     TheDialog->pushToChildren(TheDialog->_SearchComboBox);
 	TheDialog->pushToChildren(TheDialog->_ReplaceComboBox);
-    TheDialog->setPreferredSize(Vec2f(350.0f,300.0f));
+    TheDialog->setPreferredSize(Vec2f(350.0f,340.0f));
     TheDialog->setTitle(Title);
     TheDialog->setLayout(DialogLayout);
 
@@ -352,10 +378,10 @@ SearchWindowUnrecPtr SearchWindow::createDialog(const std::string& Title,
 	DialogLayout->putConstraint(SpringLayoutConstraints::NORTH_EDGE, CheckBoxPanel, 90, SpringLayoutConstraints::NORTH_EDGE, TheDialog);
 	DialogLayout->putConstraint(SpringLayoutConstraints::EAST_EDGE, CheckBoxPanel, 0, SpringLayoutConstraints::EAST_EDGE, TheDialog);
 	DialogLayout->putConstraint(SpringLayoutConstraints::WEST_EDGE, CheckBoxPanel, 0, SpringLayoutConstraints::WEST_EDGE, TheDialog);
-	DialogLayout->putConstraint(SpringLayoutConstraints::SOUTH_EDGE, CheckBoxPanel, 170, SpringLayoutConstraints::NORTH_EDGE, TheDialog);
+	DialogLayout->putConstraint(SpringLayoutConstraints::SOUTH_EDGE, CheckBoxPanel, 210, SpringLayoutConstraints::NORTH_EDGE, TheDialog);
 
     //Button Panel
-    DialogLayout->putConstraint(SpringLayoutConstraints::NORTH_EDGE, MessageButtonPanel, 190, SpringLayoutConstraints::NORTH_EDGE, TheDialog);
+    DialogLayout->putConstraint(SpringLayoutConstraints::NORTH_EDGE, MessageButtonPanel, 230, SpringLayoutConstraints::NORTH_EDGE, TheDialog);
     DialogLayout->putConstraint(SpringLayoutConstraints::WEST_EDGE, MessageButtonPanel, 0, SpringLayoutConstraints::WEST_EDGE, TheDialog);
     DialogLayout->putConstraint(SpringLayoutConstraints::EAST_EDGE, MessageButtonPanel, 0, SpringLayoutConstraints::EAST_EDGE, TheDialog);
     DialogLayout->putConstraint(SpringLayoutConstraints::SOUTH_EDGE, MessageButtonPanel, -20, SpringLayoutConstraints::SOUTH_EDGE, TheDialog);

@@ -94,4 +94,16 @@ bool SearchWindow::isUseRegExChecked(void)
 	return _MatchUseRegExCheckboxButton->getSelected();
 }
 
+inline
+bool SearchWindow::isSearchUpChecked(void)
+{
+	return _SearchUpCheckboxButton->getSelected();
+}
+
+inline
+bool SearchWindow::isWrapAroundChecked(void)
+{
+	return _WrapAroundCheckboxButton->getSelected();
+}
+
 OSG_END_NAMESPACE

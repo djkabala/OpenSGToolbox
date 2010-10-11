@@ -36,6 +36,17 @@ A UI TextDomArea
 	>
 	</Field>
 	<Field
+		name="BookmarkedLines"
+		type="UInt32"
+		category="data"
+		cardinality="multi"
+		visibility="external"
+		defaultValue="0"
+		access="public"
+	>
+	</Field>
+
+	<Field
 		name="CaretPosition"
 		type="UInt32"
 		category="data"

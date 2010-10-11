@@ -244,6 +244,22 @@ void TextDomAreaBase::setLineSpacing(const Int32 value)
     _sfLineSpacing.setValue(value);
 }
 
+//! Get the value of the \a index element the TextDomArea::_mfBookmarkedLines field.
+inline
+      UInt32  TextDomAreaBase::getBookmarkedLines(const UInt32 index) const
+{
+    return _mfBookmarkedLines[index];
+}
+
+inline
+UInt32 &TextDomAreaBase::editBookmarkedLines(const UInt32 index)
+{
+    editMField(BookmarkedLinesFieldMask, _mfBookmarkedLines);
+
+    return _mfBookmarkedLines[index];
+}
+
+
 
 #ifdef OSG_MT_CPTR_ASPECT
 inline
@@ -260,6 +276,12 @@ void TextDomAreaBase::execSync (      TextDomAreaBase *pFrom,
 
     if(FieldBits::NoField != (FontFieldMask & whichField))
         _sfFont.syncWith(pFrom->_sfFont);
+
+    if(FieldBits::NoField != (BookmarkedLinesFieldMask & whichField))
+        _mfBookmarkedLines.syncWith(pFrom->_mfBookmarkedLines,
+                                syncMode,
+                                uiSyncInfo,
+                                oOffsets);
 
     if(FieldBits::NoField != (CaretPositionFieldMask & whichField))
         _sfCaretPosition.syncWith(pFrom->_sfCaretPosition);

@@ -122,6 +122,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING SearchWindow : public SearchWindowBase
 	bool isCaseChecked(void);
 	bool isWholeWordChecked(void);
 	bool isUseRegExChecked(void);
+	bool isSearchUpChecked(void);
+	bool isWrapAroundChecked(void);
 
     /*=========================  PROTECTED  ===============================*/
 
@@ -136,6 +138,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING SearchWindow : public SearchWindowBase
 	CheckboxButtonRefPtr _MatchCaseCheckboxButton;
 	CheckboxButtonRefPtr _MatchWholeWordCheckboxButton;
 	CheckboxButtonRefPtr _MatchUseRegExCheckboxButton;
+	CheckboxButtonRefPtr _SearchUpCheckboxButton;
+	CheckboxButtonRefPtr _WrapAroundCheckboxButton;
 
     // Variables should all be in SearchWindowBase.
 

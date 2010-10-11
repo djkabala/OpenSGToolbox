@@ -148,14 +148,80 @@ void TextDomArea::stringToUpper(std::string& strToConvert)
    }
 }
 
-bool TextDomArea::searchForStringInDocument(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked)
+void TextDomArea::bookmarkAll(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked) 
+// has a bug .. will bookmark if the first occurence of a string in a line matches the string searched for 
+//(eg. if wholewordchecked is true, if there are 2 occurences of the word in a sentence,
+//and if the first word isnt a wholeword but the second word is, then the line will not be highlighted)
+// bug wont be present if boost::xpressive is used.Hence ignored.
 {
 	if(!isCaseChecked)
 	{
 		stringToUpper(stringToBeLookedFor);
 	}
-	for(UInt32 i=Manager->getCaretLine();i<Manager->getRootElement()->getElementCount();i++)
+	for(UInt32 i=0;i<Manager->getRootElement()->getElementCount();i++)
 	{
+		PlainDocumentLeafElementRefPtr theElement = dynamic_pointer_cast<PlainDocumentLeafElement>(Manager->getRootElement()->getElement(i));
+		std::string stringToBeSearchedIn = theElement->getText();
+		if(!isCaseChecked)
+		{
+			stringToUpper(stringToBeSearchedIn);
+		}
+		size_t found;
+		found=stringToBeSearchedIn.find(stringToBeLookedFor);
+		if (found!=std::string::npos)
+		{
+			if(!isWholeWordChecked || (isWholeWordChecked && (((UInt32(found) + stringToBeLookedFor.length())>=stringToBeSearchedIn.length()-2) || !isWordChar(stringToBeSearchedIn[UInt32(found) + stringToBeLookedFor.length()])) && (UInt32(found)==0 || !isWordChar(stringToBeSearchedIn[UInt32(found-1)])) ))
+			{
+				editMFBookmarkedLines()->push_back(i);
+			}
+		}
+	}
+}
+
+bool TextDomArea::searchForStringInDocument(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked,bool toBeBookmarked,bool searchUp,bool wrapAround)
+{
+	//if(toBeBookmarked)clearBookmarkedLines();
+	if(!isCaseChecked)
+	{
+		stringToUpper(stringToBeLookedFor);
+	}
+	
+	Int32 i;
+	UInt32 count=0;
+	UInt32 totalElements = Manager->getRootElement()->getElementCount();
+
+	if(toBeBookmarked)
+	{
+		i=0;
+	}
+	else
+	{
+		i=Manager->getCaretLine();
+	}
+
+	//preset    -	UInt32 i=toBeBookmarked?0:Manager->getCaretLine()
+	//condition - !wrapAround?(!searchUp?(i<Manager->getRootElement()->getElementCount()):i>=0):count!=
+	//increment - !wrapAround?(!searchUp?i++:i--):(!searchUp?(i=(i+1)%Manager->getRootElement()->getElementCount()):(--i,i<0?i=Manager->getRootElement()->getElementCount():1))
+	
+	for(;;count++)
+	{
+		// conditions to exit on...
+		if(!wrapAround)
+		{
+			if(!searchUp)
+			{
+				if(i>=totalElements)break;
+			}
+			else
+			{
+				if(i<0)break;
+			}
+		}
+		else
+		{
+			if(count>=totalElements)break;
+		}
+
 		PlainDocumentLeafElementRefPtr theElement = dynamic_pointer_cast<PlainDocumentLeafElement>(Manager->getRootElement()->getElement(i));
 		std::string stringToBeSearchedIn = theElement->getText();
 		if(!isCaseChecked)
@@ -168,11 +234,6 @@ bool TextDomArea::searchForStringInDocument(std::string stringToBeLookedFor,bool
 		{
 			if(!isWholeWordChecked || (isWholeWordChecked && (((UInt32(found) + stringToBeLookedFor.length())>=stringToBeSearchedIn.length()-2) || !isWordChar(stringToBeSearchedIn[UInt32(found) + stringToBeLookedFor.length()])) && (UInt32(found)==0 || !isWordChar(stringToBeSearchedIn[UInt32(found-1)])) ))
 			{
-				if(UInt32(found))
-					std::cout<<stringToBeSearchedIn[UInt32(found-1)]<<std::endl;
-				if((UInt32(found) + stringToBeLookedFor.length())>=stringToBeSearchedIn.length()-2)
-					std::cout<<stringToBeSearchedIn[UInt32(found) + stringToBeLookedFor.length()]<<std::endl;
-				
 				Manager->setHSI(UInt32(found));
 				Manager->setHSL(i);
 				Manager->setHEL(i);
@@ -181,7 +242,41 @@ bool TextDomArea::searchForStringInDocument(std::string stringToBeLookedFor,bool
 				Manager->setCaretIndex(UInt32(found) + stringToBeLookedFor.length());
 				Manager->recalculateCaretPositions();
 				Manager->checkCaretVisibility();
+
+				if(toBeBookmarked)
+				{
+					this->editMFBookmarkedLines()->push_back(i);
+					//pushToBookmarkedLines(i);
+				}
+				
 				return true;
+			}
+		}
+		// incrementing values 
+		if(!wrapAround)
+		{
+			if(!searchUp)
+			{
+				++i;
+			}
+			else
+			{
+				--i;
+			}
+		}
+		else
+		{
+			if(!searchUp)
+			{
+				i=(i+1)%totalElements;
+			}
+			else
+			{
+				--i;
+				if(i<0)
+				{
+					i=totalElements-1;
+				}
 			}
 		}
 	}
@@ -208,6 +303,7 @@ void TextDomArea::drawInternal(const GraphicsWeakPtr Graphics, Real32 Opacity) c
 	if(Manager)
 	{
 		drawHighlightBG(Graphics,Opacity);
+		drawBookmarkHighlight(Graphics,Opacity);
 		drawLineHighlight(Graphics,Opacity);
 		drawBraceHighlight(Graphics,Opacity);
 	}
@@ -278,6 +374,12 @@ void TextDomArea::drawHighlightBGInternal(const GraphicsWeakPtr Graphics, Real32
 void TextDomArea::drawLineHighlight(const GraphicsWeakPtr Graphics, Real32 Opacity) const
 {
 	Graphics->drawRect(Pnt2f(0,Manager->getCaretYPosition()),Pnt2f(Manager->getPreferredWidth(),Manager->getCaretYPosition()+Manager->getHeightOfLine()),Color4f(0.7,0.7,0.7,0.5),Opacity);
+}
+
+void TextDomArea::drawBookmarkHighlight(const GraphicsWeakPtr Graphics, Real32 Opacity) const
+{
+	for(UInt32 i=0;i<getMFBookmarkedLines()->size();i++)
+		Graphics->drawRect(Pnt2f(0,Manager->getHeightOfLine()*getBookmarkedLines(i)),Pnt2f(Manager->getPreferredWidth(),Manager->getHeightOfLine()*(getBookmarkedLines(i)+1)),Color4f(0.7,0.0,0.7,0.5),Opacity);
 }
 
 void TextDomArea::drawBraceHighlight(const GraphicsWeakPtr Graphics, Real32 Opacity) const
@@ -507,6 +609,7 @@ void TextDomArea::keyTyped(const KeyEventUnrecPtr e)
 		}
 	}
 }
+
 
 void TextDomArea::tabHandler(bool isShiftPressed)
 {
@@ -850,7 +953,7 @@ void TextDomArea::createDefaultLayer(void)
 void TextDomArea::updatePreferredSize(void)
 {
 	setPreferredSize(getRequestedSize());
-	produceDocumentModelChanged(NULL);
+	//produceDocumentModelChanged(NULL);
 }
 
 Int32 TextDomArea::getScrollableBlockIncrement(const Pnt2f& VisibleRectTopLeft, const Pnt2f& VisibleRectBottomRight, const UInt32& orientation, const Int32& direction)

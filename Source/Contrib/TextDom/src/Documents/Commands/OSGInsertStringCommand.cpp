@@ -80,6 +80,10 @@ InsertStringCommandPtr InsertStringCommand::create(FixedHeightLayoutManagerRefPt
 
 void InsertStringCommand::execute(void)
 {
+	_OriginalHSL = _Manager->getHSL();
+	_OriginalHSI = _Manager->getHSI();
+	_OriginalHEL = _Manager->getHEL();
+	_OriginalHEI = _Manager->getHEI();
 	_theOriginalCaretLine= _Manager->getCaretLine();
 	_theOriginalCaretIndex = _Manager->getCaretIndex();
 
@@ -114,8 +118,17 @@ void InsertStringCommand::redo(void)
 void InsertStringCommand::undo(void)
 {
 	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-
 	_Manager->deleteSelected();
+
+	// restoring highlighted text and caret position
+	_Manager->setHSL(_OriginalHSL);
+	_Manager->setHSI(_OriginalHSI);
+	_Manager->setHEL(_OriginalHEL);
+	_Manager->setHEI(_OriginalHEI);
+	_Manager->setCaretLine(_theOriginalCaretLine);
+	_Manager->setCaretIndex(_theOriginalCaretIndex);
+	_Manager->recalculateCaretPositions();
+	_Manager->checkCaretVisibility();
 
 	Inherited::undo();
 }

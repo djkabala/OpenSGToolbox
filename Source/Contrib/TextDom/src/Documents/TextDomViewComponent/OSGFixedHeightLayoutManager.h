@@ -129,9 +129,9 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING FixedHeightLayoutManager : public FixedHeigh
 	virtual Vec2f getContentRequestedSize(void) const;
 	void calculateLineHeight(void);
 	UInt32 calculateCaretPosition(Pnt2f PointOnComponent,bool isDragging);
-	void checkCaretVisibility(UInt32 dir);
+	void checkCaretVisibility(void);
 	bool isCaretVisible(void);
-	void makeCaretVisible(UInt32 dir);
+	void makeCaretVisible(void);
 	bool isSomethingSelected(void);
 	bool isStartLocationBeforeEndLocation(void) const;
 	void moveCaretEnd(bool isControlPressed);
@@ -146,6 +146,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING FixedHeightLayoutManager : public FixedHeigh
 	void DoIfLineLongerThanPreferredSize() const;
 	UInt32 getCaretIndex(void) const;
 	UInt32 getCaretLine(void) const;
+	void setCaretIndex(UInt32);
+	void setCaretLine(UInt32);
 	void setHighlight(UInt32 startline,UInt32 startindex,UInt32 endline,UInt32 endindex);
 	Real32 getHeightOfLine(void);
 	void doubleClickHandler(void);

@@ -1025,7 +1025,7 @@ void FixedHeightLayoutManager::moveTheCaret(UInt32 dir,bool isShiftPressed,bool 
 
 		break;
 	}
-	checkCaretVisibility(dir);
+	checkCaretVisibility();
 }
 
 UInt32 FixedHeightLayoutManager::getNumberOfLeadingSpaces(UInt32 line)
@@ -1040,9 +1040,9 @@ UInt32 FixedHeightLayoutManager::getNumberOfLeadingSpaces(UInt32 line)
 	return count;
 }
 
-void FixedHeightLayoutManager::checkCaretVisibility(UInt32 dir)
+void FixedHeightLayoutManager::checkCaretVisibility()
 {
-	if(!isCaretVisible())makeCaretVisible(dir);
+	if(!isCaretVisible())makeCaretVisible();
 }
 
 bool FixedHeightLayoutManager::isCaretInWidthRange()
@@ -1106,7 +1106,7 @@ void FixedHeightLayoutManager::doubleClickHandler(void)
 
 
 
-void FixedHeightLayoutManager::makeCaretVisible(UInt32 dir)
+void FixedHeightLayoutManager::makeCaretVisible()
 {
 
 	

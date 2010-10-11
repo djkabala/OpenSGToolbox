@@ -86,6 +86,8 @@ protected:
 	UInt32 old_HEL;
 	TextDomAreaRefPtr _TextDomArea;
 	std::string deletedString;
+	UInt32 _theOriginalCaretLine;
+	UInt32 _theOriginalCaretIndex;
 
 public:
 

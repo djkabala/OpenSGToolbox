@@ -94,7 +94,9 @@ void DeleteSelectedCommand::execute(void)
 		old_HSI = Manager->getHEI();
 		old_HSL = Manager->getHEL();
 	}
-	
+
+	_theOriginalCaretLine = Manager->getCaretLine();
+	_theOriginalCaretIndex = Manager->getCaretIndex();
 
 	deletedString = _TextDomArea->getHighlightedString();
 	Manager->deleteSelected();
@@ -114,6 +116,11 @@ std::string DeleteSelectedCommand::getPresentationName(void) const
 
 void DeleteSelectedCommand::redo(void)
 {
+	Manager->setHSI(old_HSI);
+	Manager->setHSL(old_HSL);
+	Manager->setHEI(old_HEI);
+	Manager->setHEL(old_HEL);
+
 	Manager->deleteSelected();
 	Inherited::redo();
 }
@@ -122,12 +129,16 @@ void DeleteSelectedCommand::undo(void)
 {
 	TextWithProps temp;
 
+	_TextDomArea->getDocumentModel()->insertString(Manager->CaretLineAndIndexToCaretOffsetInDOM(old_HSL,old_HSI),deletedString,temp);
+
 	Manager->setHSI(old_HSI);
 	Manager->setHSL(old_HSL);
 	Manager->setHEI(old_HEI);
 	Manager->setHEL(old_HEL);
-	
-	_TextDomArea->getDocumentModel()->insertString(Manager->CaretLineAndIndexToCaretOffsetInDOM(old_HSL,old_HSI),deletedString,temp);
+	Manager->setCaretLine(_theOriginalCaretLine);
+	Manager->setCaretIndex(_theOriginalCaretIndex);
+	Manager->recalculateCaretPositions();
+	Manager->checkCaretVisibility();
 
 	Inherited::undo();
 }

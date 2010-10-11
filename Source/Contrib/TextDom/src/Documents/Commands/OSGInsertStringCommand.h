@@ -85,6 +85,10 @@ protected:
 	std::string _StringToBeInserted;
 	UInt32 _theOriginalCaretLine;
 	UInt32 _theOriginalCaretIndex;
+	UInt32 _OriginalHSL;
+	UInt32 _OriginalHSI;
+	UInt32 _OriginalHEL;
+	UInt32 _OriginalHEI;
 
 public:
 

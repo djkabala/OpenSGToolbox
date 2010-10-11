@@ -100,8 +100,8 @@ void TextEditor::keyTyped(const KeyEventUnrecPtr e)
 					inputValues.push_back("Main");
 					inputValues.push_back("main");
 					TheSearchDialog = SearchWindow::createDialog("Search Window",inputValues);
-					TheSearchDialog->setIconable(false);
-					TheSearchDialog->setAllwaysOnTop(true);
+					//TheSearchDialog->setIconable(false);
+					//TheSearchDialog->setAllwaysOnTop(true);
 					TheSearchDialog->addSearchWindowListener(&_TheSearchWindowListener);
 					TheSearchDialog->setPosition(getParentWindow()->getPosition());
 					getParentWindow()->getDrawingSurface()->openWindow(TheSearchDialog);
@@ -243,18 +243,42 @@ void TextEditor::dialogClosing(const SearchWindowEventUnrecPtr e)
 void TextEditor::searchButtonClicked(const SearchWindowEventUnrecPtr e)
 {
 	SearchWindowRefPtr theSearchWindow = dynamic_cast<SearchWindow*>(e->getSource());
+
 	if(theSearchWindow)
 	{
-		std::cout<<"\nstext:"<<theSearchWindow->getSearchText()<<" rtext:"<<theSearchWindow->getReplaceText();
-		std::cout<<" isCaseChecked:"<<theSearchWindow->isCaseChecked()<<" isWholeWordChecked:"<<theSearchWindow->isWholeWordChecked();
-		std::cout<<" isUseRegExChecked:"<<theSearchWindow->isUseRegExChecked()<<std::endl;
+		//std::cout<<"\nstext:"<<theSearchWindow->getSearchText()<<" rtext:"<<theSearchWindow->getReplaceText();
+		//std::cout<<" isCaseChecked:"<<theSearchWindow->isCaseChecked()<<" isWholeWordChecked:"<<theSearchWindow->isWholeWordChecked();
+		//std::cout<<" isUseRegExChecked:"<<theSearchWindow->isUseRegExChecked()<<std::endl;
+	
+		TextDomAreaRefPtr theFocussedDomArea = getFocusedDomArea();
+		if(theFocussedDomArea)
+		{
+			std::string searchString = theSearchWindow->getSearchText();
+			if(!theSearchWindow->isUseRegExChecked())
+			{
+				theFocussedDomArea->searchForStringInDocument(searchString,theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked());
+			}
+			else
+			{
+				//std::string DIS = theFocussedDomArea->getDIS();
+			}
+		}
 	}
 	std::cout<<"search button clicked\n";
 }
 
 void TextEditor::replaceButtonClicked(const SearchWindowEventUnrecPtr e)
 {
-	std::cout<<"replace button clicked\n";
+	SearchWindowRefPtr theSearchWindow = dynamic_cast<SearchWindow*>(e->getSource());
+
+	if(theSearchWindow)
+	{
+		TextDomAreaRefPtr theFocussedDomArea = getFocusedDomArea();
+		if(theFocussedDomArea)
+		{
+			theFocussedDomArea->handlePastingAString(theSearchWindow->getReplaceText());
+		}
+	}
 }
 
 void TextEditor::replaceAllButtonClicked(const SearchWindowEventUnrecPtr e)

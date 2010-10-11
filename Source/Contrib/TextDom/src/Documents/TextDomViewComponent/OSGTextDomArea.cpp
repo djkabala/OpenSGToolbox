@@ -64,6 +64,7 @@
 #include "OSGDeleteCharacterCommand.h"
 #include "OSGSetTextCommand.h"
 #include "OSGInsertStringCommand.h"
+#include "cctype" 
 
 
 OSG_BEGIN_NAMESPACE
@@ -137,6 +138,54 @@ void TextDomArea::loadFile(BoostPath pathOfFile)
 void TextDomArea::saveFile(BoostPath pathOfFile)
 {
 	TextFileHandler::the()->forceWrite(getDocumentModel(),pathOfFile);
+}
+
+void TextDomArea::stringToUpper(std::string& strToConvert)
+{
+   for(unsigned int i=0;i<strToConvert.length();i++)
+   {
+	   strToConvert[i] = toupper(strToConvert[i]);
+   }
+}
+
+bool TextDomArea::searchForStringInDocument(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked)
+{
+	if(!isCaseChecked)
+	{
+		stringToUpper(stringToBeLookedFor);
+	}
+	for(UInt32 i=Manager->getCaretLine();i<Manager->getRootElement()->getElementCount();i++)
+	{
+		PlainDocumentLeafElementRefPtr theElement = dynamic_pointer_cast<PlainDocumentLeafElement>(Manager->getRootElement()->getElement(i));
+		std::string stringToBeSearchedIn = theElement->getText();
+		if(!isCaseChecked)
+		{
+			stringToUpper(stringToBeSearchedIn);
+		}
+		size_t found;
+		found=stringToBeSearchedIn.find(stringToBeLookedFor,(i==Manager->getCaretLine())?(Manager->getCaretIndex()+1):0);
+		if (found!=std::string::npos)
+		{
+			if(!isWholeWordChecked || (isWholeWordChecked && (((UInt32(found) + stringToBeLookedFor.length())>=stringToBeSearchedIn.length()-2) || !isWordChar(stringToBeSearchedIn[UInt32(found) + stringToBeLookedFor.length()])) && (UInt32(found)==0 || !isWordChar(stringToBeSearchedIn[UInt32(found-1)])) ))
+			{
+				if(UInt32(found))
+					std::cout<<stringToBeSearchedIn[UInt32(found-1)]<<std::endl;
+				if((UInt32(found) + stringToBeLookedFor.length())>=stringToBeSearchedIn.length()-2)
+					std::cout<<stringToBeSearchedIn[UInt32(found) + stringToBeLookedFor.length()]<<std::endl;
+				
+				Manager->setHSI(UInt32(found));
+				Manager->setHSL(i);
+				Manager->setHEL(i);
+				Manager->setHEI(UInt32(found) + stringToBeLookedFor.length());
+				Manager->setCaretLine(i);
+				Manager->setCaretIndex(UInt32(found) + stringToBeLookedFor.length());
+				Manager->recalculateCaretPositions();
+				Manager->checkCaretVisibility();
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 UInt32 TextDomArea::getTopmostVisibleLineNumber(void)
@@ -563,7 +612,7 @@ void TextDomArea::handlePastingAString(std::string theClipboard)
 	}
 	
 	//getDocumentModel()->insertString(getCaretPosition(),theClipboard,temp);/// need to deal with this......
-	insertStringUsingCommandManager(getCaretPosition(),theClipboard);
+	insertStringUsingCommandManager(Manager->CaretLineAndIndexToCaretOffsetInDOM(Manager->getCaretLine(),Manager->getCaretIndex()),theClipboard);
 
 	Manager->updateViews();
 	Manager->updateSize();

@@ -88,6 +88,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	  void deleteCharacterUsingCommandManager(void);
 	  void setTextUsingCommandManager(PlainDocumentLeafElementRefPtr theElement,std::string theString);
 	  void insertStringUsingCommandManager(UInt32 caretPosition,std::string theString);
+	  void stringToUpper(std::string& strToConvert);
 
 	  CommandManagerPtr	_TheCommandManager;
 	  UndoManagerPtr	_TheUndoManager;
@@ -145,6 +146,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	UInt32 getLinesToBeDisplayed(void);
 	Real32 getHeightOfLine(void);
 	void tabHandler(bool isShiftPressed);
+	bool searchForStringInDocument(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked);
 
 	void disconnect(void);
 

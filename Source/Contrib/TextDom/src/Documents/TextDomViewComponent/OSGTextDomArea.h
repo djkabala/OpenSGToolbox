@@ -56,7 +56,7 @@
 #include "OSGColorLayer.h"
 #include "OSGUndoManager.h"
 #include "OSGCommandManager.h"
- 
+#include <boost/xpressive/xpressive.hpp>
 
 OSG_BEGIN_NAMESPACE
 
@@ -147,9 +147,18 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	UInt32 getLinesToBeDisplayed(void);
 	Real32 getHeightOfLine(void);
 	void tabHandler(bool isShiftPressed);
-	bool searchForStringInDocument(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked,bool toBeBookMarked,bool searchUp,bool wrapAround);
-	void bookmarkAll(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked);
+
+	//bool searchForStringInDocument(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked,bool toBeBookMarked,bool searchUp,bool wrapAround);
+	//void bookmarkAll(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked);
+	bool searchForStringInDocumentUsingRegEx(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked,bool searchUp,bool wrapAround,bool isUseRegExChecked);
+	void replaceAllUsingRegEx(std::string theSearchText,std::string theReplaceText,bool isCaseChecked,bool isWholeWordChecked,bool isUseRegExChecked);
+	void bookmarkAllUsingRegEx(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked,bool isUseRegExChecked);
+
 	void disconnect(void);
+	std::string initialSearchStringModification(std::string stringToBeLookedFor,bool isUseRegExChecked);
+	void regexCompiling(std::string stringToBeLookedFor,boost::xpressive::sregex& rex,bool isCaseChecked,bool isWholeWordChecked);
+
+
 
 	/*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */

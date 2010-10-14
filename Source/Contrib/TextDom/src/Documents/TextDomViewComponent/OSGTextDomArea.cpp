@@ -148,61 +148,105 @@ void TextDomArea::stringToUpper(std::string& strToConvert)
    }
 }
 
-void TextDomArea::bookmarkAll(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked) 
-// has a bug .. will bookmark if the first occurence of a string in a line matches the string searched for 
-//(eg. if wholewordchecked is true, if there are 2 occurences of the word in a sentence,
-//and if the first word isnt a wholeword but the second word is, then the line will not be highlighted)
-// bug wont be present if boost::xpressive is used.Hence ignored.
+std::string TextDomArea::initialSearchStringModification(std::string stringToBeLookedFor,bool isUseRegExChecked)
 {
-	if(!isCaseChecked)
+	
+	std::string specialcharacters = ".|*?+(){}[]^$\\";
+	std::string temp="";
+	if(!isUseRegExChecked)
 	{
-		stringToUpper(stringToBeLookedFor);
+		for(UInt32 i=0;i<stringToBeLookedFor.length();i++)
+		{
+			size_t found;
+			found=specialcharacters.find(stringToBeLookedFor[i]);
+			if (found!=std::string::npos)
+			{
+				temp+="\\"+stringToBeLookedFor[i];
+			}
+			else
+			{
+				temp+=stringToBeLookedFor[i];
+			}
+		}
+		stringToBeLookedFor=temp;
 	}
+	return stringToBeLookedFor;
+
+}
+
+void TextDomArea::regexCompiling(std::string stringToBeLookedFor,boost::xpressive::sregex& rex,bool isCaseChecked,bool isWholeWordChecked)
+{
+	if(isCaseChecked)
+		if(isWholeWordChecked)
+			rex = boost::xpressive::sregex::compile("\\b"+stringToBeLookedFor+"\\b");
+		else
+			rex = boost::xpressive::sregex::compile(stringToBeLookedFor);
+	else
+		if(isWholeWordChecked)
+			rex = boost::xpressive::sregex::compile("\\b"+stringToBeLookedFor+"\\b", boost::xpressive::regex_constants::icase);
+		else
+			rex = boost::xpressive::sregex::compile(stringToBeLookedFor, boost::xpressive::regex_constants::icase);
+}
+
+void TextDomArea::bookmarkAllUsingRegEx(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked,bool isUseRegExChecked)
+{
+	boost::xpressive::sregex rex;
+	
+	stringToBeLookedFor = initialSearchStringModification(stringToBeLookedFor,isUseRegExChecked);
+
+	regexCompiling(stringToBeLookedFor,rex,isCaseChecked,isWholeWordChecked);
+
 	for(UInt32 i=0;i<Manager->getRootElement()->getElementCount();i++)
 	{
 		PlainDocumentLeafElementRefPtr theElement = dynamic_pointer_cast<PlainDocumentLeafElement>(Manager->getRootElement()->getElement(i));
 		std::string stringToBeSearchedIn = theElement->getText();
-		if(!isCaseChecked)
+
+		boost::xpressive::smatch what;
+ 
+		if( boost::xpressive::regex_search( stringToBeSearchedIn, what, rex ) )
 		{
-			stringToUpper(stringToBeSearchedIn);
-		}
-		size_t found;
-		found=stringToBeSearchedIn.find(stringToBeLookedFor);
-		if (found!=std::string::npos)
-		{
-			if(!isWholeWordChecked || (isWholeWordChecked && (((UInt32(found) + stringToBeLookedFor.length())>=stringToBeSearchedIn.length()-2) || !isWordChar(stringToBeSearchedIn[UInt32(found) + stringToBeLookedFor.length()])) && (UInt32(found)==0 || !isWordChar(stringToBeSearchedIn[UInt32(found-1)])) ))
-			{
-				editMFBookmarkedLines()->push_back(i);
-			}
+			editMFBookmarkedLines()->push_back(i);   
 		}
 	}
 }
 
-bool TextDomArea::searchForStringInDocument(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked,bool toBeBookmarked,bool searchUp,bool wrapAround)
+void TextDomArea::replaceAllUsingRegEx(std::string stringToBeLookedFor,std::string theReplaceText,bool isCaseChecked,bool isWholeWordChecked,bool isUseRegExChecked)
 {
-	//if(toBeBookmarked)clearBookmarkedLines();
-	if(!isCaseChecked)
-	{
-		stringToUpper(stringToBeLookedFor);
-	}
 	
-	Int32 i;
+	boost::xpressive::sregex rex;
+
+	stringToBeLookedFor = initialSearchStringModification(stringToBeLookedFor,isUseRegExChecked);
+
+	regexCompiling(stringToBeLookedFor,rex,isCaseChecked,isWholeWordChecked);
+
+	for(UInt32 i=0;i<Manager->getRootElement()->getElementCount();i++)
+	{
+		PlainDocumentLeafElementRefPtr theElement = dynamic_pointer_cast<PlainDocumentLeafElement>(Manager->getRootElement()->getElement(i));
+		std::string stringToBeSearchedIn = theElement->getText();
+
+		boost::xpressive::smatch what;
+
+		if( boost::xpressive::regex_search( stringToBeSearchedIn, what, rex ) )
+		{
+			std::string str = regex_replace( stringToBeSearchedIn, rex, theReplaceText );
+			setTextUsingCommandManager(theElement,str);
+		}
+	}
+}
+
+bool TextDomArea::searchForStringInDocumentUsingRegEx(std::string stringToBeLookedFor,bool isCaseChecked,bool isWholeWordChecked,bool searchUp,bool wrapAround,bool isUseRegExChecked)
+{
+	
+	boost::xpressive::sregex rex;
+
+	stringToBeLookedFor = initialSearchStringModification(stringToBeLookedFor,isUseRegExChecked);
+
+	regexCompiling(stringToBeLookedFor,rex,isCaseChecked,isWholeWordChecked);
+
+	Int32 i=Manager->getCaretLine();
 	UInt32 count=0;
 	UInt32 totalElements = Manager->getRootElement()->getElementCount();
 
-	if(toBeBookmarked)
-	{
-		i=0;
-	}
-	else
-	{
-		i=Manager->getCaretLine();
-	}
-
-	//preset    -	UInt32 i=toBeBookmarked?0:Manager->getCaretLine()
-	//condition - !wrapAround?(!searchUp?(i<Manager->getRootElement()->getElementCount()):i>=0):count!=
-	//increment - !wrapAround?(!searchUp?i++:i--):(!searchUp?(i=(i+1)%Manager->getRootElement()->getElementCount()):(--i,i<0?i=Manager->getRootElement()->getElementCount():1))
-	
 	for(;;count++)
 	{
 		// conditions to exit on...
@@ -224,34 +268,27 @@ bool TextDomArea::searchForStringInDocument(std::string stringToBeLookedFor,bool
 
 		PlainDocumentLeafElementRefPtr theElement = dynamic_pointer_cast<PlainDocumentLeafElement>(Manager->getRootElement()->getElement(i));
 		std::string stringToBeSearchedIn = theElement->getText();
-		if(!isCaseChecked)
-		{
-			stringToUpper(stringToBeSearchedIn);
-		}
-		size_t found;
-		found=stringToBeSearchedIn.find(stringToBeLookedFor,(i==Manager->getCaretLine())?(Manager->getCaretIndex()+1):0);
-		if (found!=std::string::npos)
-		{
-			if(!isWholeWordChecked || (isWholeWordChecked && (((UInt32(found) + stringToBeLookedFor.length())>=stringToBeSearchedIn.length()-2) || !isWordChar(stringToBeSearchedIn[UInt32(found) + stringToBeLookedFor.length()])) && (UInt32(found)==0 || !isWordChar(stringToBeSearchedIn[UInt32(found-1)])) ))
-			{
-				Manager->setHSI(UInt32(found));
-				Manager->setHSL(i);
-				Manager->setHEL(i);
-				Manager->setHEI(UInt32(found) + stringToBeLookedFor.length());
-				Manager->setCaretLine(i);
-				Manager->setCaretIndex(UInt32(found) + stringToBeLookedFor.length());
-				Manager->recalculateCaretPositions();
-				Manager->checkCaretVisibility();
 
-				if(toBeBookmarked)
-				{
-					this->editMFBookmarkedLines()->push_back(i);
-					//pushToBookmarkedLines(i);
-				}
-				
-				return true;
-			}
+		if(i==Manager->getCaretLine()) stringToBeSearchedIn = stringToBeSearchedIn.substr(Manager->getCaretIndex());
+
+		boost::xpressive::smatch what;
+ 
+		if( boost::xpressive::regex_search( stringToBeSearchedIn, what, rex ) )
+		{
+			UInt32 temphsi = what.position();
+			if(i==Manager->getCaretLine())temphsi+=Manager->getCaretIndex();
+			Manager->setHSI(temphsi);
+			Manager->setHSL(i);
+			Manager->setHEL(i);
+			Manager->setHEI(temphsi+ what.length());
+			Manager->setCaretLine(i);
+			Manager->setCaretIndex(temphsi+ what.length() );
+			Manager->recalculateCaretPositions();
+			Manager->checkCaretVisibility();
+
+			return true;
 		}
+
 		// incrementing values 
 		if(!wrapAround)
 		{
@@ -282,6 +319,7 @@ bool TextDomArea::searchForStringInDocument(std::string stringToBeLookedFor,bool
 	}
 	return false;
 }
+
 
 UInt32 TextDomArea::getTopmostVisibleLineNumber(void)
 {

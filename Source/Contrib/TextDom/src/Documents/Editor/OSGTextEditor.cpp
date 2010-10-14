@@ -240,45 +240,7 @@ void TextEditor::dialogClosing(const SearchWindowEventUnrecPtr e)
 	std::cout<<"dialog closing\n";
 }
 
-void TextEditor::searchButtonClicked(const SearchWindowEventUnrecPtr e)
-{
-	SearchWindowRefPtr theSearchWindow = dynamic_cast<SearchWindow*>(e->getSource());
-
-	if(theSearchWindow)
-	{
-		TextDomAreaRefPtr theFocussedDomArea = getFocusedDomArea();
-		if(theFocussedDomArea)
-		{
-			std::string searchString = theSearchWindow->getSearchText();
-			if(!theSearchWindow->isUseRegExChecked())
-			{
-				theFocussedDomArea->searchForStringInDocument(searchString,theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked(),false,theSearchWindow->isSearchUpChecked(),theSearchWindow->isWrapAroundChecked());
-			}
-			else
-			{
-				//std::string DIS = theFocussedDomArea->getDIS();
-			}
-		}
-	}
-	std::cout<<"search button clicked\n";
-}
-
-void TextEditor::replaceButtonClicked(const SearchWindowEventUnrecPtr e)
-{
-	SearchWindowRefPtr theSearchWindow = dynamic_cast<SearchWindow*>(e->getSource());
-
-	if(theSearchWindow)
-	{
-		TextDomAreaRefPtr theFocussedDomArea = getFocusedDomArea();
-		if(theFocussedDomArea)
-		{
-			theFocussedDomArea->handlePastingAString(theSearchWindow->getReplaceText());
-		}
-	}
-}
-
-void TextEditor::replaceAllButtonClicked(const SearchWindowEventUnrecPtr e)
-{
+/*
 	SearchWindowRefPtr theSearchWindow = dynamic_cast<SearchWindow*>(e->getSource());
 
 	if(theSearchWindow)
@@ -304,16 +266,33 @@ void TextEditor::replaceAllButtonClicked(const SearchWindowEventUnrecPtr e)
 			}
 			else
 			{
-				//std::string DIS = theFocussedDomArea->getDIS();
+				theFocussedDomArea->replaceAllUsingRegEx(theSearchWindow->getSearchText(),theSearchWindow->getReplaceText(),theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked(),theSearchWindow->isUseRegExChecked());
 			}
 		}
-	}
-	//std::cout<<"replace all button clicked\n";
+	}*/
+
+void TextEditor::searchButtonClicked(const SearchWindowEventUnrecPtr e)
+{
+	searchWindowButtonClicked(e,SEARCH);
+}
+
+void TextEditor::replaceButtonClicked(const SearchWindowEventUnrecPtr e)
+{
+	searchWindowButtonClicked(e,REPLACE);
+}
+
+void TextEditor::replaceAllButtonClicked(const SearchWindowEventUnrecPtr e)
+{
+	searchWindowButtonClicked(e,REPLACE_ALL);
 }
 
 void TextEditor::bookmarkAllButtonClicked(const SearchWindowEventUnrecPtr e)
 {
+	searchWindowButtonClicked(e,BOOKMARK_ALL);
+}
 
+void TextEditor::searchWindowButtonClicked(const SearchWindowEventUnrecPtr e,UInt32 button)
+{
 	SearchWindowRefPtr theSearchWindow = dynamic_cast<SearchWindow*>(e->getSource());
 
 	if(theSearchWindow)
@@ -322,15 +301,21 @@ void TextEditor::bookmarkAllButtonClicked(const SearchWindowEventUnrecPtr e)
 
 		if(theFocussedDomArea)
 		{
-			theFocussedDomArea->editMFBookmarkedLines()->clear();
-			std::string searchString = theSearchWindow->getSearchText();
-			if(!theSearchWindow->isUseRegExChecked())
+			switch(button)
 			{
-				theFocussedDomArea->bookmarkAll(searchString,theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked());
-			}
-			else
-			{
-				//std::string DIS = theFocussedDomArea->getDIS();
+			case SEARCH: 
+				theFocussedDomArea->searchForStringInDocumentUsingRegEx(theSearchWindow->getSearchText(),theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked(),theSearchWindow->isSearchUpChecked(),theSearchWindow->isWrapAroundChecked(),theSearchWindow->isUseRegExChecked());
+				break;
+			case REPLACE:
+				theFocussedDomArea->handlePastingAString(theSearchWindow->getReplaceText());
+				break;
+			case REPLACE_ALL:
+				theFocussedDomArea->replaceAllUsingRegEx(theSearchWindow->getSearchText(),theSearchWindow->getReplaceText(),theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked(),theSearchWindow->isUseRegExChecked());
+				break;
+			case BOOKMARK_ALL:
+				theFocussedDomArea->editMFBookmarkedLines()->clear();
+				theFocussedDomArea->bookmarkAllUsingRegEx(theSearchWindow->getSearchText(),theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked(),theSearchWindow->isUseRegExChecked());
+				break;
 			}
 		}
 	}

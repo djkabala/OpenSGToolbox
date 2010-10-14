@@ -78,6 +78,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 {
   protected:
 
+	  enum searchWindowButtons{SEARCH,REPLACE,REPLACE_ALL,BOOKMARK_ALL};
+
 		SplitPanelRefPtr _DomAreaAndClipboard;
 		SplitPanelRefPtr _InsideDomArea;
 
@@ -97,10 +99,10 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 		void createDomArea(void);
 		AdvancedTextDomAreaRefPtr makeADuplicate(AdvancedTextDomAreaRefPtr TheAdvancedTextDomArea);
 
-
-
 		void updateLayout(bool isClipboardVisible);	// to update the layout of the editor(to show/hide the copy clipboard)
 		void updateDomLayout(bool isSplit);	// to update the layout of the Document Area (to show/hide the second view)
+
+		void searchWindowButtonClicked(const SearchWindowEventUnrecPtr e,UInt32 button);
 
 		// Dom related
 		TabPanelRefPtr    _LeftTabPanel;

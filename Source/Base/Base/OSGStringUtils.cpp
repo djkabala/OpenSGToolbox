@@ -209,6 +209,11 @@ bool isWordChar(UChar8 c)
 	return false;
 }
 
+bool isPrintableChar(UChar8 c)
+{
+	return ( isPunctuationChar(c) || isWordChar(c) );
+}
+
 bool isPunctuationChar(UChar8 c)
 {
 	switch(c)

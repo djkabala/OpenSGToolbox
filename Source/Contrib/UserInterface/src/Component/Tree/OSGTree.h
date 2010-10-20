@@ -331,6 +331,8 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
     //Sent when the tree has changed enough that we need to resize the bounds, but not enough that we need to remove the expanded node set (e->g nodes were expanded or collapsed, or nodes were inserted into the tree).
     void treeDidChange(void);
 
+	virtual Vec2f getContentRequestedSize(void) const;
+
     //Scrollable Interface
     //Returns the preferred size of the viewport for a view component.
     virtual Vec2f getPreferredScrollableViewportSize(void);
@@ -532,6 +534,10 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
     TreeRowComponents createRowComponent(const UInt32& Row);
     void updateDrawnRow(const UInt32& Row);
     void updatePreferredSize(void);
+
+	//newly added coz it produced errors while compiling.....
+	void updateChangedNode(const TreePath& Path);
+	void clearRowsDrawn(void);
 
     void getDrawnRows(Int32& Beginning, Int32& End) const;
 

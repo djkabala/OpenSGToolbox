@@ -6,7 +6,19 @@
 // Revision $DateTime: 2009/05/13 01:46:17 $
 //! \file rapidxml_print.hpp This file contains rapidxml printer implementation
 
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
 #include "rapidxml.h"
+//=======
+//#include "rapidxml.hpp"
+//>>>>>>> Stashed changes
+//=======
+//#include "rapidxml.hpp"
+//>>>>>>> Stashed changes
+//=======
+//#include "rapidxml.hpp"
+//>>>>>>> Stashed changes
 
 // Only include streams if not disabled
 #ifndef RAPIDXML_NO_STREAMS
@@ -21,7 +33,16 @@ namespace rapidxml
     // Printing flags
 
     const int print_no_indenting = 0x1;   //!< Printer flag instructing the printer to suppress indenting of XML. See print() function.
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
     const int print_newline_attributes = 0x2;   //!< Printer flag instructing the printer to add newlines for each attribute indenting of XML. See print() function.
+//=======
+//>>>>>>> Stashed changes
+//=======
+//>>>>>>> Stashed changes
+//=======
+//>>>>>>> Stashed changes
 
     ///////////////////////////////////////////////////////////////////////
     // Internal
@@ -176,12 +197,27 @@ namespace rapidxml
 
         // Print attributes of the node
         template<class OutIt, class Ch>
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
         inline OutIt print_attributes(OutIt out, const xml_node<Ch> *node, int flags, int indent)
+//=======
+//        inline OutIt print_attributes(OutIt out, const xml_node<Ch> *node, int flags)
+//>>>>>>> Stashed changes
+//=======
+//        inline OutIt print_attributes(OutIt out, const xml_node<Ch> *node, int flags)
+//>>>>>>> Stashed changes
+//=======
+//        inline OutIt print_attributes(OutIt out, const xml_node<Ch> *node, int flags)
+//>>>>>>> Stashed changes
         {
             for (xml_attribute<Ch> *attribute = node->first_attribute(); attribute; attribute = attribute->next_attribute())
             {
                 if (attribute->name() && attribute->value())
                 {
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
                     if(flags & print_newline_attributes)
                     {
                         *out = Ch('\n'), ++out;
@@ -189,6 +225,12 @@ namespace rapidxml
                             out = fill_chars(out, indent+1, Ch('\t'));
                     }
 
+//=======
+//>>>>>>> Stashed changes
+//=======
+//>>>>>>> Stashed changes
+//=======
+//>>>>>>> Stashed changes
                     // Print attribute name
                     *out = Ch(' '), ++out;
                     out = copy_chars(attribute->name(), attribute->name() + attribute->name_size(), out);
@@ -256,7 +298,19 @@ namespace rapidxml
                 out = fill_chars(out, indent, Ch('\t'));
             *out = Ch('<'), ++out;
             out = copy_chars(node->name(), node->name() + node->name_size(), out);
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
             out = print_attributes(out, node, flags, indent);
+//=======
+//            out = print_attributes(out, node, flags);
+//>>>>>>> Stashed changes
+//=======
+//            out = print_attributes(out, node, flags);
+//>>>>>>> Stashed changes
+//=======
+//            out = print_attributes(out, node, flags);
+//>>>>>>> Stashed changes
             
             // If node is childless
             if (node->value_size() == 0 && !node->first_node())
@@ -315,7 +369,19 @@ namespace rapidxml
             *out = Ch('l'), ++out;
 
             // Print attributes
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
             out = print_attributes(out, node, flags, indent);
+//=======
+//            out = print_attributes(out, node, flags);
+//>>>>>>> Stashed changes
+//=======
+//            out = print_attributes(out, node, flags);
+//>>>>>>> Stashed changes
+//=======
+//            out = print_attributes(out, node, flags);
+//>>>>>>> Stashed changes
             
             // Print declaration end
             *out = Ch('?'), ++out;

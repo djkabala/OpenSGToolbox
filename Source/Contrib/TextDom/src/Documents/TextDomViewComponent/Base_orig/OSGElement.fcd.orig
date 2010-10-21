@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+	name="Element"
+	parent="FieldContainer"
+<<<<<<< HEAD
+    library="ContribTextDom"
+=======
+    library="ContribUserInterface"
+>>>>>>> 43b0c45248e89890ff4be4e885dffd8528bdf79b
+    pointerfieldtypes="both"
+	structure="abstract"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)                             "
+>
+Document Element
+</FieldContainer>

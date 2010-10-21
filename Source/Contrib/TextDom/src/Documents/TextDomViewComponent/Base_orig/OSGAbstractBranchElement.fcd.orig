@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+	name="AbstractBranchElement"
+	parent="AbstractElement"
+<<<<<<< HEAD
+    library="ContribTextDom"
+    pointerfieldtypes="both"
+	structure="abstract"
+    systemcomponent="true"
+    parentsystemcomponent="false"
+=======
+    library="ContribUserInterface"
+    pointerfieldtypes="both"
+	structure="abstract"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+>>>>>>> 43b0c45248e89890ff4be4e885dffd8528bdf79b
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)                             "
+>
+Document Element
+	<Field
+		name="ChildElements"
+		type="Element"
+		category="pointer"
+		cardinality="multi"
+		visibility="external"
+		access="protected"
+	>
+	</Field>
+</FieldContainer>

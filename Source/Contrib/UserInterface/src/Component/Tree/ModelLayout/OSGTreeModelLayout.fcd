@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+	name="TreeModelLayout"
+	parent="TreeRowMapper"
+    library="ContribUserInterface"
+    pointerfieldtypes="both"
+	structure="abstract"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)                             "
+>
+A UI Tree Model Layout.
+	<ProducedEvent
+		name="TreeCollapsed"
+		detailsType="TreeModelLayoutEventDetails"
+		consumable="true"
+	>
+	</ProducedEvent>
+	<ProducedEvent
+		name="TreeExpanded"
+		detailsType="TreeModelLayoutEventDetails"
+		consumable="true"
+	>
+	</ProducedEvent>
+	<ProducedEvent
+		name="TreeWillCollapse"
+		detailsType="TreeModelLayoutEventDetails"
+		consumable="true"
+	>
+	</ProducedEvent>
+	<ProducedEvent
+		name="TreeWillExpand"
+		detailsType="TreeModelLayoutEventDetails"
+		consumable="true"
+	>
+	</ProducedEvent>
+	<ProducedEvent
+		name="TreeNodesChanged"
+		detailsType="TreeModelEventDetails"
+		consumable="true"
+	>
+	</ProducedEvent>
+	<ProducedEvent
+		name="TreeNodesInserted"
+		detailsType="TreeModelEventDetails"
+		consumable="true"
+	>
+	</ProducedEvent>
+	<ProducedEvent
+		name="TreeNodesRemoved"
+		detailsType="TreeModelEventDetails"
+		consumable="true"
+	>
+	</ProducedEvent>
+	<ProducedEvent
+		name="TreeNodesWillBeRemoved"
+		detailsType="TreeModelEventDetails"
+		consumable="true"
+	>
+	</ProducedEvent>
+	<ProducedEvent
+		name="TreeStructureChanged"
+		detailsType="TreeModelEventDetails"
+		consumable="true"
+	>
+	</ProducedEvent>
+</FieldContainer>

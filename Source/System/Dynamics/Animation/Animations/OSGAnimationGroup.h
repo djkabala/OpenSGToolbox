@@ -43,8 +43,6 @@
 #endif
 
 #include "OSGAnimationGroupBase.h"
-#include "OSGEventConnection.h"
-#include "OSGEventListener.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -52,7 +50,7 @@ OSG_BEGIN_NAMESPACE
            PageDynamicsAnimationGroup for a description.
 */
 
-class OSG_TBANIMATION_DLLMAPPING AnimationGroup : public AnimationGroupBase, public EventListener
+class OSG_TBANIMATION_DLLMAPPING AnimationGroup : public AnimationGroupBase
 {
   protected:
 
@@ -80,21 +78,15 @@ class OSG_TBANIMATION_DLLMAPPING AnimationGroup : public AnimationGroupBase, pub
                       const BitVector  bvFlags  = 0) const;
 
     /*! \}                                                                 */
-    //virtual bool update(const AnimationAdvancerPtr& advancer);
     virtual bool update(const Time& ElapsedTime);
     
     virtual void start(const Time& StartTime=0.0f);
     virtual void seek(const Time& SeekTime);
     virtual void pause(bool ShouldPause);
-    virtual bool isPaused(void) const;
-    virtual bool isPlaying(void) const;
     virtual void stop(bool DisconnectFromEventProducer = true);
 
-    virtual Real32 getLength(void) const;
-
-    void attachUpdateProducer(EventProducerPtr TheProducer);
-    virtual void eventProduced(const EventUnrecPtr EventDetails, UInt32 ProducedEventId);
-    void detachUpdateProducer(void);
+    virtual Real32 getUnclippedCycleLength(void) const;
+    virtual Real32 getUnclippedLength(void) const;
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -123,17 +115,8 @@ class OSG_TBANIMATION_DLLMAPPING AnimationGroup : public AnimationGroupBase, pub
     static void initMethod(InitPhase ePhase);
 
     /*! \}                                                                 */
-    void produceAnimationsStarted(void);
-    void produceAnimationsStopped(void);
-    void produceAnimationsPaused(void);
-    void produceAnimationsUnpaused(void);
-    void produceAnimationsEnded(void);
-    void produceAnimationsCycled(void);
 
-    Time _CurrentTime,_PrevTime;
-    bool _IsPlaying,_IsPaused;
-
-    EventConnection _UpdateEventConnection;
+    virtual void internalUpdate(Real32 t, const Real32 prev_t);
     /*==========================  PRIVATE  ================================*/
 
   private:

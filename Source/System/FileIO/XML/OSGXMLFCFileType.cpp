@@ -62,6 +62,7 @@
 #include "OSGContainerUtils.h"
 
 #include "OSGStringUtils.h"
+#include "OSGPathUtils.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -72,6 +73,8 @@
 #include "rapidxml.h"
 #include "rapidxml_iterators.h"
 #include "rapidxml_print.h"
+
+#include "OSGSceneFileHandler.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -176,7 +179,7 @@ XMLFCFileType::FCPtrStore XMLFCFileType::read(std::istream &InputStream,
 
     FieldContainerUnrecPtr NewFieldContainer;
     const FieldDescriptionBase* Desc;
-    EditFieldHandlePtr TheFieldHandle;
+    GetFieldHandlePtr TheFieldHandle;
     std::string FieldValue;
     IDLookupMap::iterator FCInfoIter;
     UInt32 CurrentFieldContainerOldId;
@@ -235,20 +238,132 @@ XMLFCFileType::FCPtrStore XMLFCFileType::read(std::istream &InputStream,
                                    FileNameOrExtension);
         }
         NewFieldContainer = FCInfoIter->second._Ptr;
-        //if(NewFieldContainer->getType().isDerivedFrom(AttachmentContainer::getClassType()))
-        //{
-        //	//Search for File attachment
-        //	SearchItor = (*NodeListItor)->get_attrmap().find(xmlpp::xmlstring(FileAttachmentXMLToken));
-        //	if(SearchItor != (*NodeListItor)->get_attrmap().end())
-        //	{
-//                    Result.insert(NewFieldContainer);
-//                    continue;
-        //	}
-        //}
 
         if(NewFieldContainer != NULL)
         {
-            BitVector ChangedFields = 0;
+            //Apply all of the non-Ptr fields first
+            for(AttributeIterator = rapidxml::attribute_iterator<char>(&(*NodeListItor)); AttributeIterator != rapidxml::attribute_iterator<char>(); ++AttributeIterator)
+            {
+                std::string FieldName(AttributeIterator->name(), AttributeIterator->name_size());
+                if(FieldName.compare(FieldContainerIDXMLToken) == 0 ||
+                   FieldName.compare(NameAttachmentXMLToken) == 0 ||
+                   FieldName.compare(FileAttachmentXMLToken) == 0 ||
+                   (NewFieldContainer->getType().isDerivedFrom(AttachmentContainer::getClassType()) &&
+                    FieldName.compare(AttachmentsXMLToken) == 0))
+                {
+                    continue;
+                }
+
+                Desc = NewFieldContainer->getFieldDescription(FieldName.c_str());
+                if(Desc == NULL)
+                {
+                    printXMLSemanticError(" There is no Field named: " + FieldName +
+                        ", for FieldContainers of Type: " + NewFieldContainer->getType().getCName(),
+                                                                       StreamText,
+                                                                       AttributeIterator->value() - StreamText.c_str(),
+                                                                       FileNameOrExtension);
+                }
+                else
+                {
+                    FieldValue = std::string(AttributeIterator->value(), AttributeIterator->value_size());
+                    TheFieldHandle = NewFieldContainer->getField(Desc->getFieldId());
+                    if(TheFieldHandle == NULL)
+                    {
+                        continue;
+                    }
+					if(Desc->getFieldType().getClass() != FieldType::PtrField &&
+						Desc->getFieldType().getClass() != FieldType::ChildPtrField)
+                    {
+                        //Single fields
+                        if(Desc->getFieldType().getCardinality() == FieldType::SingleField)
+                        {
+                            if(Desc->getFieldType() == SFBoostPath::getClassType())
+                            {
+                                //If the field type is a Path
+                                BoostPath TheFilePath(FieldValue.c_str());
+                                if(!TheFilePath.has_root_path())
+                                {
+                                    TheFilePath = RootPath / TheFilePath;
+                                }
+                                static_cast<SFBoostPath*>(NewFieldContainer->editField(Desc->getFieldId())->getField())->setValue(TheFilePath);
+                            }
+                            else
+                            {
+                                NewFieldContainer->editField(Desc->getFieldId())->pushValueFromCString(FieldValue.c_str());
+                            }
+                        }
+                        else if(Desc->getFieldType().getCardinality() == FieldType::MultiField &&
+                            !FieldValue.empty())
+                        {
+                            //Multi fields
+                            std::vector< std::string > SplitVec;
+                            boost::algorithm::split( SplitVec, FieldValue,
+                                                     boost::algorithm::is_any_of(std::string(";,")) );
+                            for(UInt32 SplitIndex(0); SplitIndex<SplitVec.size() ; ++SplitIndex)
+                            {
+                                if(Desc->getFieldType() == MFBoostPath::getClassType())
+                                {
+                                    //If the field type is a Path
+                                    BoostPath TheFilePath(SplitVec[SplitIndex].c_str());
+                                    if(!TheFilePath.has_root_path())
+                                    {
+                                        TheFilePath = RootPath / TheFilePath;
+                                    }
+                                    static_cast<MFBoostPath*>(NewFieldContainer->editField(Desc->getFieldId())->getField())->push_back(TheFilePath);
+                                }
+                                else
+                                {
+                                    NewFieldContainer->editField(Desc->getFieldId())->pushValueFromCString(SplitVec[SplitIndex].c_str());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+		}
+	}
+    for(rapidxml::node_iterator<char> NodeListItor(doc.first_node(RootFCXMLToken.c_str())) ; NodeListItor!=rapidxml::node_iterator<char>() ; ++NodeListItor)
+    {
+        //Find the FieldContainerId Token
+        rapidxml::xml_attribute<char> *IdAttrib(NodeListItor->first_attribute(FieldContainerIDXMLToken.c_str()));
+        if(IdAttrib == NULL)
+        {
+            printXMLSemanticError( "Couldn't find "+FieldContainerIDXMLToken+" attribute for '" + std::string(NodeListItor->name(), NodeListItor->name_size()) + "'!",
+                                   StreamText,
+                                   IdAttrib->value() - StreamText.c_str(),
+                                   FileNameOrExtension);
+            continue;
+        }
+        //Get the FieldContainer with that ID
+        CurrentFieldContainerOldId = TypeTraits<UInt32>::getFromCString(std::string(IdAttrib->value(), IdAttrib->value_size()).c_str());
+        FCInfoIter = TheIDLookupMap.find(CurrentFieldContainerOldId);
+        if(FCInfoIter == TheIDLookupMap.end())
+        {
+            printXMLSemanticError("No matching container found for ID " +
+                                   std::string(IdAttrib->value(), IdAttrib->value_size()) + "." ,
+                                   StreamText,
+                                   IdAttrib->value() - StreamText.c_str(),
+                                   FileNameOrExtension);
+
+            continue;
+        }
+
+        if(FCInfoIter->second._Read)
+        {
+            printXMLSemanticError("A FieldContainer by this Id has already been written to.  Subsequent definitions will overwrite the previous ones. Original ID: " +
+                                   boost::lexical_cast<std::string>(CurrentFieldContainerOldId) +
+                                   ", new ID: " +
+                                   boost::lexical_cast<std::string>(FCInfoIter->second._NewId),
+                                   StreamText,
+                                   IdAttrib->value() - StreamText.c_str(),
+                                   FileNameOrExtension);
+        }
+        NewFieldContainer = FCInfoIter->second._Ptr;
+
+        if(NewFieldContainer != NULL)
+        {
+
+            //Apply all of the Ptr fields second
             for(AttributeIterator = rapidxml::attribute_iterator<char>(&(*NodeListItor)); AttributeIterator != rapidxml::attribute_iterator<char>(); ++AttributeIterator)
             {
                 std::string FieldName(AttributeIterator->name(), AttributeIterator->name_size());
@@ -335,16 +450,15 @@ XMLFCFileType::FCPtrStore XMLFCFileType::read(std::istream &InputStream,
                 }
                 else
                 {
-                    TheFieldHandle = NewFieldContainer->editField(Desc->getFieldId());
+                    TheFieldHandle = NewFieldContainer->getField(Desc->getFieldId());
                     if(TheFieldHandle == NULL)
                     {
                         continue;
                     }
-                    ChangedFields = ChangedFields | Desc->getFieldMask();
 					if(Desc->getFieldType().getClass() == FieldType::PtrField ||
 						Desc->getFieldType().getClass() == FieldType::ChildPtrField)
                     {
-
+                        //Single Fields
                         if(Desc->getFieldType().getCardinality() == FieldType::SingleField)
                         {
                             FieldContainerUnrecPtr TheFC;
@@ -398,13 +512,14 @@ XMLFCFileType::FCPtrStore XMLFCFileType::read(std::istream &InputStream,
                             }
                             if(Desc->getFieldType().getClass() == FieldType::PtrField)
                             {
-                                static_cast<EditSFieldHandle<FieldContainerPtrSFieldBase>*>(TheFieldHandle.get())->set(TheFC);
+                                static_cast<EditSFieldHandle<FieldContainerPtrSFieldBase>*>(NewFieldContainer->editField(Desc->getFieldId()).get())->set(TheFC);
                             }
                             else if( Desc->getFieldType().getClass() == FieldType::ChildPtrField)
                             {
-                                static_cast<ChildPointerSField <FieldContainer *, UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->setValue(TheFC);
+                                static_cast<ChildPointerSField <FieldContainer *, UnrecordedRefCountPolicy,1>*>(NewFieldContainer->editField(Desc->getFieldId())->getField())->setValue(TheFC);
                             }
                         }
+                        //Multi Fields
                         else if(Desc->getFieldType().getCardinality() == FieldType::MultiField &&
                             !FieldValue.empty())
                         {
@@ -454,11 +569,11 @@ XMLFCFileType::FCPtrStore XMLFCFileType::read(std::istream &InputStream,
                                     {
                                         if(Desc->getFieldType().getClass() == FieldType::PtrField)
                                         {
-                                            static_cast<EditMFieldHandle<FieldContainerPtrMFieldBase>*>(TheFieldHandle.get())->add(TheFC);
+                                            static_cast<EditMFieldHandle<FieldContainerPtrMFieldBase>*>(NewFieldContainer->editField(Desc->getFieldId()).get())->add(TheFC);
                                         }
                                         else if( Desc->getFieldType().getClass() == FieldType::ChildPtrField)
                                         {
-                                           static_cast<ChildPointerMField <FieldContainer *, UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->push_back(TheFC);
+                                           static_cast<ChildPointerMField <FieldContainer *, UnrecordedRefCountPolicy,1>*>(NewFieldContainer->editField(Desc->getFieldId())->getField())->push_back(TheFC);
                                         }
                                     }
                                     else
@@ -476,66 +591,21 @@ XMLFCFileType::FCPtrStore XMLFCFileType::read(std::istream &InputStream,
 									//Push NULL
                                     if(Desc->getFieldType().getClass() == FieldType::PtrField)
                                     {
-                                        static_cast<EditMFieldHandle<FieldContainerPtrMFieldBase>*>(TheFieldHandle.get())->add(NULL);
+                                        static_cast<EditMFieldHandle<FieldContainerPtrMFieldBase>*>(NewFieldContainer->editField(Desc->getFieldId()).get())->add(NULL);
                                     }
                                     else if( Desc->getFieldType().getClass() == FieldType::ChildPtrField)
                                     {
                                        static_cast<ChildPointerMField
                                            <FieldContainer *,
-                                           UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->push_back(NULL);
+                                           UnrecordedRefCountPolicy,1>*>(NewFieldContainer->editField(Desc->getFieldId())->getField())->push_back(NULL);
                                     }
 								}
                                 
                             }
                         }
                     }
-                    else
-                    {
-                        if(Desc->getFieldType().getCardinality() == FieldType::SingleField)
-                        {
-                            if(Desc->getFieldType() == SFBoostPath::getClassType())
-                            {
-                                //If the field type is a Path
-                                BoostPath TheFilePath(FieldValue.c_str());
-                                if(!TheFilePath.has_root_path())
-                                {
-                                    TheFilePath = RootPath / TheFilePath;
-                                }
-                                static_cast<SFBoostPath*>(TheFieldHandle->getField())->setValue(TheFilePath);
-                            }
-                            else
-                            {
-                                TheFieldHandle->pushValueFromCString(FieldValue.c_str());
-                            }
-                        }
-                        else if(Desc->getFieldType().getCardinality() == FieldType::MultiField &&
-                            !FieldValue.empty())
-                        {
-                            std::vector< std::string > SplitVec;
-                            boost::algorithm::split( SplitVec, FieldValue,
-                                                     boost::algorithm::is_any_of(std::string(";,")) );
-                            for(UInt32 SplitIndex(0); SplitIndex<SplitVec.size() ; ++SplitIndex)
-                            {
-                                if(Desc->getFieldType() == MFBoostPath::getClassType())
-                                {
-                                    //If the field type is a Path
-                                    BoostPath TheFilePath(SplitVec[SplitIndex].c_str());
-                                    if(!TheFilePath.has_root_path())
-                                    {
-                                        TheFilePath = RootPath / TheFilePath;
-                                    }
-                                    static_cast<MFBoostPath*>(TheFieldHandle->getField())->push_back(TheFilePath);
-                                }
-                                else
-                                {
-                                    TheFieldHandle->pushValueFromCString(SplitVec[SplitIndex].c_str());
-                                }
-                            }
-                        }
-                    }
                 }
             }
-            //ChangedFieldsVec.push_back(FieldContainerChangedPair(NewFieldContainer, ChangedFields));
 
             try
             {
@@ -563,15 +633,6 @@ XMLFCFileType::FCPtrStore XMLFCFileType::read(std::istream &InputStream,
                                                                FileNameOrExtension);
         }
     }
-
-    //Send the changed event to each FieldContainer
-    //for the fields that were changed
-
-    //for(ChangedFieldsVectorItor Itor(ChangedFieldsVec.begin()) ; Itor != ChangedFieldsVec.end() ; ++Itor)
-    //{
-        //changedCP(Itor->first, Itor->second);
-    //}
-    commitChanges();
     
 
     FieldContainerFactory::the()->setMapper(NULL);
@@ -701,9 +762,20 @@ bool XMLFCFileType::write(const FCPtrStore &Containers, std::ostream &OutputStre
     BoostPath RootPath = FCFileHandler::the()->getRootFilePath();
 
     //Get all of the dependent FieldContainers
-    const std::set<FieldContainerUnrecPtr> IgnoreContainers;
+    FCFileType::FCPtrStore IgnoreContainers;
     FCPtrStore AllContainers;
-    AllContainers = getAllDependantFCs(Containers, IgnoreContainers, IgnoreTypes);
+    AllContainers = getAllDependantFCs(Containers,
+                                       IgnoreContainers,
+                                       IgnoreTypes,
+                                       false);
+
+    //Normalize the FieldContainer Ids for the file
+    std::map<UInt32,UInt32> RunTimeToFileIDMap;
+    UInt32 i(1);
+    for(FCFileType::FCPtrStore::iterator StoreItor(AllContainers.begin()) ; StoreItor!=AllContainers.end() ; ++StoreItor, ++i)
+    {
+        RunTimeToFileIDMap.insert(std::make_pair((*StoreItor)->getId(), i));
+    }
 
     // root node
     rapidxml::xml_node<>* root = doc.allocate_node(rapidxml::node_element,
@@ -721,7 +793,9 @@ bool XMLFCFileType::write(const FCPtrStore &Containers, std::ostream &OutputStre
         child = doc.allocate_node(rapidxml::node_element, (*FCItor)->getType().getCName());
         root->append_node(child);
 
-        alloc_str = doc.allocate_string(boost::lexical_cast<std::string>((*FCItor)->getId()).c_str());
+		FieldContainer* FCAddr = (*FCItor);
+
+        alloc_str = doc.allocate_string(boost::lexical_cast<std::string>(RunTimeToFileIDMap[(*FCItor)->getId()]).c_str());
         attr = doc.allocate_attribute(FieldContainerIDXMLToken.c_str(),
                                       alloc_str);
         child->append_attribute(attr);
@@ -741,11 +815,49 @@ bool XMLFCFileType::write(const FCPtrStore &Containers, std::ostream &OutputStre
             const BoostPath* FilePath(FilePathAttachment::getFilePath(dynamic_pointer_cast<AttachmentContainer>(*FCItor)));
             if(FilePath != NULL)
             {
-                alloc_str = doc.allocate_string(FilePath->string().c_str());
+                BoostPath RelativePath = makeRelative(RootPath, *FilePath);
+
+                alloc_str = doc.allocate_string(RelativePath.string().c_str());
                 attr = doc.allocate_attribute(FileAttachmentXMLToken.c_str(),
                                               alloc_str);
                 child->append_attribute(attr);
-                continue;
+
+                bool RecurseWrite(true);
+                //Write FC File type
+                if((!getOptionAs<bool>(getOptions(), "RecurseWriteDepFCFiles", RecurseWrite) ||
+                   RecurseWrite) &&
+                   FCFileHandler::the()->getFileType(*FilePath,FCFileType::OSG_WRITE_SUPPORTED) != NULL)
+                {
+                    FCPtrStore store;
+                    store.insert(*FCItor);
+                    //Remove the file path attachment temporarily
+                    AttachmentUnrecPtr att  = 
+                        dynamic_pointer_cast<AttachmentContainer>(*FCItor)->findAttachment(FilePathAttachment::getClassType().getGroupId());
+
+                    dynamic_pointer_cast<AttachmentContainer>(*FCItor)->subAttachment(att);
+
+                    FCFileHandler::the()->write(store,*FilePath, IgnoreTypes);
+                    //Put the file path attachment back on
+                    dynamic_pointer_cast<AttachmentContainer>(*FCItor)->addAttachment(att);
+                }
+                //Write Scene File Type
+                else if((*FCItor)->getType().isDerivedFrom(Node::getClassType()) &&
+                        (!getOptionAs<bool>(getOptions(), "RecurseWriteDepSceneFiles", RecurseWrite) || RecurseWrite) &&
+                        SceneFileHandler::the()->getFileType(FilePath->string().c_str()) != NULL)
+                {
+                    AttachmentUnrecPtr att  = 
+                        dynamic_pointer_cast<AttachmentContainer>(*FCItor)->findAttachment(FilePathAttachment::getClassType().getGroupId());
+
+                    dynamic_pointer_cast<AttachmentContainer>(*FCItor)->subAttachment(att);
+
+                    SceneFileHandler::the()->write(dynamic_pointer_cast<Node>(*FCItor),FilePath->string().c_str());
+                    //Put the file path attachment back on
+                    dynamic_pointer_cast<AttachmentContainer>(*FCItor)->addAttachment(att);
+                }
+                if(FilePathAttachment::shouldUseOnlyFileHandler((*FCItor)->getType()))
+                {
+                    continue;
+                }
             }
 
             //All of the others
@@ -758,7 +870,7 @@ bool XMLFCFileType::write(const FCPtrStore &Containers, std::ostream &OutputStre
                    MapItor->second->getType() != FilePathAttachment::getClassType() &&
                    MapItor->second->getType() != DrawableStatsAttachment::getClassType())
                 {
-                    AttachmentIds.push_back(boost::lexical_cast<std::string>(MapItor->second->getId()));
+                    AttachmentIds.push_back(boost::lexical_cast<std::string>(RunTimeToFileIDMap[MapItor->second->getId()]));
                 }
             }
 
@@ -822,10 +934,8 @@ bool XMLFCFileType::write(const FCPtrStore &Containers, std::ostream &OutputStre
                     }
                     else
                     {
-                        alloc_str =
-                            doc.allocate_string(boost::lexical_cast<std::string>(static_cast<const
-                                                                                 SFUnrecFieldContainerPtr
-                                                                                 *>(TheField)->getValue()->getId()).c_str());
+                        alloc_str = doc.allocate_string(boost::lexical_cast<std::string>(
+                            RunTimeToFileIDMap[static_cast<const SFUnrecFieldContainerPtr*>(TheField)->getValue()->getId()]).c_str());
                     }
                 }
                 else if(TheFieldHandle->getCardinality() == FieldType::MultiField)
@@ -844,7 +954,7 @@ bool XMLFCFileType::write(const FCPtrStore &Containers, std::ostream &OutputStre
                         }
                         else
                         {
-                            IdListStr += boost::lexical_cast<std::string>(static_cast<const MFUnrecFieldContainerPtr *>(TheField)->operator[](Index)->getId());
+                            IdListStr += boost::lexical_cast<std::string>(RunTimeToFileIDMap[static_cast<const MFUnrecFieldContainerPtr *>(TheField)->operator[](Index)->getId()]);
                         }
                     }
                     alloc_str = doc.allocate_string(IdListStr.c_str());
@@ -855,35 +965,33 @@ bool XMLFCFileType::write(const FCPtrStore &Containers, std::ostream &OutputStre
             }
             else if(TheFieldHandle->getType() == SFBoostPath::getClassType())
             {
-
-                //Path RootPath = boost::filesystem::system_complete(RootPath);
                 BoostPath FilePath = boost::filesystem::system_complete(static_cast<const SFBoostPath*>(TheField)->getValue());
-                //Path RelativePath = makeRelative(RootPath, FilePath);
-                //FieldValue = RelativePath.string();//TheField->getValueByStr(FieldValue);
-                alloc_str = doc.allocate_string(FilePath.string().c_str());
+                BoostPath RelativePath = makeRelative(RootPath, FilePath);
+
+                alloc_str = doc.allocate_string(RelativePath.string().c_str());
                 attr = doc.allocate_attribute(Desc->getCName(),
                                               alloc_str);
                 child->append_attribute(attr);
             }
             else if(TheFieldHandle->getType() == MFBoostPath::getClassType())
             {
-                //OSGOutputStream << "\t\t" << Desc->getCName() << "=\"" ;
-                ////Path RootPath = boost::filesystem::system_complete(RootPath);
-                //BoostPath FilePath;
-                ////Path RelativePath;
-                //for(UInt32 Index(0) ; Index<TheFieldHandle->size() ; ++Index)
-                //{
-                    //FieldValue.clear();
-                    //FilePath = boost::filesystem::system_complete((*static_cast<const MFBoostPath*>(TheField))[Index]);
-                    ////RelativePath = makeRelative(RootPath, FilePath);
-                    //FieldValue = FilePath.string();
-                    //if(Index!=0)
-                    //{
-                        //OSGOutputStream << ";";
-                    //}
-                    //OSGOutputStream << FieldValue;
-                //}
-                //OSGOutputStream << "\"" << std::endl;
+                BoostPath FilePath;
+                BoostPath RelativePath;
+                std::string PathList;
+                for(UInt32 Index(0) ; Index<TheFieldHandle->size() ; ++Index)
+                {
+                    FilePath = boost::filesystem::system_complete((*static_cast<const MFBoostPath*>(TheField))[Index]);
+                    BoostPath RelativePath = makeRelative(RootPath, FilePath);
+                    if(Index!=0)
+                    {
+                        PathList += ";";
+                    }
+                    PathList += RelativePath.string();
+                }
+                alloc_str = doc.allocate_string(PathList.c_str());
+                attr = doc.allocate_attribute(Desc->getCName(),
+                                              alloc_str);
+                child->append_attribute(attr);
             }
             else if(TheFieldHandle->getType() == SFString::getClassType())
             {

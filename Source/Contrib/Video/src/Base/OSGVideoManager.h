@@ -38,11 +38,11 @@ OSG_BEGIN_NAMESPACE
 class OSG_CONTRIBVIDEO_DLLMAPPING VideoManager
 {
 public:
-    virtual void init(int   argc, char *argv[]) = 0;
-    virtual void init(void);
-    virtual void exit(void) = 0;
+    virtual bool init(int   argc, char *argv[]) = 0;
+    virtual bool init(void);
+    virtual bool exit(void) = 0;
 
-    virtual VideoWrapperRefPtr createVideoWrapper(void) const = 0;
+    virtual VideoWrapperTransitPtr createVideoWrapper(void) const = 0;
 
 private:
 protected:

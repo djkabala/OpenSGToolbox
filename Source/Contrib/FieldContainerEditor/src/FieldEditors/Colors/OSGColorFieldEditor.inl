@@ -40,14 +40,4 @@
 
 OSG_BEGIN_NAMESPACE
 
-inline
-ColorFieldEditor::ButtonListener::ButtonListener(ColorFieldEditor * ptr) : _ColorFieldEditor(ptr)
-{
-}
-
-inline
-ColorFieldEditor::DialogListener::DialogListener(ColorFieldEditor * ptr) : _ColorFieldEditor(ptr)
-{
-}
-
 OSG_END_NAMESPACE

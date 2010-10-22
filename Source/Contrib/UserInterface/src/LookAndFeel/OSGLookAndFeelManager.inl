@@ -6,7 +6,7 @@
 OSG_BEGIN_NAMESPACE
 
 inline
-LookAndFeelRefPtr LookAndFeelManager::getLookAndFeel(void)
+LookAndFeel* LookAndFeelManager::getLookAndFeel(void) const
 {
 	return _LookAndFeel;
 }
@@ -16,6 +16,7 @@ inline
 LookAndFeelManager::LookAndFeelManager(void)
 {
 	_LookAndFeel = WindowsLookAndFeel::create();
+    addPreFactoryExitFunction(boost::bind(&LookAndFeelManager::uninitialize, this));
 }
 
 inline

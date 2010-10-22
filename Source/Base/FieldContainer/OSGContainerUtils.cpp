@@ -2,7 +2,6 @@
 #include "OSGNameAttachment.h"
 #include "OSGAttachmentContainer.h"
 #include "OSGFieldContainerFactory.h"
-#include "OSGEventProducerPtrType.h"
 //#include "OSGFilePathAttachment.h"
 
 OSG_BEGIN_NAMESPACE
@@ -56,14 +55,21 @@ std::vector<FieldContainerUnrecPtr> getAllContainersByDerivedType(const FieldCon
     const FieldContainerFactoryBase::ContainerStore &FCStore(	FieldContainerFactory::the()->getFieldContainerStore () );
 
     FieldContainerFactoryBase::ContainerStore::const_iterator FCStoreIter;
-    FieldContainerFactoryBase::ContainerPtr Cont;
+    FieldContainerFactoryBase::ContainerPtr Cont(NULL);
     for(FCStoreIter = FCStore.begin() ; FCStoreIter != FCStore.end() ; ++FCStoreIter)
     {
+        if(*FCStoreIter != NULL)
+        {
 #ifdef OSG_MT_CPTR_ASPECT
-        Cont = (*FCStoreIter)->getPtr();
+            Cont = (*FCStoreIter)->getPtr();
 #else
-        Cont = *FCStoreIter;
+            Cont = *FCStoreIter;
 #endif
+        }
+        else
+        {
+            Cont = NULL;
+        }
         if( Cont != NULL && Cont->getType().isDerivedFrom(*szType) )
         {
             Result.push_back(Cont);
@@ -187,41 +193,6 @@ bool isFieldContentDerivedFrom(const FieldType &TheFieldType, const FieldContain
         return false;
     }
     return false;
-}
-
-bool isEventProducer(const FieldContainerRefPtr TheFC)
-{
-    GetFieldHandlePtr TheField(TheFC->getField("EventProducer"));
-
-    if(TheField != NULL)
-    {
-        return TheField->getType().getContentType() == FieldTraits<EventProducerPtr>::getType();
-    }
-    else
-    {
-        return false;
-    }
-}
-
-EventProducerPtr getEventProducer(const FieldContainerRefPtr TheFC)
-{
-    EditFieldHandlePtr TheFieldHandle(TheFC->editField("EventProducer"));
-    if(TheFieldHandle == NULL)
-    {
-        return NULL;
-    }
-
-    SFEventProducerPtr*
-        TheField(static_cast<SFEventProducerPtr*>(TheFieldHandle->getField()));
-
-    if(TheField == NULL)
-    {
-        return NULL;
-    }
-    else
-    {
-        return TheField->getValue();
-    }
 }
 
 OSG_END_NAMESPACE

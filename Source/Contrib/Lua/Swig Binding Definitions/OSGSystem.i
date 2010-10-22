@@ -19,21 +19,22 @@
 #include "OSGGeometry.h"
 #include "OSGViewport.h"
 #include "OSGCamera.h"
+#include "OSGIntersectAction.h"
 #include "OSGImage.h"
 #include "OSGTextureObjChunk.h"
 #include "OSGMathFields.h"
 #include "OSGSysFields.h"
 #include "OSGBaseFields.h"
+#include "OSGBaseFieldTraits.h"
 #include "OSGVecFields.h"
 #include "OSGFieldContainerFields.h"
 #include "OSGContainerUtils.h"
 #include "OSGActivity.h"
 #include "OSGEventProducerType.h"
-#include "OSGEventProducer.h"
 #include "OSGActivity.h"
 #include "OSGWindow.h"
-#include "OSGEvent.h"
-#include "OSGGenericEvent.h"
+#include "OSGEventDetails.h"
+#include "OSGGenericEventDetails.h"
 #include "OSGLuaActivity.h"
     
     int createFieldContainer(lua_State*L) // my native code
@@ -163,7 +164,9 @@
           //GLenum
           else if(FieldContentType == OSG::FieldTraits<GLenum,1>::getType() )
           {
-              lua_pushnumber(L,static_cast<const OSG::SFGLenum*>(TheFieldHandle->getField())->getValue()); SWIG_arg++;
+              std::string value = std::string("GL_") + OSG::GLDefineMapper::the()->toString(static_cast<const OSG::SFGLenum*>(TheFieldHandle->getField())->getValue());
+
+              lua_pushstring(L,value.c_str()); SWIG_arg++;
           }
           //Int8
           else if(FieldContentType == OSG::FieldTraits<OSG::Int8>::getType() )
@@ -392,7 +395,9 @@
           //GLenum
           else if(FieldContentType == OSG::FieldTraits<GLenum, 1>::getType() )
           {
-              lua_pushnumber(L,static_cast<const OSG::MFGLenum*>(TheFieldHandle->getField())->operator[](arg3)); SWIG_arg++;
+              std::string value = std::string("GL_") + OSG::GLDefineMapper::the()->toString(static_cast<const OSG::MFGLenum*>(TheFieldHandle->getField())->operator[](arg3));
+
+              lua_pushstring(L,value.c_str()); SWIG_arg++;
           }
           //Int8
           else if(FieldContentType == OSG::FieldTraits<OSG::Int8>::getType() )
@@ -678,12 +683,19 @@
           //GLenum
           else if(FieldContentType == OSG::FieldTraits<GLenum, 1>::getType() )
           {
-              if(!lua_isnumber(L,3))
+              if(lua_isnumber(L,3))
+              {
+                  static_cast<OSG::SFGLenum*>(TheFieldHandle->getField())->setValue(static_cast<GLenum>(lua_tonumber(L, 3)));
+              }
+              else if(lua_isstring(L,3))
+              {
+                  static_cast<OSG::SFGLenum*>(TheFieldHandle->getField())->setValue(OSG::GLDefineMapper::the()->fromString(lua_tostring(L, 3)));
+              }
+              else
               {
                   LUA_BINDING_fail_arg(L,"setFieldValue",3,"GLenum'");
                   return SWIG_arg;
               }
-                  static_cast<OSG::SFGLenum*>(TheFieldHandle->getField())->setValue(static_cast<GLenum>(lua_tonumber(L, 3)));
           }
           //Int8
           else if(FieldContentType == OSG::FieldTraits<OSG::Int8>::getType() )
@@ -693,7 +705,7 @@
                   LUA_BINDING_fail_arg(L,"setFieldValue",3,"Int8'");
                   return SWIG_arg;
               }
-                  static_cast<OSG::SFInt8*>(TheFieldHandle->getField())->setValue(static_cast<OSG::Int8>(lua_tonumber(L, 3)));
+              static_cast<OSG::SFInt8*>(TheFieldHandle->getField())->setValue(static_cast<OSG::Int8>(lua_tonumber(L, 3)));
           }
           //Int16
           else if(FieldContentType == OSG::FieldTraits<OSG::Int16>::getType() )
@@ -899,24 +911,33 @@
           //FieldContainerRefPtrs
           else if(TheFieldHandle->isPointerField())
           {
-              OSG::FieldContainerRefPtr *arg3 = (OSG::FieldContainerRefPtr *) 0 ;
-              if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_OSG__FieldContainerRefPtr,0)))
+              OSG::FieldContainerRefPtr ValueToSet(NULL);
+              if(!lua_isnil(L, 3))
               {
-                  LUA_BINDING_fail_ptr(L,"setFieldValue",3,SWIGTYPE_p_OSG__FieldContainerRefPtr);
-                  return SWIG_arg;
+                  OSG::FieldContainerRefPtr *arg3 = (OSG::FieldContainerRefPtr *) 0 ;
+                  if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_OSG__FieldContainerRefPtr,0)))
+                  {
+                      LUA_BINDING_fail_ptr(L,"setFieldValue",3,SWIGTYPE_p_OSG__FieldContainerRefPtr);
+                      return SWIG_arg;
+                  }
+
+                  if(arg3 != NULL)
+                  {
+                      ValueToSet = *arg3;
+                  }
               }
               switch(TheFieldHandle->getType().getClass())
               {
                   case OSG::FieldType::ChildPtrField:
                        static_cast<OSG::ChildPointerSField <OSG::FieldContainer *,
-                                   OSG::UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->setValue(*arg3);
+                                   OSG::UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->setValue(ValueToSet);
                        break;
                   case OSG::FieldType::ParentPtrField:
                        lua_pushfstring(L,"Error in setFieldValue the FieldContainer given is of the ParentPtr class.  Cannot set the value of this field directly");
                        lua_error(L);
                        break;
                   case OSG::FieldType::PtrField:
-                       static_cast<OSG::SFUnrecFieldContainerPtr*>(TheFieldHandle->getField())->setValue(*arg3);
+                       static_cast<OSG::SFUnrecFieldContainerPtr*>(TheFieldHandle->getField())->setValue(ValueToSet);
                        break;
               }
           }
@@ -1075,12 +1096,19 @@
           //GLenum
           else if(FieldContentType == OSG::FieldTraits<GLenum, 1>::getType() )
           {
-              if(!lua_isnumber(L,3))
+              if(lua_isnumber(L,3))
+              {
+                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->operator[](arg4) = (static_cast<GLenum>(lua_tonumber(L, 3)));
+              }
+              else if(lua_isstring(L,3))
+              {
+                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->operator[](arg4) = OSG::GLDefineMapper::the()->fromString(lua_tostring(L, 3));
+              }
+              else
               {
                   LUA_BINDING_fail_arg(L,"setFieldValue",3,"GLenum'");
                   return SWIG_arg;
               }
-                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->operator[](arg4) = (static_cast<GLenum>(lua_tonumber(L, 3)));
           }
           //Int8
           else if(FieldContentType == OSG::FieldTraits<OSG::Int8>::getType() )
@@ -1296,25 +1324,33 @@
           //FieldContainerRefPtrs
           else if(TheFieldHandle->isPointerField())
           {
-              OSG::FieldContainerRefPtr *arg3 = (OSG::FieldContainerRefPtr *) 0 ;
-              if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_OSG__FieldContainerRefPtr,0)))
+              OSG::FieldContainerRefPtr ValueToSet(NULL);
+              if(!lua_isnil(L, 3))
               {
-                  LUA_BINDING_fail_ptr(L,"setFieldValue",3,SWIGTYPE_p_OSG__FieldContainerRefPtr);
-                  return SWIG_arg;
+                  OSG::FieldContainerRefPtr *arg3 = (OSG::FieldContainerRefPtr *) 0 ;
+                  if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_OSG__FieldContainerRefPtr,0)))
+                  {
+                      LUA_BINDING_fail_ptr(L,"setFieldValue",3,SWIGTYPE_p_OSG__FieldContainerRefPtr);
+                      return SWIG_arg;
+                  }
+
+                  if(arg3 != NULL)
+                  {
+                      ValueToSet = *arg3;
+                  }
               }
-              //TODO
               switch(TheFieldHandle->getType().getClass())
               {
                   case OSG::FieldType::ChildPtrField:
                        static_cast<OSG::ChildPointerMField <OSG::FieldContainer *,
-                                   OSG::UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->replace(arg4,*arg3);
+                                   OSG::UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->replace(arg4,ValueToSet);
                        break;
                   case OSG::FieldType::ParentPtrField:
                        lua_pushfstring(L,"Error in setFieldValue the FieldContainer given is of the ParentPtr class.  Cannot set the value of this field directly");
                        lua_error(L);
                        break;
                   case OSG::FieldType::PtrField:
-                       static_cast<OSG::MFUnrecFieldContainerPtr*>(TheFieldHandle->getField())->replace(arg4,*arg3);
+                       static_cast<OSG::MFUnrecFieldContainerPtr*>(TheFieldHandle->getField())->replace(arg4,ValueToSet);
                        break;
               }
           }
@@ -1332,7 +1368,7 @@
           //Otherwise
           else
           {
-              lua_pushfstring(L,"Error in setFieldValue field of name '%s' on type '%s', could not set the indexed value of the multi-field because that type is not supported in this biding.",arg2,(*arg1)->getTypeName());
+              lua_pushfstring(L,"Error in setFieldValue field of name '%s' on type '%s', could not set the indexed value of the multi-field because that type is not supported in this binding.",arg2,(*arg1)->getTypeName());
               lua_error(L);
           }
         }
@@ -1456,12 +1492,19 @@
           //GLenum
           else if(FieldContentType == OSG::FieldTraits<GLenum, 1>::getType() )
           {
-              if(!lua_isnumber(L,3))
+              if(lua_isnumber(L,3))
               {
-                  LUA_BINDING_fail_arg(L,"pushFieldValue",3,"GLenum'");
+                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->push_back(static_cast<GLenum>(lua_tonumber(L, 3)));
+              }
+              else if(lua_isstring(L,3))
+              {
+                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->push_back(OSG::GLDefineMapper::the()->fromString(lua_tostring(L, 3)));
+              }
+              else
+              {
+                  LUA_BINDING_fail_arg(L,"setFieldValue",3,"GLenum'");
                   return SWIG_arg;
               }
-                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->push_back(static_cast<GLenum>(lua_tonumber(L, 3)));
           }
           //Int8
           else if(FieldContentType == OSG::FieldTraits<OSG::Int8>::getType() )
@@ -1677,25 +1720,33 @@
           //FieldContainerRefPtrs
           else if(TheFieldHandle->isPointerField())
           {
-              OSG::FieldContainerRefPtr *arg3 = (OSG::FieldContainerRefPtr *) 0 ;
-              if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_OSG__FieldContainerRefPtr,0)))
+              OSG::FieldContainerRefPtr ValueToSet(NULL);
+              if(!lua_isnil(L, 3))
               {
-                  LUA_BINDING_fail_ptr(L,"pushFieldValue",3,SWIGTYPE_p_OSG__FieldContainerRefPtr);
-                  return SWIG_arg;
+                  OSG::FieldContainerRefPtr *arg3 = (OSG::FieldContainerRefPtr *) 0 ;
+                  if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_OSG__FieldContainerRefPtr,0)))
+                  {
+                      LUA_BINDING_fail_ptr(L,"pushFieldValue",3,SWIGTYPE_p_OSG__FieldContainerRefPtr);
+                      return SWIG_arg;
+                  }
+
+                  if(arg3 != NULL)
+                  {
+                      ValueToSet = *arg3;
+                  }
               }
-              //TODO
               switch(TheFieldHandle->getType().getClass())
               {
                   case OSG::FieldType::ChildPtrField:
                        static_cast<OSG::ChildPointerMField <OSG::FieldContainer *,
-                                   OSG::UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->push_back(*arg3);
+                                   OSG::UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->push_back(ValueToSet);
                        break;
                   case OSG::FieldType::ParentPtrField:
                        lua_pushfstring(L,"Error in pushFieldValue the FieldContainer given is of the ParentPtr class.  Cannot set the value of this field directly");
                        lua_error(L);
                        break;
                   case OSG::FieldType::PtrField:
-                       static_cast<OSG::MFUnrecFieldContainerPtr*>(TheFieldHandle->getField())->push_back(*arg3);
+                       static_cast<OSG::MFUnrecFieldContainerPtr*>(TheFieldHandle->getField())->push_back(ValueToSet);
                        break;
               }
           }
@@ -1871,14 +1922,23 @@
           //GLenum
           else if(FieldContentType == OSG::FieldTraits<GLenum, 1>::getType() )
           {
-              if(!lua_isnumber(L,3))
+              if(lua_isnumber(L,3))
               {
-                  LUA_BINDING_fail_arg(L,"insertFieldValue",3,"GLenum'");
+                  OSG::MFGLenum::iterator InsertItor(static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->begin());
+                  InsertItor += arg4;
+                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->insert(InsertItor, static_cast<GLenum>(lua_tonumber(L, 3)));
+              }
+              else if(lua_isstring(L,3))
+              {
+                  OSG::MFGLenum::iterator InsertItor(static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->begin());
+                  InsertItor += arg4;
+                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->insert(InsertItor, OSG::GLDefineMapper::the()->fromString(lua_tostring(L, 3)));
+              }
+              else
+              {
+                  LUA_BINDING_fail_arg(L,"setFieldValue",3,"GLenum'");
                   return SWIG_arg;
               }
-              OSG::MFGLenum::iterator InsertItor(static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->begin());
-              InsertItor += arg4;
-                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->insert(InsertItor, static_cast<GLenum>(lua_tonumber(L, 3)));
           }
           //Int8
           else if(FieldContentType == OSG::FieldTraits<OSG::Int8>::getType() )
@@ -2123,13 +2183,21 @@
           //FieldContainerRefPtrs
           else if(TheFieldHandle->isPointerField())
           {
-              OSG::FieldContainerRefPtr *arg3 = (OSG::FieldContainerRefPtr *) 0 ;
-              if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_OSG__FieldContainerRefPtr,0)))
+              OSG::FieldContainerRefPtr ValueToSet(NULL);
+              if(!lua_isnil(L, 3))
               {
-                  LUA_BINDING_fail_ptr(L,"insertFieldValue",3,SWIGTYPE_p_OSG__FieldContainerRefPtr);
-                  return SWIG_arg;
+                  OSG::FieldContainerRefPtr *arg3 = (OSG::FieldContainerRefPtr *) 0 ;
+                  if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_OSG__FieldContainerRefPtr,0)))
+                  {
+                      LUA_BINDING_fail_ptr(L,"insertFieldValue",3,SWIGTYPE_p_OSG__FieldContainerRefPtr);
+                      return SWIG_arg;
+                  }
+
+                  if(arg3 != NULL)
+                  {
+                      ValueToSet = *arg3;
+                  }
               }
-              //TODO
               switch(TheFieldHandle->getType().getClass())
               {
                   case OSG::FieldType::ChildPtrField:
@@ -2139,7 +2207,7 @@
                                    OSG::UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->begin());
                        InsertItor += arg4;
                        static_cast<OSG::ChildPointerMField <OSG::FieldContainer *,
-                                   OSG::UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->insert(InsertItor, *arg3);
+                                   OSG::UnrecordedRefCountPolicy,1>*>(TheFieldHandle->getField())->insert(InsertItor, ValueToSet);
                   }
                        break;
                   case OSG::FieldType::ParentPtrField:
@@ -2150,7 +2218,7 @@
                   {
                        OSG::MFUnrecFieldContainerPtr::iterator InsertItor(static_cast<OSG::MFUnrecFieldContainerPtr*>(TheFieldHandle->getField())->begin());
                        InsertItor += arg4;
-                       static_cast<OSG::MFUnrecFieldContainerPtr*>(TheFieldHandle->getField())->insert(InsertItor, *arg3);
+                       static_cast<OSG::MFUnrecFieldContainerPtr*>(TheFieldHandle->getField())->insert(InsertItor, ValueToSet);
                   }
                        break;
               }
@@ -2171,7 +2239,7 @@
           //Otherwise
           else
           {
-              lua_pushfstring(L,"Error in insertFieldValue field of name '%s' on type '%s', could not insert the value of the multi-field because that type is not supported in this biding.",arg2,(*arg1)->getTypeName());
+              lua_pushfstring(L,"Error in insertFieldValue field of name '%s' on type '%s', could not insert the value of the multi-field because that type is not supported in this binding.",arg2,(*arg1)->getTypeName());
               lua_error(L);
           }
 
@@ -2182,10 +2250,47 @@
 %template(StringToUInt32Map) std::map<std::string,OSG::UInt32>;
 %template(Int32ToStringMap) std::map<OSG::Int32,std::string>;
 
-namespace OSG {
+namespace boost
+{
+    namespace signals2
+    {
+        class connection
+        {
+        public:
+    
+          connection();
+          connection(const connection &other);
+          //connection(const boost::weak_ptr<detail::connection_body_base> &connectionBody);
+          ~connection();
+          void disconnect() const;
+          bool connected() const;
+          bool blocked() const;
+          bool operator==(const connection& other) const;
+          bool operator!=(const connection& other) const;
+          bool operator<(const connection& other) const;
+          void swap(connection &other);
+        };
+        
+        class scoped_connection
+        {
+        public:
+          scoped_connection(const connection &other);
+          ~scoped_connection();
+          void disconnect() const;
+          bool connected() const;
+        private:
+          scoped_connection();
+          scoped_connection& operator=(const scoped_connection& other);
+        };
+    }
+}
+
+namespace OSG
+{
 
     class FieldDescription;
     class FieldContainerRefPtr;
+    class ReflexiveContainer;
     class FieldContainerType;
     class FieldContainer;
     class AttachmentContainer;
@@ -2205,64 +2310,8 @@ namespace OSG {
     class Matrix;
     class BoxVolume;
     class EventProducerType;
+    class Activity;
 
-    class EventProducer
-    {
-      public:
-
-        //Attaching Activities
-        /*EventConnection attachActivity(ActivityPtr TheActivity, UInt32 ProducedEventId);*/
-        /*bool isActivityAttached(ActivityPtr TheActivity, UInt32 ProducedEventId) const;*/
-        UInt32 getNumActivitiesAttached(UInt32 ProducedEventId) const;
-        /*ActivityPtr getAttachedActivity(UInt32 ProducedEventId, UInt32 ActivityIndex) const;*/
-        /*void detachActivity(ActivityPtr TheActivity, UInt32 ProducedEventId);*/
-
-        /*EventConnection attachActivity(ActivityPtr TheActivity, const Char8 *ProducedEventName);*/
-        /*bool isActivityAttached(ActivityPtr TheActivity, const Char8 *ProducedEventName) const;*/
-        UInt32 getNumActivitiesAttached(const Char8 *ProducedEventName) const;
-        /*ActivityPtr getAttachedActivity(const Char8 *ProducedEventName, UInt32 ActivityIndex) const;*/
-        /*void detachActivity(ActivityPtr TheActivity, const Char8 *ProducedEventName);*/
-        void detachAllActivities(void);
-        UInt32 getNumAttachedActivities(void) const;
-
-        //Attaching EventListeners
-        /*EventConnection attachEventListener(EventListenerPtr TheEventListener, UInt32 ProducedEventId);*/
-        /*bool isEventListenerAttached(EventListenerPtr TheEventListener, UInt32 ProducedEventId) const;*/
-        UInt32 getNumEventListenersAttached(UInt32 ProducedEventId) const;
-        /*EventListenerPtr getAttachedEventListener(UInt32 ProducedEventId, UInt32 EventListenerIndex) const;*/
-        /*void detachEventListener(EventListenerPtr TheEventListener, UInt32 ProducedEventId);*/
-
-        /*EventConnection attachEventListener(EventListenerPtr TheEventListener, const Char8 *ProducedEventName);*/
-        /*bool isEventListenerAttached(EventListenerPtr TheEventListener, const Char8 *ProducedEventName) const;*/
-        UInt32 getNumEventListenersAttached(const Char8 *ProducedEventName) const;
-        /*EventListenerPtr getAttachedEventListener(const Char8 *ProducedEventName, UInt32 EventListenerIndex) const;*/
-        /*void detachEventListener(EventListenerPtr TheEventListener, const Char8 *ProducedEventName);*/
-        void detachAllEventListeners(void);
-        UInt32 getNumAttachedEventListeners(void) const;
-
-
-        /*const EventProducerType &getProducerType(void) const;*/
-
-        UInt32 getNumProducedEvents(void) const;
-        /*const MethodDescription *getProducedEventDescription(const Char8 *ProducedEventName) const;*/
-        /*const MethodDescription *getProducedEventDescription(UInt32 ProducedEventId) const;*/
-        UInt32 getProducedEventId(const Char8 *ProducedEventName) const;
-
-        /*static const EventProducerType &getProducerClassType(void);*/
-        static UInt32                   getProducerClassTypeId(void);
-
-        //EventProducer(const EventProducerType* TheProducerType);
-         ~EventProducer(void);
-
-        
-      protected:
-        EventProducer(const EventProducer &source);
-      private:
-
-        void operator =(const EventProducer &source);
-    };
-
-    typedef EventProducer *EventProducerPtr;
     /******************************************************/
     /*              FieldDescription                    */
     /******************************************************/
@@ -2303,38 +2352,18 @@ namespace OSG {
     };
     
     /******************************************************/
-    /*              Event Connection                      */
+    /*              EventDescription                      */
     /******************************************************/
-    class EventConnection
+    class EventDescription
     {
       public:
-          EventConnection(void);
-          
-          EventConnection(const EventConnection& c);
-    
-          const EventConnection& operator=(const EventConnection& c);
-    
-          bool isValid(void) const;
-    
-          bool isConnected(void) const;
-    
-          void disconnect(void);
-    
-    };
-    
-    /******************************************************/
-    /*              MethodDescription                      */
-    /******************************************************/
-    class MethodDescription
-    {
-      public:
-        const Char8        *getCName       (void                ) const;
-    
-              UInt32     getMethodId       (void                ) const;
-    
-        const TypeBase& getEventArgumentType   (void                ) const;
+        const std::string &getName            (void) const;
+        const std::string &getDescription     (void) const;
+              UInt32      getEventId         (void) const;
+              bool        getConsumable       (void) const;
+        const TypeBase&   getEventArgumentType(void) const;
       protected:
-          MethodDescription(void);
+          EventDescription(void);
     };
     
     /******************************************************/
@@ -2347,15 +2376,15 @@ namespace OSG {
         UInt16              getGroupId(void) const;
         EventProducerType *getParent (void) const;
     
-              MethodDescription *getMethodDescription (UInt32 uiMethodId);
-        const MethodDescription *getMethodDescription (UInt32 uiMethodId) const;
+              EventDescription *getEventDescription (UInt32 uiEventId);
+        const EventDescription *getEventDescription (UInt32 uiEventId) const;
     
-              MethodDescription *findMethodDescription(const Char8 *szMethodName);
+              EventDescription *findEventDescription(const Char8 *szEventName);
     
-        const MethodDescription *findMethodDescription(
-            const Char8 *szMethodName) const;
+        const EventDescription *findEventDescription(
+            const Char8 *szEventName) const;
     
-        UInt32                 getNumMethodDescs(void) const;
+        UInt32                 getNumEventDescs(void) const;
     
         bool isAbstract   (void                           ) const;
     
@@ -2515,7 +2544,7 @@ namespace OSG {
               //GLenum
               else if(FieldContentType == OSG::FieldTraits<GLenum,1>::getType() )
               {
-                      static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->clear();
+                  static_cast<OSG::MFGLenum*>(TheFieldHandle->getField())->clear();
               }
               //Int8
               else if(FieldContentType == OSG::FieldTraits<OSG::Int8>::getType() )
@@ -2851,325 +2880,6 @@ namespace OSG {
               }
         }
 
-        EventConnection attachActivity(FieldContainerRefPtr TheActivity, const Char8 *ProducedEventName)
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call attachActivity on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            if(!TheActivity->getType().isDerivedFrom(OSG::Activity::getClassType()))
-            {
-                  std::string ErrorString = "Cannot call attachActivity with Argument 1 of type '";
-                  ErrorString += TheActivity->getTypeName();
-                  ErrorString += "', because it is not derived from Activity.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->attachActivity(OSG::dynamic_pointer_cast<OSG::Activity>(TheActivity),ProducedEventName);
-        }
-
-        bool isActivityAttached(FieldContainerRefPtr TheActivity, const Char8 *ProducedEventName) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call isActivityAttached on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            if(!TheActivity->getType().isDerivedFrom(OSG::Activity::getClassType()))
-            {
-                  std::string ErrorString = "Cannot call isActivityAttached with Argument 1 of type '";
-                  ErrorString += TheActivity->getTypeName();
-                  ErrorString += "', because it is not derived from Activity.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->isActivityAttached(OSG::dynamic_pointer_cast<OSG::Activity>(TheActivity),ProducedEventName);
-        }
-
-        UInt32 getNumActivitiesAttached(const Char8 *ProducedEventName) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getNumActivitiesAttached on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->getNumActivitiesAttached(ProducedEventName);
-        }
-
-        FieldContainerRefPtr getAttachedActivity(const Char8 *ProducedEventName, UInt32 ActivityIndex) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getAttachedActivity on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->getAttachedActivity(ProducedEventName, ActivityIndex);
-        }
-
-        void detachActivity(FieldContainerRefPtr TheActivity, const Char8 *ProducedEventName)
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call detachActivity on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            if(!TheActivity->getType().isDerivedFrom(OSG::Activity::getClassType()))
-            {
-                  std::string ErrorString = "Cannot call detachActivity with Argument 1 of type '";
-                  ErrorString += TheActivity->getTypeName();
-                  ErrorString += "', because it is not derived from Activity.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->detachActivity(OSG::dynamic_pointer_cast<OSG::Activity>(TheActivity),ProducedEventName);
-        }
-
-        EventConnection attachActivity(FieldContainerRefPtr TheActivity, UInt32 ProducedEventId)
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call attachActivity on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            if(!TheActivity->getType().isDerivedFrom(OSG::Activity::getClassType()))
-            {
-                  std::string ErrorString = "Cannot call attachActivity with Argument 1 of type '";
-                  ErrorString += TheActivity->getTypeName();
-                  ErrorString += "', because it is not derived from Activity.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->attachActivity(OSG::dynamic_pointer_cast<OSG::Activity>(TheActivity),ProducedEventId);
-        }
-
-        bool isActivityAttached(FieldContainerRefPtr TheActivity, UInt32 ProducedEventId) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call isActivityAttached on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            if(!TheActivity->getType().isDerivedFrom(OSG::Activity::getClassType()))
-            {
-                  std::string ErrorString = "Cannot call isActivityAttached with Argument 1 of type '";
-                  ErrorString += TheActivity->getTypeName();
-                  ErrorString += "', because it is not derived from Activity.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->isActivityAttached(OSG::dynamic_pointer_cast<OSG::Activity>(TheActivity),ProducedEventId);
-        }
-
-        UInt32 getNumActivitiesAttached(UInt32 ProducedEventId) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getNumActivitiesAttached on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->getNumActivitiesAttached(ProducedEventId);
-        }
-
-        FieldContainerRefPtr getAttachedActivity(UInt32 ProducedEventId, UInt32 ActivityIndex) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getAttachedActivity on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->getAttachedActivity(ProducedEventId, ActivityIndex);
-        }
-        
-        void detachActivity(FieldContainerRefPtr TheActivity, UInt32 ProducedEventId)
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call detachActivity on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            if(!TheActivity->getType().isDerivedFrom(OSG::Activity::getClassType()))
-            {
-                  std::string ErrorString = "Cannot call detachActivity with Argument 1 of type '";
-                  ErrorString += TheActivity->getTypeName();
-                  ErrorString += "', because it is not derived from Activity.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->detachActivity(OSG::dynamic_pointer_cast<OSG::Activity>(TheActivity),ProducedEventId);
-        }
-
-        void detachAllActivities(void)
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call detachAllActivities on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->detachAllActivities();
-        }
-
-        UInt32 getNumAttachedActivities(void) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getNumAttachedActivities on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->getNumAttachedActivities();
-        }
-
-        const EventProducerType &getProducerType(void) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getProducerType on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-            
-            return OSG::getEventProducer(*$self)->getProducerType();
-        }
-
-        UInt32 getNumProducedEvents(void) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getNumProducedEvents on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->getNumProducedEvents();
-        }
-
-        const MethodDescription *getProducedEventDescription(const Char8 *ProducedEventName) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getProducedEventDescription on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->getProducedEventDescription(ProducedEventName);
-        }
-
-        const MethodDescription *getProducedEventDescription(UInt32 ProducedEventId) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getProducedEventDescription on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->getProducedEventDescription(ProducedEventId);
-        }
-
-        UInt32 getProducedEventId(const Char8 *ProducedEventName) const
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getProducedEventId on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            OSG::EventProducerPtr ProdField = OSG::getEventProducer(*$self);
-            
-            return ProdField->getProducedEventId(ProducedEventName);
-        }
-
-        EventProducerPtr getEventProducer(void)
-        {
-            if(!OSG::isEventProducer(*$self))
-            {
-                  std::string ErrorString = "Cannot call getEventProducer on FieldContainer of type '";
-                  ErrorString += (*$self)->getTypeName();
-                  ErrorString += "', because it is not an EventProducer.'";
-                  throw(ErrorString.c_str());
-            }
-
-            return OSG::getEventProducer(*$self);
-            
-        }
-        bool isEventProducer(void) const
-        {
-            return (*$self != NULL) && OSG::isEventProducer(*$self);
-        }
-
         
      };
 
@@ -3236,9 +2946,71 @@ namespace OSG {
     };
 
     /******************************************************/
+    /*              ReflexiveContainer                    */
+    /******************************************************/
+    class ReflexiveContainer
+    {
+      public:
+            virtual const TypeBase &getType    (void) const;
+            
+                          UInt32      getTypeId  (void) const;
+                          
+                          UInt16      getGroupId (void) const;
+                          
+                    const Char8      *getTypeName(void) const;
+                    
+            virtual const EventProducerType &getProducerType(void) const;
+            
+            virtual UInt32 getContainerSize(void) const = 0;
+        
+                    UInt32 getId           (void) const;
+            virtual UInt32             getNumFields(      void            ) const;
+            virtual UInt32              getNumEvents(      void            ) const;
+            bool                       isEventProducer(      void            ) const;
+                
+            virtual boost::signals2::connection attachActivity(UInt32 eventId,
+                                                               Activity* TheActivity);
+        
+            /* virtual boost::signals2::connection connectEvent(UInt32 eventId, 
+                                                              const BaseEventType::slot_type &listener,
+                                                              boost::signals2::connect_position at= boost::signals2::at_back);
+                                  
+            virtual boost::signals2::connection connectEvent(UInt32 eventId, 
+                                                              const BaseEventType::group_type &group,
+                                                              const BaseEventType::slot_type &listener,
+                                                              boost::signals2::connect_position at= boost::signals2::at_back); */
+            
+            //virtual void   disconnectEvent        (UInt32 eventId, const BaseEventType::group_type &group);
+        
+            virtual void   disconnectAllSlotsEvent(UInt32 eventId);
+        
+            virtual bool   isEmptyEvent           (UInt32 eventId) const;
+        
+            virtual UInt32 numSlotsEvent          (UInt32 eventId) const;
+        
+            virtual void   disconnectAll(void);
+            
+            virtual FieldDescriptionBase * getFieldDescription(      UInt32 fieldId  ) const;
+                                   
+            virtual FieldDescriptionBase * getFieldDescription(const Char8 *fieldName) const;
+                                   
+            virtual EventDescription const * getEventDescription(      UInt32 eventId  ) const;
+            
+            virtual EventDescription const * getEventDescription(const Char8 *eventName) const;
+
+      protected:
+        ReflexiveContainer(void);
+
+        ReflexiveContainer(const ReflexiveContainer &obj);
+
+        virtual ~ReflexiveContainer (void);
+
+    };
+
+    /******************************************************/
     /*              FieldContainer                        */
     /******************************************************/
-    class FieldContainer
+    class FieldContainer : public ReflexiveContainer
     {
       public:
         virtual       FieldContainerType &getType    (void);
@@ -3935,89 +3707,126 @@ namespace OSG {
     };
 
     /******************************************************/
-    /*                    EventPtr          */
+    /*                    EventDetailsPtr          */
     /******************************************************/
-    class EventRefPtr : 
+    class EventDetailsRefPtr : 
         public FieldContainerRefPtr
     {
         public:
 
-            EventRefPtr(      void                          );
-            EventRefPtr(const EventRefPtr &source);
-            ~EventRefPtr(void);
+            EventDetailsRefPtr(      void                          );
+            EventDetailsRefPtr(const EventDetailsRefPtr &source);
+            ~EventDetailsRefPtr(void);
 
         protected:
     };
-    %extend EventRefPtr
+    %extend EventDetailsRefPtr
     {
-        static EventRefPtr dcast(const FieldContainerRefPtr oIn)
+        static EventDetailsRefPtr dcast(const FieldContainerRefPtr oIn)
         {
-            return OSG::dynamic_pointer_cast<OSG::Event>(oIn);
+            return OSG::dynamic_pointer_cast<OSG::EventDetails>(oIn);
         }
     };
 
     /******************************************************/
-    /*Event			                       */
+    /*EventDetails			                       */
     /******************************************************/
-    class Event : public FieldContainer
+    class EventDetails : public FieldContainer
     {
         public:
 
         protected:
-            Event(void);
-            Event(const Event &obj);
-            virtual ~Event(void);
+            EventDetails(void);
+            EventDetails(const EventDetails &obj);
+            virtual ~EventDetails(void);
     };
 
     /******************************************************/
-    /*                    GenericEventPtr          */
+    /*                    GenericEventDetailsPtr          */
     /******************************************************/
-    class GenericEventRefPtr : 
-        public EventRefPtr
+    class GenericEventDetailsRefPtr : 
+        public EventDetailsRefPtr
     {
         public:
 
-            GenericEventRefPtr(      void                          );
-            GenericEventRefPtr(const GenericEventRefPtr &source);
-            ~GenericEventRefPtr(void);
+            GenericEventDetailsRefPtr(      void                          );
+            GenericEventDetailsRefPtr(const GenericEventDetailsRefPtr &source);
+            ~GenericEventDetailsRefPtr(void);
         protected:
     };
-    %extend GenericEventRefPtr
+    %extend GenericEventDetailsRefPtr
     {
-        static GenericEventRefPtr dcast(const FieldContainerRefPtr oIn)
+        static GenericEventDetailsRefPtr dcast(const FieldContainerRefPtr oIn)
         {
-            return OSG::dynamic_pointer_cast<OSG::GenericEvent>(oIn);
+            return OSG::dynamic_pointer_cast<OSG::GenericEventDetails>(oIn);
         }
     };
 
     /******************************************************/
-    /*GenericEvent			                       */
+    /*GenericEventDetails			                       */
     /******************************************************/
-    class GenericEvent : public Event
+    class GenericEventDetails : public EventDetails
     {
         public:
 
         protected:
-            GenericEvent(void);
-            GenericEvent(const GenericEvent &obj);
-            virtual ~GenericEvent(void);
+            GenericEventDetails(void);
+            GenericEventDetails(const GenericEventDetails &obj);
+            virtual ~GenericEventDetails(void);
+            
+            virtual void eventProduced(EventDetails* const details,
+                                       UInt32 producedEventId) = 0;
     };
-    %extend GenericEvent
+    %extend GenericEventDetails
     {
-        static GenericEventRefPtr create(FieldContainerRefPtr Source,
+        static GenericEventDetailsRefPtr create(FieldContainerRefPtr Source,
                                         Time TimeStamp,
                                         const std::map<std::string,OSG::UInt32>& strToIntMap = std::map<std::string,OSG::UInt32>())
         {
-            OSG::GenericEventRecPtr event(OSG::GenericEvent::create(Source,TimeStamp,strToIntMap));
+            OSG::GenericEventDetailsRecPtr event(OSG::GenericEventDetails::create(Source,TimeStamp,strToIntMap));
             return event;
         }
+    };
+    /******************************************************/
+    /*              ActivityRefPtr                             */
+    /******************************************************/
+    class ActivityRefPtr : public AttachmentContainerRefPtr
+    {
+      public:
+         ActivityRefPtr(void);
+         ActivityRefPtr(const ActivityRefPtr               &source);
+
+
+        ~ActivityRefPtr(void);
+        Activity *operator->(void);
+    };
+    %extend ActivityRefPtr
+    {
+        static ActivityRefPtr dcast(const FieldContainerRefPtr oIn)
+        {
+            return OSG::dynamic_pointer_cast<OSG::Activity>(oIn);
+        }
+    };
+    
+    /******************************************************/
+    /*                       Activity                       */
+    /******************************************************/
+    class Activity : public AttachmentContainer
+    {
+     public:
+
+     protected:
+        Activity(void);
+        Activity(const Activity &source);
+
+        virtual ~Activity(void);
     };
     
     /******************************************************/
     /*                    LuaActivityPtr          */
     /******************************************************/
     class LuaActivityRefPtr : 
-        public AttachmentContainerRefPtr
+        public ActivityRefPtr
     {
         public:
 
@@ -4038,17 +3847,156 @@ namespace OSG {
     /******************************************************/
     /*                 LuaActivity                        */
     /******************************************************/
-    class LuaActivity : public AttachmentContainer
+    class LuaActivity : public Activity
     {
         public:
 
-            static LuaActivityRefPtr addLuaCallback(FieldContainerRefPtr producerObject, std::string funcName, UInt32 producedMethodId);
-            static void removeLuaCallback(FieldContainerRefPtr producerObject, LuaActivityRefPtr toRemove, UInt32 producedMethodId);
+            static boost::signals2::connection addLuaCallback(FieldContainerRefPtr producerObject, std::string funcName, UInt32 producedEventId);
+            static boost::signals2::connection addLuaCallback(FieldContainerRefPtr producerObject, std::string funcName, const std::string& producedEventName);
+            static void removeLuaCallback(FieldContainerRefPtr producerObject, std::string funcName, UInt32 producedEventId);
+            static void removeLuaCallback(FieldContainerRefPtr producerObject,  std::string funcName, const std::string& producedEventName);
 
         protected:
             LuaActivity(void);
             LuaActivity(const LuaActivity &obj);
             virtual ~LuaActivity(void);
+    };
+    
+    /******************************************************/
+    /*              Intersect Action                      */
+    /******************************************************/
+    class ActionBase
+    {
+      public:
+     
+        enum ResultE
+        {
+            Continue,   // continue with my children
+            Skip,       // skip my children
+                        // really needed? Cancel, 
+                        // skip my brothers, go one step up
+            Quit        // forget it, you're done
+        };
+      protected:
+        ActionBase(void);
+        ActionBase(const Action &source);
+    };
+    
+    class Action : public ActionBase
+    {
+      public:
+        static Action *create(void);
+        //static void    setPrototype(Action *proto);
+        //static Action *getPrototype(void         );
+    
+        virtual ~Action(void);
+        
+        //static void registerEnterDefault (const FieldContainerType &type, 
+        //                                  const Functor            &func);
+        //static void registerLeaveDefault (const FieldContainerType &type, 
+        //                                  const Functor            &func);
+        //       void registerEnterFunction(const FieldContainerType &type, 
+        //                                  const Functor            &func);
+        //       void registerLeaveFunction(const FieldContainerType &type, 
+        //                                  const Functor            &func);
+    
+        //virtual ResultE apply(std::vector<Node *>::iterator begin, 
+        //                      std::vector<Node *>::iterator end  );
+        virtual ResultE apply(Node * const                   node);
+        
+        //inline Node           *getActNode  (void);
+        //inline FieldContainer *getActParent(void);
+        //void setActNode(Node * const node);
+        //UInt32       getNNodes  (void                 ) const;
+        //Node        *getNode    (int             index);
+        //void         addNode    (Node * const node);
+        //void         useNodeList(bool bVal = true    ); 
+        UInt32 getTravMask (void      ) const;
+        void   setTravMask (UInt32 val);
+        void   andTravMask (UInt32 val);
+        void pushTravMask(void);
+        void popTravMask (void);
+        //bool operator <  (const Action &other);
+        //bool operator == (const Action &other);
+        //bool operator != (const Action &other);
+    
+      protected:
+        Action(void);
+        Action(const Action &source);
+      private:
+    };
+    %extend Action
+    {
+        ResultE apply(NodeRefPtr node)
+        {
+            return $self->apply(node);
+        }
+    };
+
+    class IntersectAction : public Action
+    {
+      public:
+    
+        // create a new IntersectAction by cloning the prototype
+        static IntersectAction *create(      void                 );
+        static IntersectAction *create(const Line   &line, 
+                                       const Real32  maxdist = Inf);
+        
+    
+        //static void             setPrototype(IntersectAction *proto);
+        //static IntersectAction *getPrototype(void                  );
+     
+        //IntersectAction& operator =(const IntersectAction &source);
+    
+        virtual ~IntersectAction(void); 
+    
+              void     setLine(       const Line   &line, 
+                                      const Real32  maxdist = Inf);
+              void     setTestLines     ( bool value );
+              void     setTestLineWidth (Real32 width);
+        const Line    &getLine       (      void                 ) const;
+              Real32   getMaxDist    (      void                 ) const;
+              bool     getTestLines  (      void                 ) const;
+              Real32   getTestLineWidth (   void                 ) const;
+              bool     didHit        (      void                 ) const;
+              Real32   getHitT       (      void                 ) const;
+              Pnt3f    getHitPoint   (      void                 ) const;
+              Vec3f    getHitNormal  (      void                 ) const;
+              //Node    *getHitObject  (      void                 ) const;
+              Int32    getHitTriangle(      void                 ) const;
+              Int32    getHitLine    (      void                 ) const;
+        /* Action::ResultE setEnterLeave(Real32   enter, 
+                                      Real32   leave   );
+        void            setHit       (Real32   t, 
+                                      Node    *obj, 
+                                      Int32    triIndex, 
+                                      Vec3f   &normal,
+                                      Int32    lineIndex );
+        void scale(Real32 s); */
+        //bool operator < (const IntersectAction &other) const;
+        
+        //bool operator == (const IntersectAction &other) const;
+        //bool operator != (const IntersectAction &other) const;
+        
+        
+        // default registration. static, so it can be called during static init
+        //static void registerEnterDefault(const FieldContainerType &type, 
+        //                                 const Action::Functor    &func);
+        //
+        //static void registerLeaveDefault(const FieldContainerType &type, 
+        //                                 const Action::Functor    &func);
+    
+      protected:
+        IntersectAction(void);
+        IntersectAction(const IntersectAction &source);
+      private:
+    };
+    %extend IntersectAction
+    {
+        NodeRefPtr getHitObject(void) const
+        {
+            return $self->getHitObject();
+        }
     };
     
     /******************************************************/
@@ -4201,6 +4149,20 @@ namespace OSG {
     
     void                        separateProperties(GeometryRefPtr geo);
 
+    
+    /******************************************************/
+    /*                   Node Functions                   */
+    /******************************************************/
+    
+    NodeRefPtr cloneTree(NodeRefPtr rootNode)
+    {
+        return cloneTree(rootNode);
+    }
+    
+    NodeRefPtr deepCloneTree(NodeRefPtr rootNode)
+    {
+        return deepCloneTree(rootNode);
+    }
 
 }
 

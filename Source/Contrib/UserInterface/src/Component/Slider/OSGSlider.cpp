@@ -85,12 +85,7 @@ void Slider::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-EventConnection Slider::addChangeListener(ChangeListenerPtr l)
-{
-    return getRangeModel()->addChangeListener(l);
-}
-
-void Slider::drawInternal(const GraphicsWeakPtr TheGraphics, Real32 Opacity) const
+void Slider::drawInternal(Graphics* const TheGraphics, Real32 Opacity) const
 {
 
     //Draw the Major Tick Marks
@@ -177,8 +172,14 @@ void Slider::updateLayout(void)
             AlignedPosition = calculateAlignment(BorderTopLeft, (BorderBottomRight-BorderTopLeft), Size, getAlignment(), 0.5);
         }
 
-        getTrackDrawObject()->setPosition(AlignedPosition);
-        getTrackDrawObject()->setSize(Size);
+        if(getTrackDrawObject()->getPosition() != AlignedPosition)
+        {
+            getTrackDrawObject()->setPosition(AlignedPosition);
+        }
+        if(getTrackDrawObject()->getSize() != Size)
+        {
+            getTrackDrawObject()->setSize(Size);
+        }
     }
 
     //Update the MinorTickMarks
@@ -271,8 +272,14 @@ void Slider::updateLayout(void)
                 Pos[MinorAxis] = getTrackDrawObject()->getPosition()[MinorAxis] - getTrackToLabelOffset() - dynamic_pointer_cast<Component>((*Itor).second)->getPreferredSize()[MinorAxis];
             }
 
-            dynamic_pointer_cast<Component>((*Itor).second)->setPosition(Pos);
-            dynamic_pointer_cast<Component>((*Itor).second)->setSize(dynamic_pointer_cast<Component>((*Itor).second)->getPreferredSize());
+            if(dynamic_pointer_cast<Component>((*Itor).second)->getPosition() != Pos)
+            {
+                dynamic_pointer_cast<Component>((*Itor).second)->setPosition(Pos);
+            }
+            if(dynamic_pointer_cast<Component>((*Itor).second)->getSize() != dynamic_pointer_cast<Component>((*Itor).second)->getPreferredSize())
+            {
+                dynamic_pointer_cast<Component>((*Itor).second)->setSize(dynamic_pointer_cast<Component>((*Itor).second)->getPreferredSize());
+            }
         }
     }
 }
@@ -306,8 +313,14 @@ void Slider::updateSliderTrack(void)
 
         AlignedPosition = calculateSliderAlignment(getSliderTrackTopLeft(), getSliderTrackSize(), getKnobButton()->getPreferredSize(), Alignment.y(), Alignment.x());
 
-        getKnobButton()->setPosition(AlignedPosition);
-        getKnobButton()->setSize(Size);
+        if(getKnobButton()->getPosition() != AlignedPosition)
+        {
+            getKnobButton()->setPosition(AlignedPosition);
+        }
+        if(getKnobButton()->getSize() != Size)
+        {
+            getKnobButton()->setSize(Size);
+        }
     }
 
 }
@@ -449,7 +462,11 @@ Pnt2f Slider::calculateSliderAlignment(const Pnt2f& Position1, const Vec2f& Size
 void Slider::detachFromEventProducer(void)
 {
     Inherited::detachFromEventProducer();
-    _KnobDraggedListener.disconnect();
+    _RangeModelStateChangedConnection.disconnect();
+    _KnobDragMouseDraggedConnection.disconnect();
+    _KnobMousePressedConnection.disconnect();
+    _KnobDragMouseReleasedConnection.disconnect();
+    _KnobDragkeyTypedConnection.disconnect();
 }
 
 /*-------------------------------------------------------------------------*\
@@ -496,16 +513,12 @@ void Slider::onDestroy()
 
 Slider::Slider(void) :
     Inherited(),
-    _BoundedRangeModelChangeListener(this),
-    _KnobDraggedListener(this),
     _UsingDefaultLabels(true)
 {
 }
 
 Slider::Slider(const Slider &source) :
     Inherited(source),
-    _BoundedRangeModelChangeListener(this),
-    _KnobDraggedListener(this),
     _UsingDefaultLabels(source._UsingDefaultLabels)
 {
 }
@@ -596,17 +609,20 @@ void Slider::changed(ConstFieldMaskArg whichField,
         updateLayout();
     }
 
-    if(whichField & KnobButtonFieldMask &&
-       getKnobButton() != NULL)
+    if(whichField & KnobButtonFieldMask)
     {
-        getKnobButton()->addMouseListener(&_KnobDraggedListener);
+        _KnobMousePressedConnection.disconnect();
+        if(getKnobButton() != NULL)
+        {
+            _KnobMousePressedConnection = getKnobButton()->connectMousePressed(boost::bind(&Slider::handleKnobMousePressed, this, _1));
+        }
     }
     if(whichField & RangeModelFieldMask)
     {
-        _RangeModelConnection.disconnect();
+        _RangeModelStateChangedConnection.disconnect();
         if(getRangeModel() != NULL)
         {
-            _RangeModelConnection = getRangeModel()->addChangeListener(&_BoundedRangeModelChangeListener);
+            _RangeModelStateChangedConnection = getRangeModel()->connectStateChanged(boost::bind(&Slider::handleRangeModelStateChanged, this, _1));
             if( getDrawLabels() &&
                 _UsingDefaultLabels)
             {
@@ -623,23 +639,22 @@ void Slider::dump(      UInt32    ,
     SLOG << "Dump Slider NI" << std::endl;
 }
 
-void Slider::BoundedRangeModelChangeListener::stateChanged(const ChangeEventUnrecPtr e)
+void Slider::handleRangeModelStateChanged(ChangeEventDetails* const e)
 {
-    _Slider->updateLayout();
+    updateLayout();
 }
 
-
-void Slider::KnobDraggedListener::mouseDragged(const MouseEventUnrecPtr e)
+void Slider::handleKnobDragMouseDragged(MouseEventDetails* const e)
 {
-	if(e->getButton() == e->BUTTON1)
+	if(e->getButton() == MouseEventDetails::BUTTON1)
 	{
-		Pnt2f MousePosInComponent = ViewportToComponent(e->getLocation(), _Slider, e->getViewport());
+		Pnt2f MousePosInComponent = ViewportToComponent(e->getLocation(), this, e->getViewport());
 		
         Pnt2f BorderTopLeft, BorderBottomRight;
-        _Slider->getInsideInsetsBounds(BorderTopLeft, BorderBottomRight);
+        getInsideInsetsBounds(BorderTopLeft, BorderBottomRight);
         
         UInt16 MajorAxis, MinorAxis;
-        if(_Slider->getOrientation() == VERTICAL_ORIENTATION)
+        if(getOrientation() == VERTICAL_ORIENTATION)
         {
             MajorAxis = 1;
         }
@@ -649,59 +664,55 @@ void Slider::KnobDraggedListener::mouseDragged(const MouseEventUnrecPtr e)
         }
         MinorAxis = (MajorAxis+1)%2;
 
-		if(_Slider->getInverted())
+		if(getInverted())
 		{
-			MousePosInComponent[MajorAxis] = _Slider->getTrackMax() - (MousePosInComponent[MajorAxis] - _Slider->getTrackMin());
+			MousePosInComponent[MajorAxis] = getTrackMax() - (MousePosInComponent[MajorAxis] - getTrackMin());
 		}
         
-        _Slider->setValue( _Slider->getMinimum() + (_Slider->getMaximum() - _Slider->getMinimum()) * (MousePosInComponent[MajorAxis] - _Slider->getTrackMin())/static_cast<Int32>(_Slider->getTrackLength()) );
+        setValue( getMinimum() + (getMaximum() - getMinimum()) * (MousePosInComponent[MajorAxis] - getTrackMin())/static_cast<Int32>(getTrackLength()) );
 	}
 }
 
-void Slider::KnobDraggedListener::mousePressed(const MouseEventUnrecPtr e)
+void Slider::handleKnobMousePressed(MouseEventDetails* const e)
 {
-    if(e->getButton() == e->BUTTON1 &&
-		_Slider->getEnabled() &&
-       _Slider->getParentWindow() != NULL &&
-       _Slider->getParentWindow()->getDrawingSurface() != NULL &&
-       _Slider->getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
+    if(e->getButton() == MouseEventDetails::BUTTON1 &&
+		getEnabled() &&
+       getParentWindow() != NULL &&
+       getParentWindow()->getParentDrawingSurface() != NULL &&
+       getParentWindow()->getParentDrawingSurface()->getEventProducer() != NULL)
     {
-		_InitialValue = _Slider->getValue();
-        _Slider->getKnobButton()->removeMouseListener(this);
-        _Slider->getParentWindow()->getDrawingSurface()->getEventProducer()->addMouseListener(this);
-        _Slider->getParentWindow()->getDrawingSurface()->getEventProducer()->addMouseMotionListener(this);
-        _Slider->getParentWindow()->getDrawingSurface()->getEventProducer()->addKeyListener(this);
-		_Slider->getRangeModel()->setValueIsAdjusting(true);
+		_InitialValue = getValue();
+        _KnobMousePressedConnection.disconnect();
+        _KnobDragMouseDraggedConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectMouseDragged(boost::bind(&Slider::handleKnobDragMouseDragged, this, _1));
+        _KnobDragMouseReleasedConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectMouseReleased(boost::bind(&Slider::handleKnobDragMouseReleased, this, _1));
+        _KnobDragkeyTypedConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectKeyTyped(boost::bind(&Slider::handleKnobDragKeyTyped, this, _1));
+		getRangeModel()->setValueIsAdjusting(true);
     }
 }
 
-void Slider::KnobDraggedListener::mouseReleased(const MouseEventUnrecPtr e)
+void Slider::handleKnobDragMouseReleased(MouseEventDetails* const e)
 {
-    if(e->getButton() == e->BUTTON1 &&
-       _Slider->getParentWindow() != NULL &&
-       _Slider->getParentWindow()->getDrawingSurface() != NULL &&
-       _Slider->getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
+    if(e->getButton() == MouseEventDetails::BUTTON1)
     {
-        disconnect();
+        _KnobDragMouseDraggedConnection.disconnect();
+        _KnobMousePressedConnection = getKnobButton()->connectMousePressed(boost::bind(&Slider::handleKnobMousePressed, this, _1));
+        _KnobDragMouseReleasedConnection.disconnect();
+        _KnobDragkeyTypedConnection.disconnect();
+        getRangeModel()->setValueIsAdjusting(false);
     }
 }
 
-void Slider::KnobDraggedListener::keyTyped(const KeyEventUnrecPtr e)
+void Slider::handleKnobDragKeyTyped(KeyEventDetails* const e)
 {
-	if(e->getKey() == KeyEvent::KEY_ESCAPE)
+	if(e->getKey() == KeyEventDetails::KEY_ESCAPE)
 	{
-		_Slider->setValue(_InitialValue);
-        disconnect();
+		setValue(_InitialValue);
+        _KnobDragMouseDraggedConnection.disconnect();
+        _KnobMousePressedConnection = getKnobButton()->connectMousePressed(boost::bind(&Slider::handleKnobMousePressed, this, _1));
+        _KnobDragMouseReleasedConnection.disconnect();
+        _KnobDragkeyTypedConnection.disconnect();
+        getRangeModel()->setValueIsAdjusting(false);
 	}
-}
-
-void Slider::KnobDraggedListener::disconnect(void)
-{
-    _Slider->getParentWindow()->getDrawingSurface()->getEventProducer()->removeMouseMotionListener(this);
-    _Slider->getKnobButton()->addMouseListener(this);
-    _Slider->getParentWindow()->getDrawingSurface()->getEventProducer()->removeMouseListener(this);
-    _Slider->getParentWindow()->getDrawingSurface()->getEventProducer()->removeKeyListener(this);
-    _Slider->getRangeModel()->setValueIsAdjusting(false);
 }
 
 OSG_END_NAMESPACE

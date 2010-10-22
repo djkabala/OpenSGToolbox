@@ -104,7 +104,7 @@ void BoxLayout::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void BoxLayout::updateLayout(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+void BoxLayout::updateLayout(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
 	/*!
       totalMajorAxis will be the sum of the MajorAxis of all of the
@@ -171,6 +171,7 @@ void BoxLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compon
 	  This second sweep through the components sets each component to the
 	  matching highest height, then positions each component equally spaced apart
     */
+    Pnt2f Pos;
 	for(UInt32 i=0; i<Components->size(); ++i)
 	{	
 		// for each individual button, keep track of the offsetMinorAxis in height
@@ -204,8 +205,15 @@ void BoxLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compon
 		{
 			size = (*Components)[i]->getPreferredSize();
 		}
-			(*Components)[i]->setSize(size);
-			(*Components)[i]->setPosition(borderTopLeft + offset);
+        if((*Components)[i]->getSize() != size)
+        {
+		    (*Components)[i]->setSize(size);
+        }
+        Pos = borderTopLeft + offset;
+        if((*Components)[i]->getPosition() != Pos)
+        {
+		    (*Components)[i]->setPosition(Pos);
+        }
 
 		// now set offset for the next button
 		offset[AxisIndex] += spacing + (*Components)[i]->getPreferredSize()[AxisIndex];
@@ -213,7 +221,7 @@ void BoxLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compon
 }
 
 
-Vec2f BoxLayout::layoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
+Vec2f BoxLayout::layoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
 {
     Real32 MinorAxisMax(0.0f);
     Real32 MajorAxisSum(0.0f);
@@ -240,22 +248,22 @@ Vec2f BoxLayout::layoutSize(const MFUnrecComponentPtr* Components, const Compone
     return Result;
 }
 
-Vec2f BoxLayout::minimumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f BoxLayout::minimumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MIN_SIZE);
 }
 
-Vec2f BoxLayout::requestedContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f BoxLayout::requestedContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, REQUESTED_SIZE);
 }
 
-Vec2f BoxLayout::preferredContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f BoxLayout::preferredContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, PREFERRED_SIZE);
 }
 
-Vec2f BoxLayout::maximumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f BoxLayout::maximumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MAX_SIZE);
 }
@@ -287,6 +295,16 @@ void BoxLayout::changed(ConstFieldMaskArg whichField,
                             BitVector         details)
 {
     Inherited::changed(whichField, origin, details);
+
+    if(whichField & ( OrientationFieldMask |
+                      MajorAxisAlignmentFieldMask |
+                      MinorAxisAlignmentFieldMask |
+                      ComponentAlignmentFieldMask |
+                      MajorAxisMinimumGapFieldMask |
+                      MajorAxisMaximumGapFieldMask))
+    {
+        updateParentContainers();
+    }
 }
 
 void BoxLayout::dump(      UInt32    ,

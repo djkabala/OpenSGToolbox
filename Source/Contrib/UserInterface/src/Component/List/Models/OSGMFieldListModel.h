@@ -57,6 +57,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING MFieldListModel : public MFieldListMod
     /*==========================  PUBLIC  =================================*/
 
   public:
+    typedef std::pair<GetFieldHandlePtr, UInt32>         MFieldIndexed;
 
     typedef MFieldListModelBase Inherited;
     typedef MFieldListModel     Self;
@@ -110,9 +111,15 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING MFieldListModel : public MFieldListMod
 
     static void initMethod(InitPhase ePhase);
 
-    void containerChanged(FieldContainer * container, ConstFieldMaskArg whichField);
+    /*! \}                                                                 */
+    /*! \name                      Sync                                    */
+    /*! \{                                                                 */
+
+    virtual void resolveLinks(void);
 
     /*! \}                                                                 */
+
+    void containerChanged(FieldContainer * container, ConstFieldMaskArg whichField);
     /*==========================  PRIVATE  ================================*/
 
   private:

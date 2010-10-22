@@ -43,8 +43,6 @@
 #endif
 
 #include "OSGDefaultTableColumnModelBase.h"
-#include "OSGListSelectionListener.h"
-#include "OSGFieldChangeListener.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -82,10 +80,10 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING DefaultTableColumnModel : public Defau
     /*! \}                                                                 */
 
     //Appends aColumn to the end of the tableColumns array.
-    virtual void addColumn(TableColumnRefPtr aColumn);
+    virtual void addColumn(TableColumn* const aColumn);
 
     //Returns the TableColumn object for the column at columnIndex.
-    virtual TableColumnRefPtr getColumn(const UInt32& columnIndex) const;
+    virtual TableColumn* getColumn(const UInt32& columnIndex) const;
 
     //Returns the number of columns in the model.
     virtual UInt32 getColumnCount(void) const;
@@ -108,9 +106,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING DefaultTableColumnModel : public Defau
     //Returns an array of indicies of all selected columns.
     virtual std::vector<UInt32> getSelectedColumns(void) const;
 
-    //Returns the current selection model.
-    virtual ListSelectionModelPtr getSelectionModel(void) const;
-
     //Returns the total width of all the columns.
     virtual UInt32 getTotalColumnWidth(void) const;
 
@@ -118,7 +113,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING DefaultTableColumnModel : public Defau
     virtual void moveColumn(const UInt32& columnIndex, const UInt32& newIndex);
 
     //Deletes the TableColumn column from the tableColumns array.
-    virtual void removeColumn(TableColumnRefPtr column);
+    virtual void removeColumn(TableColumn* const column);
 
     //Sets the TableColumn's column margin to newMargin.
     virtual void setColumnMargin(const UInt32& newMargin);
@@ -126,12 +121,11 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING DefaultTableColumnModel : public Defau
     //Sets whether the columns in this model may be selected.
     virtual void setColumnSelectionAllowed(const bool& flag);
 
-    //Sets the selection model.
-    virtual void setSelectionModel(ListSelectionModelPtr newModel);
-    
     /*=========================  PROTECTED  ===============================*/
 
   protected:
+
+    // Variables should all be in DefaultTableColumnModelBase.
 
     /*---------------------------------------------------------------------*/
     /*! \name                  Constructors                                */
@@ -157,43 +151,13 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING DefaultTableColumnModel : public Defau
     /*! \}                                                                 */
     
     void recalcWidthCache(void);
-    static ListSelectionModelPtr createSelectionModel(void);
 
     UInt32 _ColumnMargin;
     bool _ColumnSelectionAllowed;;
-    ListSelectionModelPtr _SelectionModel;
     UInt32 _TotalColumnWidth;
     
-    
-    class TableSelectionListener : public ListSelectionListener
-    {
-      public :
-        TableSelectionListener(DefaultTableColumnModelRefPtr TheDefaultTableColumnModel);
-
-        //A ListSelectionListener that forwards ListSelectionEvents when there is a column selection change
-        virtual void selectionChanged(const ListSelectionEventUnrecPtr e);
-      protected :
-        DefaultTableColumnModelRefPtr _DefaultTableColumnModel;
-    };
-
-	friend class TableSelectionListener;
-
-	TableSelectionListener _TableSelectionListener;
-    
-	/*class TableFieldChangeListener : public FieldChangeListener
-	{
-	public :
-		TableFieldChangeListener(DefaultTableColumnModelRefPtr TheDefaultTableColumnModel);
-		
-        virtual void fieldChanged(const FieldChangeEventUnrecPtr e);
-	protected :
-		DefaultTableColumnModelRefPtr _DefaultTableColumnModel;
-	};
-
-	friend class TableFieldChangeListener;
-
-	TableFieldChangeListener _TableFieldChangeListener;*/
-
+    void handleSelectionChanged(ListSelectionEventDetails* const e);
+    boost::signals2::connection _SelectionChangedConnection;
     /*==========================  PRIVATE  ================================*/
 
   private:

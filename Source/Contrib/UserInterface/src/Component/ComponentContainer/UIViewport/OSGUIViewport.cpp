@@ -77,14 +77,6 @@ void UIViewport::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-EventConnection UIViewport::addChangeListener(ChangeListenerPtr Listener)
-{
-    _ChangeListeners.insert(Listener);
-    return EventConnection(
-                           boost::bind(&UIViewport::isChangeListenerAttached, this, Listener),
-                           boost::bind(&UIViewport::removeChangeListener, this, Listener));
-}
-
 void UIViewport::getViewBounds(Pnt2f& TopLeft, Pnt2f& BottomRight)
 {
     Pnt2f InsetsTopLeft, InsetsBottomRight;
@@ -137,36 +129,22 @@ void UIViewport::maximizeVisibility(const Pnt2f& TopLeft, const Pnt2f& BottomRig
     setViewPosition(NewViewPosition);
 }
 
-void UIViewport::removeChangeListener(ChangeListenerPtr Listener)
-{
-    ChangeListenerSetItor EraseIter(_ChangeListeners.find(Listener));
-    if(EraseIter != _ChangeListeners.end())
-    {
-        _ChangeListeners.erase(EraseIter);
-    }
-}
-
 void UIViewport::updateLayout(void)
 {
     if(getViewComponent() != NULL)
     {
-        Vec2f Size(getCorrectedViewSize());
-
         getViewComponent()->editPosition().setValues(-getViewPosition().x(),-getViewPosition().y());
         updateViewComponentSize();
 
-        produceStateChanged(ChangeEvent::create(UIViewportRefPtr(this), getSystemTime()));
+        produceStateChanged();
     }
 }
 
-void UIViewport::produceStateChanged(const ChangeEventUnrecPtr e)
+void UIViewport::produceStateChanged(void)
 {
-    ChangeListenerSet ListenerSet(_ChangeListeners);
-    for(ChangeListenerSetConstItor SetItor(ListenerSet.begin()) ; SetItor != ListenerSet.end() ; ++SetItor)
-    {
-        (*SetItor)->stateChanged(e);
-    }
-    _Producer.produceEvent(StateChangedMethodId,e);
+    ChangeEventDetailsUnrecPtr Details(ChangeEventDetails::create(this, getSystemTime()));
+
+    Inherited::produceStateChanged(Details);
 }
 
 Vec2f UIViewport::getCorrectedViewSize(void) const
@@ -222,21 +200,21 @@ void UIViewport::changed(ConstFieldMaskArg whichField,
     {
         updateViewComponentSize();
 
-        produceStateChanged(ChangeEvent::create(UIViewportRefPtr(this), getSystemTime()));
+        produceStateChanged();
     }
 
     if((whichField & ViewPositionFieldMask) && getViewComponent() != NULL)
     {
         getViewComponent()->editPosition().setValues(-getViewPosition().x(),-getViewPosition().y());
 
-        produceStateChanged(ChangeEvent::create(UIViewportRefPtr(this), getSystemTime()));
+        produceStateChanged();
     }
 
     if((whichField & ViewSizeFieldMask) ||
        (whichField & ViewPositionFieldMask) ||
        (whichField & SizeFieldMask))
     {
-        produceStateChanged(ChangeEvent::create(UIViewportRefPtr(this), getSystemTime()));
+        produceStateChanged();
     }
 
     if(whichField & SizeFieldMask &&
@@ -277,7 +255,10 @@ void UIViewport::updateViewComponentSize(void)
     {
         Size[0] = osgMax(Size[0],(InsetsBottomRight - InsetsTopLeft).x());
     }
-    getViewComponent()->setSize(Size);
+    if(Size != getViewComponent()->getSize())
+    {
+        getViewComponent()->setSize(Size);
+    }
 }
 
 OSG_END_NAMESPACE

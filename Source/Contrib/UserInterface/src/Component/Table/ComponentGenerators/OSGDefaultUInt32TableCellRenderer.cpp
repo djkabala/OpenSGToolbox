@@ -45,14 +45,13 @@
 
 #include "OSGConfig.h"
 
+#include "OSGDefaultUInt32TableCellRenderer.h"
+#include <boost/lexical_cast.hpp>
+#include "OSGTable.h"
 #include "OSGColorLayer.h"
 #include "OSGLineBorder.h"
 #include "OSGEmptyBorder.h"
 #include "OSGLabel.h"
-
-#include "OSGDefaultUInt32TableCellRenderer.h"
-#include <boost/lexical_cast.hpp>
-#include "OSGTable.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -77,10 +76,10 @@ A DefaultUInt32TableCellRenderer.
  *                           Instance methods                              *
 \***************************************************************************/
 
-ComponentRefPtr DefaultUInt32TableCellRenderer::getTableCellRendererComponent(TableRefPtr table, const boost::any& value, bool isSelected, bool hasFocus, UInt32 row, UInt32 column)
+ComponentTransitPtr DefaultUInt32TableCellRenderer::getTableCellRendererComponent(Table* const table, const boost::any& value, bool isSelected, bool hasFocus, UInt32 row, UInt32 column)
 {
     if(value.empty()){
-        return NULL;
+        return ComponentTransitPtr(NULL);
     }
     LabelRefPtr TheLabel = Label::create();
     std::string tempString;
@@ -124,7 +123,7 @@ ComponentRefPtr DefaultUInt32TableCellRenderer::getTableCellRendererComponent(Ta
         tempBorder = EmptyBorder::create();
         TheLabel->setBorders(tempBorder);
     }
-    return dynamic_pointer_cast<Component>(TheLabel);
+    return ComponentTransitPtr(TheLabel.get());
 
 
 }

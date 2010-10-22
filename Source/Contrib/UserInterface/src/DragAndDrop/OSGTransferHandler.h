@@ -46,7 +46,7 @@
 #include "OSGComponentFields.h"
 #include "OSGTransferableFields.h"
 #include "OSGDataFlavorFields.h"
-#include "OSGInputEvent.h"
+#include "OSGInputEventDetails.h"
 #include <vector>
 
 OSG_BEGIN_NAMESPACE
@@ -92,13 +92,13 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING TransferHandler : public TransferHandl
     /*! \}                                                                 */
 
 	//Indicates whether a component would accept an import of the given set of data flavors prior to actually attempting to import it.
-	virtual bool canImport(ComponentWeakPtr comp, std::vector<DataFlavorWeakPtr> transferFlavors) const = 0;
+	virtual bool canImport(Component* comp, std::vector<DataFlavor*> transferFlavors) const = 0;
 
 	//Creates a Transferable to use as the source for a data transfer.
-	virtual TransferableRefPtr createTransferable(ComponentWeakPtr c) const = 0;
+	virtual TransferableRefPtr createTransferable(Component* c) const = 0;
 
 	//Causes the Swing drag support to be initiated.
-	virtual void exportAsDrag(ComponentRefPtr comp, const InputEventUnrecPtr e, UInt32 action) const = 0;
+	virtual void exportAsDrag(ComponentRefPtr comp, InputEventDetails* const e, UInt32 action) const = 0;
 
 	//Invoked after data has been exported.
 	virtual void exportDone(ComponentRefPtr source, TransferableRefPtr data, UInt32 action) const = 0;
@@ -116,7 +116,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING TransferHandler : public TransferHandl
 	//static Action getPasteAction(void) = 0;
 
 	//Returns the type of transfer actions supported by the source.
-	virtual UInt32 getSourceActions(ComponentWeakPtr c) const = 0;
+	virtual UInt32 getSourceActions(Component* c) const = 0;
 
 	//Returns an object that establishes the look of a transfer.
 	virtual ComponentRefPtr getVisualRepresentation(TransferableRefPtr t) const = 0;

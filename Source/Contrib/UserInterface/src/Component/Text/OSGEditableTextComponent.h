@@ -79,9 +79,9 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING EditableTextComponent : public Editabl
 
     /*! \}                                                                 */
 
-	virtual void keyPressed(const KeyEventUnrecPtr e);
-	virtual void keyReleased(const KeyEventUnrecPtr e);
-	virtual void keyTyped(const KeyEventUnrecPtr e);
+	virtual void keyPressed(KeyEventDetails* const e);
+	virtual void keyReleased(KeyEventDetails* const e);
+	virtual void keyTyped(KeyEventDetails* const e);
 
     void write(const std::string& Text);
     void overwriteSelection(const std::string& Text);
@@ -118,9 +118,9 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING EditableTextComponent : public Editabl
 
     /*! \}                                                                 */
 
-    virtual LayerRefPtr getDrawnBackground(void) const;
-    virtual LayerRefPtr getDrawnForeground(void) const;
-    virtual BorderRefPtr getDrawnBorder(void) const;
+    virtual Layer* getDrawnBackground(void) const;
+    virtual Layer* getDrawnForeground(void) const;
+    virtual Border* getDrawnBorder(void) const;
 
     void setupCursor(void);
     

@@ -49,6 +49,7 @@
 #include "OSGLabel.h"
 #include "OSGColorLayer.h"
 #include "OSGBorder.h"
+#include "OSGChangeEventDetailsFields.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -90,28 +91,22 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ColorChooser : public ColorChooserBase
     virtual void updateLayout(void);
 
 	//Adds a color chooser panel to the color chooser.
-	void addChooserPanel(AbstractColorChooserPanelRefPtr panel);
+	void addChooserPanel(AbstractColorChooserPanel* const panel);
 
 	//Returns the specified color panels.
-	ColorChooserPanelVector getChooserPanels(void) const;
+	const ColorChooserPanelVector& getChooserPanels(void) const;
 
 	//Gets the current color value from the color chooser.
 	Color4f getColor(void) const;
 
-	//Returns the data model that handles color selections.
-	ColorSelectionModelPtr getSelectionModel(void);
-
 	//Removes the Color4f Panel specified.
-	AbstractColorChooserPanelRefPtr removeChooserPanel(AbstractColorChooserPanelRefPtr panel);
+	AbstractColorChooserPanel* removeChooserPanel(AbstractColorChooserPanel* const panel);
 
 	//Specifies the Color4f Panels used to choose a color value.
 	void setChooserPanels(ColorChooserPanelVector panels);
 
 	//Sets the current color of the color chooser to the specified color.
 	void setColor(const Color4f& color);
-
-	//Sets the model containing the selected color.
-	void setSelectionModel(ColorSelectionModelPtr newModel);
 
     /*=========================  PROTECTED  ===============================*/
 
@@ -146,23 +141,11 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ColorChooser : public ColorChooserBase
 	/*! \{                                                                 */
 	void onCreate(const ColorChooser *Id = NULL);
 	void onDestroy();
+    virtual void resolveLinks(void);
 	
 	/*! \}                                                                 */
-    ColorSelectionModelPtr _SelectionModel;
-
-    class ColorSelectedChangeListener : public ChangeListener
-    {
-      public :
-        ColorSelectedChangeListener(ColorChooserRefPtr TheColorChooser);
-
-        virtual void stateChanged(const ChangeEventUnrecPtr e);
-      private:
-        ColorChooserRefPtr _ColorChooser;
-    };
-
-    friend class ColorSelectedChangeListener;
-
-    ColorSelectedChangeListener _ColorSelectedChangeListener;
+    void handleColorSelectedStateChanged(ChangeEventDetails* const e);
+    boost::signals2::connection _ColorSelectedStateChangedConnection;
 
     TabPanelRefPtr _LayoutTabPanel;
 
@@ -173,6 +156,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ColorChooser : public ColorChooserBase
 
     LabelRefPtr _DefaultPreviewPanel;
     ColorLayerRefPtr _DefaultPreviewPanelBackground;
+    ColorChooserPanelVector _ColorChooserPanels;
     /*==========================  PRIVATE  ================================*/
 
   private:

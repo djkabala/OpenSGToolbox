@@ -54,6 +54,8 @@
 #include "OSGListModel.h"
 #include "OSGScrollBar.h"
 #include "OSGDefaultListSelectionModel.h"
+#include "OSGListSelectionEventDetails.h"
+#include "OSGListDataEventDetails.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -83,6 +85,12 @@ void List::initMethod(InitPhase ePhase)
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
+
+bool List::useBoundsForClipping(void) const
+{
+    return false;
+}
+
 Vec2f List::getContentRequestedSize(void) const
 {
     UInt32 ListLength;
@@ -104,7 +112,7 @@ Vec2f List::getContentRequestedSize(void) const
     }
 }
 
-ComponentRefPtr List::getComponentAtPoint(const MouseEventUnrecPtr e)
+Component* List::getComponentAtPoint(MouseEventDetails* const e)
 {
     Pnt2f PointInComponent(ViewportToComponent(e->getLocation(), this, e->getViewport()));
 
@@ -120,7 +128,7 @@ ComponentRefPtr List::getComponentAtPoint(const MouseEventUnrecPtr e)
     }
 }
 
-boost::any List::getValueAtPoint(const MouseEventUnrecPtr e)
+boost::any List::getValueAtPoint(MouseEventDetails* const e)
 {
     Pnt2f PointInComponent(ViewportToComponent(e->getLocation(), this, e->getViewport()));
 
@@ -148,9 +156,13 @@ void List::updateItem(const UInt32& Index)
 
 void List::cleanItem(const UInt32& Index)
 {
-    if(Index >= 0 && Index < getMFChildren()->size())
+    if(Index >= 0 && Index < getMFChildren()->size() &&
+       getSelectable())
     {
-        _DrawnIndices[Index]->removeFocusListener(this);
+        _ItemFocusGainedConnections[_DrawnIndices[Index]].disconnect();
+        _ItemFocusGainedConnections.erase(_ItemFocusGainedConnections.find(_DrawnIndices[Index]));
+        _ItemFocusLostConnections[_DrawnIndices[Index]].disconnect();
+        _ItemFocusLostConnections.erase(_ItemFocusLostConnections.find(_DrawnIndices[Index]));
     }
 }
 
@@ -161,12 +173,16 @@ void List::initItem(const UInt32& Index)
         Pnt2f InsetsTopLeft, InsetsBottomRight;
         getInsideInsetsBounds(InsetsTopLeft, InsetsBottomRight);
 
-        if(getListIndexFromDrawnIndex(Index) == _FocusedIndex)
+        if(getSelectable())
         {
-            getParentWindow()->setFocusedComponent(_DrawnIndices[Index]);
+            if(getListIndexFromDrawnIndex(Index) == _FocusedIndex)
+            {
+                getParentWindow()->setFocusedComponent(_DrawnIndices[Index]);
+            }
+            _ItemFocusGainedConnections[_DrawnIndices[Index]] = _DrawnIndices[Index]->connectFocusGained(boost::bind(&List::handleItemFocusGained, this, _1));
+            _ItemFocusLostConnections[_DrawnIndices[Index]] = _DrawnIndices[Index]->connectFocusLost(boost::bind(&List::handleItemFocusLost, this, _1));
+            _DrawnIndices[Index]->setFocused(getListIndexFromDrawnIndex(Index) == _FocusedIndex);
         }
-        _DrawnIndices[Index]->addFocusListener(this);
-        _DrawnIndices[Index]->setFocused(getListIndexFromDrawnIndex(Index) == _FocusedIndex);
 
         UInt16 OrientationMajorAxisIndex;
         UInt16 OrientationMinorAxisIndex;
@@ -191,18 +207,17 @@ void List::initItem(const UInt32& Index)
 
         _DrawnIndices[Index]->setPosition(Pos);
         _DrawnIndices[Index]->setSize(Size);
-        _DrawnIndices[Index]->setParentContainer(this);
         _DrawnIndices[Index]->setParentWindow(getParentWindow());
 
         //_DrawnIndices[Index]->updateClipBounds();
 
-        ((*editMFChildren())[Index]) = _DrawnIndices[Index];
+        replaceInChildren(Index, _DrawnIndices[Index]);
     }
 }
 
 
 
-void List::selectionChanged(const ListSelectionEventUnrecPtr e)
+void List::handleSelectionChanged(ListSelectionEventDetails* const e)
 {
     for(Int32 i(e->getFirstIndex()) ; i<=e->getLastIndex() ; ++i)
     {
@@ -210,41 +225,55 @@ void List::selectionChanged(const ListSelectionEventUnrecPtr e)
     }
 }
 
-void List::focusGained(const FocusEventUnrecPtr e)
+void List::handleItemFocusGained(FocusEventDetails* const e)
 {
-    //Find this component
-    List::MFChildrenType::iterator Child =
-        editMFChildren()->find(ComponentUnrecPtr(dynamic_cast<Component*>(e->getSource())));
-    if(Child != getMFChildren()->end())
+    if(getSelectable())
     {
-        UInt32 index(0);
-        for( ; index< getMFChildren()->size(); ++index)
+        //Find this component
+        List::MFChildrenType::iterator Child =
+            _mfChildren.find(dynamic_cast<Component*>(e->getSource()));
+        if(Child != _mfChildren.end())
         {
-            if((*Child) == getChildren(index))
+            UInt32 index(0);
+            for( ; index< getMFChildren()->size(); ++index)
             {
-                break;
+                if((*Child) == getChildren(index))
+                {
+                    break;
+                }
             }
+            updateItem(index);
         }
-        updateItem(index);
+    }
+    else
+    {
+        Inherited::focusGained(e);
     }
 }
 
-void List::focusLost(const FocusEventUnrecPtr e)
+void List::handleItemFocusLost(FocusEventDetails* const e)
 {
-    //Find this component
-    List::MFChildrenType::iterator Child =
-        editMFChildren()->find(ComponentUnrecPtr(dynamic_cast<Component*>(e->getSource())));
-    if(Child != getMFChildren()->end())
+    if(getSelectable())
     {
-        UInt32 index(0);
-        for( ; index< getMFChildren()->size(); ++index)
+        //Find this component
+        List::MFChildrenType::iterator Child =
+            _mfChildren.find(ComponentUnrecPtr(dynamic_cast<Component*>(e->getSource())));
+        if(Child != _mfChildren.end())
         {
-            if((*Child) == getChildren(index))
+            UInt32 index(0);
+            for( ; index< getMFChildren()->size(); ++index)
             {
-                break;
+                if((*Child) == getChildren(index))
+                {
+                    break;
+                }
             }
+            updateItem(index);
         }
-        updateItem(index);
+    }
+    else
+    {
+        Inherited::focusLost(e);
     }
 }
 
@@ -274,121 +303,135 @@ Int32 List::getDrawnIndexFromListIndex(const Int32& Index) const
     }
 }
 
-void List::mousePressed(const MouseEventUnrecPtr e)
+void List::mousePressed(MouseEventDetails* const e)
 {
-    bool isContained;
-    for(Int32 i(getMFChildren()->size()-1) ; i>=0 ; --i)
+    if(getSelectable())
     {
-        isContained = getChildren(i)->isContained(e->getLocation(), true);
-        checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained,e->getViewport());
+        bool isContained(false);
+        for(Int32 i(getMFChildren()->size()-1) ; i>=0 ; --i)
+        {
+            isContained = getChildren(i)->isContained(e->getLocation(), true);
+            checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained,e->getViewport());
+            if(isContained)
+            {
+                //Give myself temporary focus
+                takeFocus(true);
+                //if(!getChildren(i)->getType().isDerivedFrom(ComponentContainer::getClassType()))
+                //{
+                if(getParentWindow() != NULL &&
+                   getParentWindow()->getParentDrawingSurface() != NULL &&
+                   getParentWindow()->getParentDrawingSurface()->getEventProducer() != NULL)
+                {
+                    if(getParentWindow()->getParentDrawingSurface()->getEventProducer()->getKeyModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT)
+                    {
+                        getSelectionModel()->setSelectionInterval(getSelectionModel()->getAnchorSelectionIndex(), getListIndexFromDrawnIndex(i));
+                    }
+                    else if(getParentWindow()->getParentDrawingSurface()->getEventProducer()->getKeyModifiers() & KeyEventDetails::KEY_MODIFIER_COMMAND)
+                    {
+                        getSelectionModel()->removeSelectionInterval(getListIndexFromDrawnIndex(i),i);// this toggles the interval
+                    }
+                    else
+                    {
+                        getSelectionModel()->setSelectionInterval(getListIndexFromDrawnIndex(i),getListIndexFromDrawnIndex(i));
+                    }
+                }
+                focusIndex(getListIndexFromDrawnIndex(i));
+                //}
+                getChildren(i)->mousePressed(e);
+                break;
+            }
+        }
         if(isContained)
         {
-            //Give myself temporary focus
-            takeFocus(true);
-            //if(!getChildren(i)->getType().isDerivedFrom(ComponentContainer::getClassType()))
-            //{
-            if(getParentWindow() != NULL &&
-               getParentWindow()->getDrawingSurface() != NULL &&
-               getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
-            {
-                if(getParentWindow()->getDrawingSurface()->getEventProducer()->getKeyModifiers() & KeyEvent::KEY_MODIFIER_SHIFT)
-                {
-                    getSelectionModel()->setSelectionInterval(getSelectionModel()->getAnchorSelectionIndex(), getListIndexFromDrawnIndex(i));
-                }
-                else if(getParentWindow()->getDrawingSurface()->getEventProducer()->getKeyModifiers() & KeyEvent::KEY_MODIFIER_COMMAND)
-                {
-                    getSelectionModel()->removeSelectionInterval(getListIndexFromDrawnIndex(i),i);// this toggles the interval
-                }
-                else
-                {
-                    getSelectionModel()->setSelectionInterval(getListIndexFromDrawnIndex(i),getListIndexFromDrawnIndex(i));
-                }
-            }
-            focusIndex(getListIndexFromDrawnIndex(i));
-            //}
-            getChildren(i)->mousePressed(e);
-            break;
-        }
-    }
-    if(isContained)
-    {
-        //Remove my temporary focus
-        giveFocus(NULL, false);
-    }
-    else
-    {
-        //Give myself permanent focus
-        takeFocus();
-    }
-    Component::mousePressed(e);
-}
-
-void List::keyTyped(const KeyEventUnrecPtr e)
-{
-    bool UpdateSelectionIndex(false);
-    Int32 ListIndex(0);
-    switch(e->getKey())
-    {
-        case KeyEvent::KEY_UP:
-        case KeyEvent::KEY_DOWN:
-        case KeyEvent::KEY_RIGHT:
-        case KeyEvent::KEY_LEFT:
-            if ( (getOrientation() == List::VERTICAL_ORIENTATION && e->getKey() == KeyEvent::KEY_UP) ||
-                 (getOrientation() == List::HORIZONTAL_ORIENTATION && e->getKey() == KeyEvent::KEY_LEFT))
-            {
-                ListIndex = osgMax(_FocusedIndex-1,0);
-                UpdateSelectionIndex = true;
-            }
-            else if ((getOrientation() == List::VERTICAL_ORIENTATION && e->getKey() == KeyEvent::KEY_DOWN) ||
-                     (getOrientation() == List::HORIZONTAL_ORIENTATION && e->getKey() == KeyEvent::KEY_RIGHT))
-            {
-                ListIndex = osgMin<Int32>((_FocusedIndex+1), getModel()->getSize()-1);
-                UpdateSelectionIndex = true;
-            }
-            break;
-        case KeyEvent::KEY_ENTER:
-            if (e->getModifiers() & KeyEvent::KEY_MODIFIER_COMMAND)
-            {
-                getSelectionModel()->removeSelectionInterval(_FocusedIndex,_FocusedIndex);// this toggles the interval
-            }
-            else
-            {
-                getSelectionModel()->setSelectionInterval(_FocusedIndex, _FocusedIndex);
-            }
-            break;
-        case KeyEvent::KEY_HOME:
-            ListIndex = 0;
-            UpdateSelectionIndex = true;
-            break;
-        case KeyEvent::KEY_END:
-            ListIndex = getModel()->getSize()-1;
-            UpdateSelectionIndex = true;
-            break;
-        case KeyEvent::KEY_PAGE_UP:
-            ListIndex = osgMax(_FocusedIndex-(_BottomDrawnIndex - _TopDrawnIndex),0);
-            UpdateSelectionIndex = true;
-            break;
-        case KeyEvent::KEY_PAGE_DOWN:
-            ListIndex = osgMin<Int32>(_FocusedIndex+(_BottomDrawnIndex - _TopDrawnIndex), getModel()->getSize()-1);
-            UpdateSelectionIndex = true;
-            break;
-    }
-
-    if(UpdateSelectionIndex)
-    {
-        focusIndex(ListIndex);
-        getSelectionModel()->setLeadSelectionIndex(ListIndex);
-        if (e->getModifiers() & KeyEvent::KEY_MODIFIER_SHIFT)
-        {
-            getSelectionModel()->setSelectionInterval(getSelectionModel()->getAnchorSelectionIndex(), ListIndex);
+            //Remove my temporary focus
+            giveFocus(NULL, false);
         }
         else
         {
-            getSelectionModel()->setAnchorSelectionIndex(ListIndex);
+            //Give myself permanent focus
+            takeFocus();
         }
+        Component::mousePressed(e);
+    }
+    else
+    {
+        Inherited::mousePressed(e);
+    }
+}
+
+void List::keyTyped(KeyEventDetails* const e)
+{
+    if(getSelectable())
+    {
+        bool UpdateSelectionIndex(false);
+        Int32 ListIndex(0);
+        switch(e->getKey())
+        {
+            case KeyEventDetails::KEY_UP:
+            case KeyEventDetails::KEY_DOWN:
+            case KeyEventDetails::KEY_RIGHT:
+            case KeyEventDetails::KEY_LEFT:
+                if ( (getOrientation() == List::VERTICAL_ORIENTATION && e->getKey() == KeyEventDetails::KEY_UP) ||
+                     (getOrientation() == List::HORIZONTAL_ORIENTATION && e->getKey() == KeyEventDetails::KEY_LEFT))
+                {
+                    ListIndex = osgMax(_FocusedIndex-1,0);
+                    UpdateSelectionIndex = true;
+                }
+                else if ((getOrientation() == List::VERTICAL_ORIENTATION && e->getKey() == KeyEventDetails::KEY_DOWN) ||
+                         (getOrientation() == List::HORIZONTAL_ORIENTATION && e->getKey() == KeyEventDetails::KEY_RIGHT))
+                {
+                    ListIndex = osgMin<Int32>((_FocusedIndex+1), getModel()->getSize()-1);
+                    UpdateSelectionIndex = true;
+                }
+                break;
+            case KeyEventDetails::KEY_ENTER:
+                if (e->getModifiers() & KeyEventDetails::KEY_MODIFIER_COMMAND)
+                {
+                    getSelectionModel()->removeSelectionInterval(_FocusedIndex,_FocusedIndex);// this toggles the interval
+                }
+                else
+                {
+                    getSelectionModel()->setSelectionInterval(_FocusedIndex, _FocusedIndex);
+                }
+                break;
+            case KeyEventDetails::KEY_HOME:
+                ListIndex = 0;
+                UpdateSelectionIndex = true;
+                break;
+            case KeyEventDetails::KEY_END:
+                ListIndex = getModel()->getSize()-1;
+                UpdateSelectionIndex = true;
+                break;
+            case KeyEventDetails::KEY_PAGE_UP:
+                ListIndex = osgMax(_FocusedIndex-(_BottomDrawnIndex - _TopDrawnIndex),0);
+                UpdateSelectionIndex = true;
+                break;
+            case KeyEventDetails::KEY_PAGE_DOWN:
+                ListIndex = osgMin<Int32>(_FocusedIndex+(_BottomDrawnIndex - _TopDrawnIndex), getModel()->getSize()-1);
+                UpdateSelectionIndex = true;
+                break;
+        }
+
+        if(UpdateSelectionIndex)
+        {
+            focusIndex(ListIndex);
+            getSelectionModel()->setLeadSelectionIndex(ListIndex);
+            if (e->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT)
+            {
+                getSelectionModel()->setSelectionInterval(getSelectionModel()->getAnchorSelectionIndex(), ListIndex);
+            }
+            else
+            {
+                getSelectionModel()->setAnchorSelectionIndex(ListIndex);
+            }
+        }
+        Component::keyTyped(e);
+    }
+    else
+    {
+        Inherited::keyTyped(e);
     }
 
-    Component::keyTyped(e);
 }
 
 void List::updateIndiciesDrawnFromModel(void)
@@ -401,7 +444,7 @@ void List::updateIndiciesDrawnFromModel(void)
     updateIndicesDrawn();
 }
 
-void List::contentsChanged(const ListDataEventUnrecPtr e)
+void List::handleContentsChanged(ListDataEventDetails* const e)
 {
     updateIndiciesDrawnFromModel();
 
@@ -409,6 +452,7 @@ void List::contentsChanged(const ListDataEventUnrecPtr e)
     {
         getSelectionModel()->clearSelection();
     }
+    updatePreferredSize();
     /*if(getModel() != NULL)
       {
       if(_BottomDrawnIndex >= 0)
@@ -421,16 +465,19 @@ void List::contentsChanged(const ListDataEventUnrecPtr e)
       }*/
 }
 
-void List::intervalAdded(const ListDataEventUnrecPtr e)
+void List::handleIntervalAdded(ListDataEventDetails* const e)
 {
     updatePreferredSize();
     UInt32 NumInserted(e->getIndex1() - e->getIndex0() + 1);
 
     getSelectionModel()->incrementValuesAboveIndex(e->getIndex0(), NumInserted);
 
-    if(e->getIndex0() <= _FocusedIndex)
+    if(getSelectable())
     {
-        _FocusedIndex += NumInserted;
+        if(e->getIndex0() <= _FocusedIndex)
+        {
+            _FocusedIndex += NumInserted;
+        }
     }
 
     if(e->getIndex0() <= _BottomDrawnIndex)
@@ -494,15 +541,18 @@ void List::intervalAdded(const ListDataEventUnrecPtr e)
 
 }
 
-void List::intervalRemoved(const ListDataEventUnrecPtr e)
+void List::handleIntervalRemoved(ListDataEventDetails* const e)
 {
     UInt32 NumRemoved(e->getIndex1() - e->getIndex0() + 1);
     //The Selected Items
     getSelectionModel()->decrementValuesAboveIndex(e->getIndex0(), NumRemoved);
 
-    if(e->getIndex0() < _FocusedIndex)
+    if(getSelectable())
     {
-        _FocusedIndex -= NumRemoved;
+        if(e->getIndex0() < _FocusedIndex)
+        {
+            _FocusedIndex -= NumRemoved;
+        }
     }
 
     Int32 NewTopDrawnIndex,
@@ -582,20 +632,6 @@ void List::intervalRemoved(const ListDataEventUnrecPtr e)
 
     updatePreferredSize();
     getSelectionModel()->removeIndexInterval(e->getIndex0(), e->getIndex1());
-}
-
-void List::setSelectionModel(ListSelectionModelPtr SelectionModel)
-{
-    if(_SelectionModel != NULL)
-    {
-        _SelectionModel->removeListSelectionListener(this);
-    }
-    _SelectionModel = SelectionModel;
-
-    if(_SelectionModel != NULL)
-    {
-        _SelectionModel->addListSelectionListener(this);
-    }
 }
 
 void List::updateLayout(void)
@@ -804,15 +840,27 @@ Int32 List::getIndexForLocation(const Pnt2f& Location) const
 
 }
 
-ComponentRefPtr List::createIndexComponent(const UInt32& Index)
+Int32 List::getIndexForDrawingSurfaceLocation(const Pnt2f& Location) const
+{
+    Pnt2f ComponentSpaceLoc(DrawingSurfaceToComponent(Location, this));
+    return getIndexForLocation(ComponentSpaceLoc);
+}
+
+Int32 List::getIndexClosestToDrawingSurfaceLocation(const Pnt2f& Location) const
+{
+    Pnt2f ComponentSpaceLoc(DrawingSurfaceToComponent(Location, this));
+    return getIndexClosestToLocation(ComponentSpaceLoc);
+}
+
+ComponentTransitPtr List::createIndexComponent(const UInt32& Index)
 {
     if(getModel() != NULL && getCellGenerator() != NULL)
     {
         bool Selected;
 
-        if(_SelectionModel != NULL)
+        if(getSelectionModel() != NULL)
         {
-            Selected = _SelectionModel->isSelectedIndex(Index);
+            Selected = getSelectionModel()->isSelectedIndex(Index);
         }
         else
         {
@@ -829,7 +877,7 @@ ComponentRefPtr List::createIndexComponent(const UInt32& Index)
     }
     else
     {
-        return NULL;
+        return ComponentTransitPtr(NULL);
     }
 }
 
@@ -840,25 +888,28 @@ void List::updatePreferredSize(void)
 
 void List::focusIndex(const Int32& Index)
 {
-    Int32 OldFocused(_FocusedIndex);
-    _FocusedIndex = Index;
-
-    //Unfocus the old index
-    if(OldFocused >= _TopDrawnIndex && OldFocused <= _BottomDrawnIndex )
+    if(getSelectable())
     {
-        takeFocus();
-    }
+        Int32 OldFocused(_FocusedIndex);
+        _FocusedIndex = Index;
+
+        //Unfocus the old index
+        if(OldFocused >= _TopDrawnIndex && OldFocused <= _BottomDrawnIndex )
+        {
+            takeFocus();
+        }
 
 
-    //Focus the new index
-    if(_FocusedIndex >= _TopDrawnIndex && _FocusedIndex <= _BottomDrawnIndex )
-    {
-        getChildren(getDrawnIndexFromListIndex(_FocusedIndex))->takeFocus();
-    }
+        //Focus the new index
+        if(_FocusedIndex >= _TopDrawnIndex && _FocusedIndex <= _BottomDrawnIndex )
+        {
+            getChildren(getDrawnIndexFromListIndex(_FocusedIndex))->takeFocus();
+        }
 
-    if(getAutoScrollToFocused())
-    {
-        scrollToFocused();
+        if(getAutoScrollToFocused())
+        {
+            scrollToFocused();
+        }
     }
 }
 
@@ -929,9 +980,9 @@ void List::scrollToFocused(void)
 
 void List::scrollToSelection(void)
 {
-    if(_SelectionModel != NULL)
+    if(getSelectionModel() != NULL)
     {
-        Int32 Index(_SelectionModel->getMinSelectionIndex());
+        Int32 Index(getSelectionModel()->getMinSelectionIndex());
 
         if(Index >= 0)
         {
@@ -940,7 +991,7 @@ void List::scrollToSelection(void)
     }
 }
 
-ComponentRefPtr List::getComponentAtIndex(const UInt32& Index) const
+Component* List::getComponentAtIndex(const UInt32& Index)
 {
     if(getModel() != NULL && Index < getModel()->getSize())
     {
@@ -973,7 +1024,7 @@ void List::onCreate(const List * Id)
 
     if(Id != NULL)
     {
-        ListSelectionModelPtr TheListSelectionModel(new DefaultListSelectionModel());
+        ListSelectionModelUnrecPtr TheListSelectionModel(DefaultListSelectionModel::create());
         setSelectionModel(TheListSelectionModel);
     }
 }
@@ -982,11 +1033,33 @@ void List::onDestroy()
 {
 }
 
+void List::resolveLinks(void)
+{
+    Inherited::resolveLinks();
+
+    _DrawnIndices.clear();
+
+    std::map<Component*, boost::signals2::connection>::iterator MapItor;
+    for(MapItor = _ItemFocusGainedConnections.begin() ; MapItor!= _ItemFocusGainedConnections.end() ; ++MapItor)
+    {
+        MapItor->second.disconnect();
+    }
+    for(MapItor = _ItemFocusLostConnections.begin() ; MapItor!= _ItemFocusLostConnections.end() ; ++MapItor)
+    {
+        MapItor->second.disconnect();
+    }
+    _ItemFocusGainedConnections.clear();
+    _ItemFocusLostConnections.clear();
+    _SelectionChangedConnection.disconnect();
+    _ContentsChangedConnection.disconnect();
+    _IntervalAddedConnection.disconnect();
+    _IntervalRemovedConnection.disconnect();
+}
+
 /*----------------------- constructors & destructors ----------------------*/
 
 List::List(void) :
     Inherited(),
-		_SelectionModel(),
         _TopDrawnIndex(-1),
         _BottomDrawnIndex(-1),
 		_FocusedIndex(-1)
@@ -995,7 +1068,6 @@ List::List(void) :
 
 List::List(const List &source) :
     Inherited(source),
-		_SelectionModel(source._SelectionModel),
         _TopDrawnIndex(-1),
         _BottomDrawnIndex(-1),
 		_FocusedIndex(-1)
@@ -1019,7 +1091,17 @@ void List::changed(ConstFieldMaskArg whichField,
     {
 		updatePreferredSize();
     }
-	
+
+    if(whichField & SelectionModelFieldMask)
+    {
+        _SelectionChangedConnection.disconnect();
+
+        if(getSelectionModel() != NULL)
+        {
+            _SelectionChangedConnection = getSelectionModel()->connectSelectionChanged(boost::bind(&List::handleSelectionChanged, this, _1));
+        }
+    }
+    	
     if(whichField & List::ClipBoundsFieldMask)
     {
         updateIndicesDrawn();
@@ -1037,7 +1119,9 @@ void List::changed(ConstFieldMaskArg whichField,
 
 		if(getModel() != NULL)
 		{
-			getModel()->addListDataListener(this);
+            _ContentsChangedConnection = getModel()->connectListDataContentsChanged(boost::bind(&List::handleContentsChanged, this, _1));
+            _IntervalAddedConnection = getModel()->connectListDataIntervalAdded(boost::bind(&List::handleIntervalAdded, this, _1));
+            _IntervalRemovedConnection = getModel()->connectListDataIntervalRemoved(boost::bind(&List::handleIntervalRemoved, this, _1));
 		}
 		
 		updateIndiciesDrawnFromModel();

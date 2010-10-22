@@ -43,8 +43,6 @@
 #endif
 
 #include "OSGSplitPanelBase.h"
-#include "OSGMouseListener.h"
-#include "OSGMouseMotionListener.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -86,9 +84,9 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING SplitPanel : public SplitPanelBase
 
     /*! \}                                                                 */
 
-	virtual void setDividerDrawObject( const UIDrawObjectCanvasRefPtr &value );
+	virtual void setDividerDrawObject( UIDrawObjectCanvas* const value );
 
-	virtual void drawInternal(const GraphicsWeakPtr Graphics, Real32 Opacity = 1.0f) const;
+	virtual void drawInternal(Graphics* const Graphics, Real32 Opacity = 1.0f) const;
 
     virtual void detachFromEventProducer(void);
 
@@ -130,45 +128,19 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING SplitPanel : public SplitPanelBase
 
     virtual void updateLayout(void);
 
-    class DividerListener : public MouseListener
-    {
-      public :
-        DividerListener(SplitPanelRefPtr ptr);
-        virtual void mouseClicked(const MouseEventUnrecPtr e);
-        virtual void mouseEntered(const MouseEventUnrecPtr e);
-        virtual void mouseExited(const MouseEventUnrecPtr e);
-        virtual void mousePressed(const MouseEventUnrecPtr e);
-        virtual void mouseReleased(const MouseEventUnrecPtr e);
+    void dividerMouseEntered(MouseEventDetails* const e);
+    void dividerMouseExited(MouseEventDetails* const e);
+    void dividerMousePressed(MouseEventDetails* const e);
+    boost::signals2::connection _MouseEnteredConnection,
+                                _MouseExitedConnection,
+                                _MousePressedConnection;
+    
+    void dividerDragMouseDragged(MouseEventDetails* const e);
+    void dividerDragMouseReleased(MouseEventDetails* const e);
+    boost::signals2::connection _DragMouseDraggedConnection,
+                                _DragMouseReleasedConnection;
 
-        void cancel(void);
-      protected :
-        SplitPanelRefPtr _SplitPanel;
-    };
-
-    friend class DividerListener;
-
-    DividerListener _DividerListener;
-    class DividerDraggedListener : public MouseMotionListener, public MouseListener
-    {
-      public :
-        DividerDraggedListener(SplitPanelRefPtr ptr);
-        virtual void mouseMoved(const MouseEventUnrecPtr e);
-        virtual void mouseDragged(const MouseEventUnrecPtr e);
-
-        virtual void mouseClicked(const MouseEventUnrecPtr e);
-        virtual void mouseEntered(const MouseEventUnrecPtr e);
-        virtual void mouseExited(const MouseEventUnrecPtr e);
-        virtual void mousePressed(const MouseEventUnrecPtr e);
-        virtual void mouseReleased(const MouseEventUnrecPtr e);
-
-        void cancel(void);
-      protected :
-        SplitPanelRefPtr _SplitPanel;
-    };
-
-    friend class DividerDraggedListener;
-
-    DividerDraggedListener _DividerDraggedListener;
+    void dividerDragCancel(void);
 
     void updateChildren(void);
     /*==========================  PRIVATE  ================================*/

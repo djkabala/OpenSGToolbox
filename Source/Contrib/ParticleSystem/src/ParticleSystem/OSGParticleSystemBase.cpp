@@ -68,7 +68,7 @@
 
 #include <boost/bind.hpp>
 
-#include "OSGEvent.h"
+#include "OSGEventDetails.h"
 
 #ifdef WIN32 // turn off 'this' : used in base member initializer list warning
 #pragma warning(disable:4355)
@@ -170,6 +170,14 @@ OSG_BEGIN_NAMESPACE
     the previous value of position and velocity respectively.
 */
 
+/*! \var bool            ParticleSystemBase::_sfClearVelocities
+    If true then the velocities of every particle will be set to 0 every update before Affectors are applied.
+*/
+
+/*! \var bool            ParticleSystemBase::_sfClearAccelerations
+    If true then the accelerations of every particle will be set to 0 every update before Affectors are applied.
+*/
+
 /*! \var Time            ParticleSystemBase::_sfLastElapsedTime
     This value holds the value of the last elapsed time.
 */
@@ -222,8 +230,8 @@ void ParticleSystemBase::classDescInserter(TypeObject &oType)
     FieldDescriptionBase *pDesc = NULL;
 
 
-    pDesc = new SFUnrecNodePtr::Description(
-        SFUnrecNodePtr::getClassType(),
+    pDesc = new SFWeakNodePtr::Description(
+        SFWeakNodePtr::getClassType(),
         "Beacon",
         "",
         BeaconFieldId, BeaconFieldMask,
@@ -432,6 +440,30 @@ void ParticleSystemBase::classDescInserter(TypeObject &oType)
 
     oType.addInitialDesc(pDesc);
 
+    pDesc = new SFBool::Description(
+        SFBool::getClassType(),
+        "ClearVelocities",
+        "If true then the velocities of every particle will be set to 0 every update before Affectors are applied.\n",
+        ClearVelocitiesFieldId, ClearVelocitiesFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&ParticleSystem::editHandleClearVelocities),
+        static_cast<FieldGetMethodSig >(&ParticleSystem::getHandleClearVelocities));
+
+    oType.addInitialDesc(pDesc);
+
+    pDesc = new SFBool::Description(
+        SFBool::getClassType(),
+        "ClearAccelerations",
+        "If true then the accelerations of every particle will be set to 0 every update before Affectors are applied.\n",
+        ClearAccelerationsFieldId, ClearAccelerationsFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&ParticleSystem::editHandleClearAccelerations),
+        static_cast<FieldGetMethodSig >(&ParticleSystem::getHandleClearAccelerations));
+
+    oType.addInitialDesc(pDesc);
+
     pDesc = new SFTime::Description(
         SFTime::getClassType(),
         "LastElapsedTime",
@@ -503,17 +535,6 @@ void ParticleSystemBase::classDescInserter(TypeObject &oType)
         static_cast<FieldGetMethodSig >(&ParticleSystem::getHandleMaxParticleSize));
 
     oType.addInitialDesc(pDesc);
-    pDesc = new SFEventProducerPtr::Description(
-        SFEventProducerPtr::getClassType(),
-        "EventProducer",
-        "Event Producer",
-        EventProducerFieldId,EventProducerFieldMask,
-        true,
-        (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast     <FieldEditMethodSig>(&ParticleSystem::editHandleEventProducer),
-        static_cast     <FieldGetMethodSig >(&ParticleSystem::getHandleEventProducer));
-
-    oType.addInitialDesc(pDesc);
 }
 
 
@@ -546,7 +567,7 @@ ParticleSystemBase::TypeObject ParticleSystemBase::_type(
     "\t<Field\n"
     "\t\tname=\"Beacon\"\n"
     "\t\ttype=\"Node\"\n"
-    "        category=\"pointer\"\n"
+    "        category=\"weakpointer\"\n"
     "\t\tcardinality=\"single\"\n"
     "\t\tvisibility=\"external\"\n"
     "\t\taccess=\"public\"\n"
@@ -726,6 +747,28 @@ ParticleSystemBase::TypeObject ParticleSystemBase::_type(
     "   the previous value of position and velocity respectively.\n"
     "\t</Field>\n"
     "\t<Field\n"
+    "\t\tname=\"ClearVelocities\"\n"
+    "\t\ttype=\"bool\"\n"
+    "        category=\"data\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "\t\tvisibility=\"external\"\n"
+    "\t\tdefaultValue=\"false\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t>\n"
+    "   If true then the velocities of every particle will be set to 0 every update before Affectors are applied.\n"
+    "\t</Field>\n"
+    "\t<Field\n"
+    "\t\tname=\"ClearAccelerations\"\n"
+    "\t\ttype=\"bool\"\n"
+    "        category=\"data\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "\t\tvisibility=\"external\"\n"
+    "\t\tdefaultValue=\"false\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t>\n"
+    "   If true then the accelerations of every particle will be set to 0 every update before Affectors are applied.\n"
+    "\t</Field>\n"
+    "\t<Field\n"
     "\t\tname=\"LastElapsedTime\"\n"
     "\t\ttype=\"Time\"\n"
     "        category=\"data\"\n"
@@ -789,64 +832,79 @@ ParticleSystemBase::TypeObject ParticleSystemBase::_type(
     "\t>\n"
     "    The Size of the Largest particle in this system\n"
     "\t</Field>\n"
-    "\t<ProducedMethod\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"SystemUpdated\"\n"
-    "\t\ttype=\"ParticleSystemEvent\"\n"
+    "\t\tdetailsType=\"ParticleSystemEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"VolumeChanged\"\n"
-    "\t\ttype=\"ParticleSystemEvent\"\n"
+    "\t\tdetailsType=\"ParticleSystemEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"ParticleGenerated\"\n"
-    "\t\ttype=\"ParticleEvent\"\n"
+    "\t\tdetailsType=\"ParticleEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"ParticleKilled\"\n"
-    "\t\ttype=\"ParticleEvent\"\n"
+    "\t\tdetailsType=\"ParticleEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"ParticleStolen\"\n"
-    "\t\ttype=\"ParticleEvent\"\n"
+    "\t\tdetailsType=\"ParticleEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
+    "\t</ProducedEvent>\n"
     "</FieldContainer>\n",
     ""
     );
 
-//! ParticleSystem Produced Methods
+//! ParticleSystem Produced Events
 
-MethodDescription *ParticleSystemBase::_methodDesc[] =
+EventDescription *ParticleSystemBase::_eventDesc[] =
 {
-    new MethodDescription("SystemUpdated", 
-                    "",
-                     SystemUpdatedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("VolumeChanged", 
-                    "",
-                     VolumeChangedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("ParticleGenerated", 
-                    "",
-                     ParticleGeneratedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("ParticleKilled", 
-                    "",
-                     ParticleKilledMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("ParticleStolen", 
-                    "",
-                     ParticleStolenMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod())
+    new EventDescription("SystemUpdated", 
+                          "",
+                          SystemUpdatedEventId, 
+                          FieldTraits<ParticleSystemEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ParticleSystemBase::getHandleSystemUpdatedSignal)),
+
+    new EventDescription("VolumeChanged", 
+                          "",
+                          VolumeChangedEventId, 
+                          FieldTraits<ParticleSystemEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ParticleSystemBase::getHandleVolumeChangedSignal)),
+
+    new EventDescription("ParticleGenerated", 
+                          "",
+                          ParticleGeneratedEventId, 
+                          FieldTraits<ParticleEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ParticleSystemBase::getHandleParticleGeneratedSignal)),
+
+    new EventDescription("ParticleKilled", 
+                          "",
+                          ParticleKilledEventId, 
+                          FieldTraits<ParticleEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ParticleSystemBase::getHandleParticleKilledSignal)),
+
+    new EventDescription("ParticleStolen", 
+                          "",
+                          ParticleStolenEventId, 
+                          FieldTraits<ParticleEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ParticleSystemBase::getHandleParticleStolenSignal))
+
 };
 
 EventProducerType ParticleSystemBase::_producerType(
@@ -854,8 +912,8 @@ EventProducerType ParticleSystemBase::_producerType(
     "EventProducerType",
     "",
     InitEventProducerFunctor(),
-    _methodDesc,
-    sizeof(_methodDesc));
+    _eventDesc,
+    sizeof(_eventDesc));
 
 /*------------------------------ get -----------------------------------*/
 
@@ -883,12 +941,12 @@ UInt32 ParticleSystemBase::getContainerSize(void) const
 
 
 //! Get the ParticleSystem::_sfBeacon field.
-const SFUnrecNodePtr *ParticleSystemBase::getSFBeacon(void) const
+const SFWeakNodePtr *ParticleSystemBase::getSFBeacon(void) const
 {
     return &_sfBeacon;
 }
 
-SFUnrecNodePtr      *ParticleSystemBase::editSFBeacon         (void)
+SFWeakNodePtr       *ParticleSystemBase::editSFBeacon         (void)
 {
     editSField(BeaconFieldMask);
 
@@ -1087,6 +1145,32 @@ SFBool *ParticleSystemBase::editSFUpdateSecAttribs(void)
 const SFBool *ParticleSystemBase::getSFUpdateSecAttribs(void) const
 {
     return &_sfUpdateSecAttribs;
+}
+
+
+SFBool *ParticleSystemBase::editSFClearVelocities(void)
+{
+    editSField(ClearVelocitiesFieldMask);
+
+    return &_sfClearVelocities;
+}
+
+const SFBool *ParticleSystemBase::getSFClearVelocities(void) const
+{
+    return &_sfClearVelocities;
+}
+
+
+SFBool *ParticleSystemBase::editSFClearAccelerations(void)
+{
+    editSField(ClearAccelerationsFieldMask);
+
+    return &_sfClearAccelerations;
+}
+
+const SFBool *ParticleSystemBase::getSFClearAccelerations(void) const
+{
+    return &_sfClearAccelerations;
 }
 
 
@@ -1401,6 +1485,14 @@ UInt32 ParticleSystemBase::getBinSize(ConstFieldMaskArg whichField)
     {
         returnValue += _sfUpdateSecAttribs.getBinSize();
     }
+    if(FieldBits::NoField != (ClearVelocitiesFieldMask & whichField))
+    {
+        returnValue += _sfClearVelocities.getBinSize();
+    }
+    if(FieldBits::NoField != (ClearAccelerationsFieldMask & whichField))
+    {
+        returnValue += _sfClearAccelerations.getBinSize();
+    }
     if(FieldBits::NoField != (LastElapsedTimeFieldMask & whichField))
     {
         returnValue += _sfLastElapsedTime.getBinSize();
@@ -1424,10 +1516,6 @@ UInt32 ParticleSystemBase::getBinSize(ConstFieldMaskArg whichField)
     if(FieldBits::NoField != (MaxParticleSizeFieldMask & whichField))
     {
         returnValue += _sfMaxParticleSize.getBinSize();
-    }
-    if(FieldBits::NoField != (EventProducerFieldMask & whichField))
-    {
-        returnValue += _sfEventProducer.getBinSize();
     }
 
     return returnValue;
@@ -1502,6 +1590,14 @@ void ParticleSystemBase::copyToBin(BinaryDataHandler &pMem,
     {
         _sfUpdateSecAttribs.copyToBin(pMem);
     }
+    if(FieldBits::NoField != (ClearVelocitiesFieldMask & whichField))
+    {
+        _sfClearVelocities.copyToBin(pMem);
+    }
+    if(FieldBits::NoField != (ClearAccelerationsFieldMask & whichField))
+    {
+        _sfClearAccelerations.copyToBin(pMem);
+    }
     if(FieldBits::NoField != (LastElapsedTimeFieldMask & whichField))
     {
         _sfLastElapsedTime.copyToBin(pMem);
@@ -1525,10 +1621,6 @@ void ParticleSystemBase::copyToBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (MaxParticleSizeFieldMask & whichField))
     {
         _sfMaxParticleSize.copyToBin(pMem);
-    }
-    if(FieldBits::NoField != (EventProducerFieldMask & whichField))
-    {
-        _sfEventProducer.copyToBin(pMem);
     }
 }
 
@@ -1601,6 +1693,14 @@ void ParticleSystemBase::copyFromBin(BinaryDataHandler &pMem,
     {
         _sfUpdateSecAttribs.copyFromBin(pMem);
     }
+    if(FieldBits::NoField != (ClearVelocitiesFieldMask & whichField))
+    {
+        _sfClearVelocities.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (ClearAccelerationsFieldMask & whichField))
+    {
+        _sfClearAccelerations.copyFromBin(pMem);
+    }
     if(FieldBits::NoField != (LastElapsedTimeFieldMask & whichField))
     {
         _sfLastElapsedTime.copyFromBin(pMem);
@@ -1624,10 +1724,6 @@ void ParticleSystemBase::copyFromBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (MaxParticleSizeFieldMask & whichField))
     {
         _sfMaxParticleSize.copyFromBin(pMem);
-    }
-    if(FieldBits::NoField != (EventProducerFieldMask & whichField))
-    {
-        _sfEventProducer.copyFromBin(pMem);
     }
 }
 
@@ -1703,7 +1799,6 @@ ParticleSystem *ParticleSystemBase::createEmpty(void)
     return returnValue;
 }
 
-
 FieldContainerTransitPtr ParticleSystemBase::shallowCopyLocal(
     BitVector bFlags) const
 {
@@ -1749,11 +1844,214 @@ FieldContainerTransitPtr ParticleSystemBase::shallowCopy(void) const
 
 
 
+/*------------------------- event producers ----------------------------------*/
+void ParticleSystemBase::produceEvent(UInt32 eventId, EventDetails* const e)
+{
+    switch(eventId)
+    {
+    case SystemUpdatedEventId:
+        OSG_ASSERT(dynamic_cast<SystemUpdatedEventDetailsType* const>(e));
+
+        _SystemUpdatedEvent.set_combiner(ConsumableEventCombiner(e));
+        _SystemUpdatedEvent(dynamic_cast<SystemUpdatedEventDetailsType* const>(e), SystemUpdatedEventId);
+        break;
+    case VolumeChangedEventId:
+        OSG_ASSERT(dynamic_cast<VolumeChangedEventDetailsType* const>(e));
+
+        _VolumeChangedEvent.set_combiner(ConsumableEventCombiner(e));
+        _VolumeChangedEvent(dynamic_cast<VolumeChangedEventDetailsType* const>(e), VolumeChangedEventId);
+        break;
+    case ParticleGeneratedEventId:
+        OSG_ASSERT(dynamic_cast<ParticleGeneratedEventDetailsType* const>(e));
+
+        _ParticleGeneratedEvent.set_combiner(ConsumableEventCombiner(e));
+        _ParticleGeneratedEvent(dynamic_cast<ParticleGeneratedEventDetailsType* const>(e), ParticleGeneratedEventId);
+        break;
+    case ParticleKilledEventId:
+        OSG_ASSERT(dynamic_cast<ParticleKilledEventDetailsType* const>(e));
+
+        _ParticleKilledEvent.set_combiner(ConsumableEventCombiner(e));
+        _ParticleKilledEvent(dynamic_cast<ParticleKilledEventDetailsType* const>(e), ParticleKilledEventId);
+        break;
+    case ParticleStolenEventId:
+        OSG_ASSERT(dynamic_cast<ParticleStolenEventDetailsType* const>(e));
+
+        _ParticleStolenEvent.set_combiner(ConsumableEventCombiner(e));
+        _ParticleStolenEvent(dynamic_cast<ParticleStolenEventDetailsType* const>(e), ParticleStolenEventId);
+        break;
+    default:
+        SWARNING << "No event defined with ID " << eventId << std::endl;
+        break;
+    }
+}
+
+boost::signals2::connection ParticleSystemBase::connectEvent(UInt32 eventId, 
+                                                             const BaseEventType::slot_type &listener, 
+                                                             boost::signals2::connect_position at)
+{
+    switch(eventId)
+    {
+    case SystemUpdatedEventId:
+        return _SystemUpdatedEvent.connect(listener, at);
+        break;
+    case VolumeChangedEventId:
+        return _VolumeChangedEvent.connect(listener, at);
+        break;
+    case ParticleGeneratedEventId:
+        return _ParticleGeneratedEvent.connect(listener, at);
+        break;
+    case ParticleKilledEventId:
+        return _ParticleKilledEvent.connect(listener, at);
+        break;
+    case ParticleStolenEventId:
+        return _ParticleStolenEvent.connect(listener, at);
+        break;
+    default:
+        SWARNING << "No event defined with ID " << eventId << std::endl;
+        return boost::signals2::connection();
+        break;
+    }
+
+    return boost::signals2::connection();
+}
+
+boost::signals2::connection  ParticleSystemBase::connectEvent(UInt32 eventId, 
+                                                              const BaseEventType::group_type &group,
+                                                              const BaseEventType::slot_type &listener,
+                                                              boost::signals2::connect_position at)
+{
+    switch(eventId)
+    {
+    case SystemUpdatedEventId:
+        return _SystemUpdatedEvent.connect(group, listener, at);
+        break;
+    case VolumeChangedEventId:
+        return _VolumeChangedEvent.connect(group, listener, at);
+        break;
+    case ParticleGeneratedEventId:
+        return _ParticleGeneratedEvent.connect(group, listener, at);
+        break;
+    case ParticleKilledEventId:
+        return _ParticleKilledEvent.connect(group, listener, at);
+        break;
+    case ParticleStolenEventId:
+        return _ParticleStolenEvent.connect(group, listener, at);
+        break;
+    default:
+        SWARNING << "No event defined with ID " << eventId << std::endl;
+        return boost::signals2::connection();
+        break;
+    }
+
+    return boost::signals2::connection();
+}
+    
+void  ParticleSystemBase::disconnectEvent(UInt32 eventId, const BaseEventType::group_type &group)
+{
+    switch(eventId)
+    {
+    case SystemUpdatedEventId:
+        _SystemUpdatedEvent.disconnect(group);
+        break;
+    case VolumeChangedEventId:
+        _VolumeChangedEvent.disconnect(group);
+        break;
+    case ParticleGeneratedEventId:
+        _ParticleGeneratedEvent.disconnect(group);
+        break;
+    case ParticleKilledEventId:
+        _ParticleKilledEvent.disconnect(group);
+        break;
+    case ParticleStolenEventId:
+        _ParticleStolenEvent.disconnect(group);
+        break;
+    default:
+        SWARNING << "No event defined with ID " << eventId << std::endl;
+        break;
+    }
+}
+
+void  ParticleSystemBase::disconnectAllSlotsEvent(UInt32 eventId)
+{
+    switch(eventId)
+    {
+    case SystemUpdatedEventId:
+        _SystemUpdatedEvent.disconnect_all_slots();
+        break;
+    case VolumeChangedEventId:
+        _VolumeChangedEvent.disconnect_all_slots();
+        break;
+    case ParticleGeneratedEventId:
+        _ParticleGeneratedEvent.disconnect_all_slots();
+        break;
+    case ParticleKilledEventId:
+        _ParticleKilledEvent.disconnect_all_slots();
+        break;
+    case ParticleStolenEventId:
+        _ParticleStolenEvent.disconnect_all_slots();
+        break;
+    default:
+        SWARNING << "No event defined with ID " << eventId << std::endl;
+        break;
+    }
+}
+
+bool  ParticleSystemBase::isEmptyEvent(UInt32 eventId) const
+{
+    switch(eventId)
+    {
+    case SystemUpdatedEventId:
+        return _SystemUpdatedEvent.empty();
+        break;
+    case VolumeChangedEventId:
+        return _VolumeChangedEvent.empty();
+        break;
+    case ParticleGeneratedEventId:
+        return _ParticleGeneratedEvent.empty();
+        break;
+    case ParticleKilledEventId:
+        return _ParticleKilledEvent.empty();
+        break;
+    case ParticleStolenEventId:
+        return _ParticleStolenEvent.empty();
+        break;
+    default:
+        SWARNING << "No event defined with ID " << eventId << std::endl;
+        return true;
+        break;
+    }
+}
+
+UInt32  ParticleSystemBase::numSlotsEvent(UInt32 eventId) const
+{
+    switch(eventId)
+    {
+    case SystemUpdatedEventId:
+        return _SystemUpdatedEvent.num_slots();
+        break;
+    case VolumeChangedEventId:
+        return _VolumeChangedEvent.num_slots();
+        break;
+    case ParticleGeneratedEventId:
+        return _ParticleGeneratedEvent.num_slots();
+        break;
+    case ParticleKilledEventId:
+        return _ParticleKilledEvent.num_slots();
+        break;
+    case ParticleStolenEventId:
+        return _ParticleStolenEvent.num_slots();
+        break;
+    default:
+        SWARNING << "No event defined with ID " << eventId << std::endl;
+        return 0;
+        break;
+    }
+}
+
 
 /*------------------------- constructors ----------------------------------*/
 
 ParticleSystemBase::ParticleSystemBase(void) :
-    _Producer(&getProducerType()),
     Inherited(),
     _sfBeacon                 (NULL),
     _mfInternalPositions      (),
@@ -1771,18 +2069,18 @@ ParticleSystemBase::ParticleSystemBase(void) :
     _sfMaxParticles           (UInt32(4294967295)),
     _sfDynamic                (bool(true)),
     _sfUpdateSecAttribs       (),
+    _sfClearVelocities        (bool(false)),
+    _sfClearAccelerations     (bool(false)),
     _sfLastElapsedTime        (Time(0.0)),
     _mfGenerators             (),
     _mfAffectors              (),
     _mfSystemAffectors        (),
     _sfVolume                 (),
     _sfMaxParticleSize        (Vec3f(0.0f,0.0f,0.0f))
-    ,_sfEventProducer(&_Producer)
 {
 }
 
 ParticleSystemBase::ParticleSystemBase(const ParticleSystemBase &source) :
-    _Producer(&source.getProducerType()),
     Inherited(source),
     _sfBeacon                 (NULL),
     _mfInternalPositions      (source._mfInternalPositions      ),
@@ -1800,13 +2098,14 @@ ParticleSystemBase::ParticleSystemBase(const ParticleSystemBase &source) :
     _sfMaxParticles           (source._sfMaxParticles           ),
     _sfDynamic                (source._sfDynamic                ),
     _sfUpdateSecAttribs       (source._sfUpdateSecAttribs       ),
+    _sfClearVelocities        (source._sfClearVelocities        ),
+    _sfClearAccelerations     (source._sfClearAccelerations     ),
     _sfLastElapsedTime        (source._sfLastElapsedTime        ),
     _mfGenerators             (),
     _mfAffectors              (),
     _mfSystemAffectors        (),
     _sfVolume                 (source._sfVolume                 ),
     _sfMaxParticleSize        (source._sfMaxParticleSize        )
-    ,_sfEventProducer(&_Producer)
 {
 }
 
@@ -1867,8 +2166,8 @@ void ParticleSystemBase::onCreate(const ParticleSystem *source)
 
 GetFieldHandlePtr ParticleSystemBase::getHandleBeacon          (void) const
 {
-    SFUnrecNodePtr::GetHandlePtr returnValue(
-        new  SFUnrecNodePtr::GetHandle(
+    SFWeakNodePtr::GetHandlePtr returnValue(
+        new  SFWeakNodePtr::GetHandle(
              &_sfBeacon,
              this->getType().getFieldDesc(BeaconFieldId),
              const_cast<ParticleSystemBase *>(this)));
@@ -1878,8 +2177,8 @@ GetFieldHandlePtr ParticleSystemBase::getHandleBeacon          (void) const
 
 EditFieldHandlePtr ParticleSystemBase::editHandleBeacon         (void)
 {
-    SFUnrecNodePtr::EditHandlePtr returnValue(
-        new  SFUnrecNodePtr::EditHandle(
+    SFWeakNodePtr::EditHandlePtr returnValue(
+        new  SFWeakNodePtr::EditHandle(
              &_sfBeacon,
              this->getType().getFieldDesc(BeaconFieldId),
              this));
@@ -2268,6 +2567,56 @@ EditFieldHandlePtr ParticleSystemBase::editHandleUpdateSecAttribs(void)
     return returnValue;
 }
 
+GetFieldHandlePtr ParticleSystemBase::getHandleClearVelocities (void) const
+{
+    SFBool::GetHandlePtr returnValue(
+        new  SFBool::GetHandle(
+             &_sfClearVelocities,
+             this->getType().getFieldDesc(ClearVelocitiesFieldId),
+             const_cast<ParticleSystemBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr ParticleSystemBase::editHandleClearVelocities(void)
+{
+    SFBool::EditHandlePtr returnValue(
+        new  SFBool::EditHandle(
+             &_sfClearVelocities,
+             this->getType().getFieldDesc(ClearVelocitiesFieldId),
+             this));
+
+
+    editSField(ClearVelocitiesFieldMask);
+
+    return returnValue;
+}
+
+GetFieldHandlePtr ParticleSystemBase::getHandleClearAccelerations (void) const
+{
+    SFBool::GetHandlePtr returnValue(
+        new  SFBool::GetHandle(
+             &_sfClearAccelerations,
+             this->getType().getFieldDesc(ClearAccelerationsFieldId),
+             const_cast<ParticleSystemBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr ParticleSystemBase::editHandleClearAccelerations(void)
+{
+    SFBool::EditHandlePtr returnValue(
+        new  SFBool::EditHandle(
+             &_sfClearAccelerations,
+             this->getType().getFieldDesc(ClearAccelerationsFieldId),
+             this));
+
+
+    editSField(ClearAccelerationsFieldMask);
+
+    return returnValue;
+}
+
 GetFieldHandlePtr ParticleSystemBase::getHandleLastElapsedTime (void) const
 {
     SFTime::GetHandlePtr returnValue(
@@ -2455,27 +2804,57 @@ EditFieldHandlePtr ParticleSystemBase::editHandleMaxParticleSize(void)
 }
 
 
-GetFieldHandlePtr ParticleSystemBase::getHandleEventProducer        (void) const
+GetEventHandlePtr ParticleSystemBase::getHandleSystemUpdatedSignal(void) const
 {
-    SFEventProducerPtr::GetHandlePtr returnValue(
-        new  SFEventProducerPtr::GetHandle(
-             &_sfEventProducer,
-             this->getType().getFieldDesc(EventProducerFieldId),
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<SystemUpdatedEventType>(
+             const_cast<SystemUpdatedEventType *>(&_SystemUpdatedEvent),
+             _producerType.getEventDescription(SystemUpdatedEventId),
              const_cast<ParticleSystemBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr ParticleSystemBase::editHandleEventProducer       (void)
+GetEventHandlePtr ParticleSystemBase::getHandleVolumeChangedSignal(void) const
 {
-    SFEventProducerPtr::EditHandlePtr returnValue(
-        new  SFEventProducerPtr::EditHandle(
-             &_sfEventProducer,
-             this->getType().getFieldDesc(EventProducerFieldId),
-             this));
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<VolumeChangedEventType>(
+             const_cast<VolumeChangedEventType *>(&_VolumeChangedEvent),
+             _producerType.getEventDescription(VolumeChangedEventId),
+             const_cast<ParticleSystemBase *>(this)));
 
+    return returnValue;
+}
 
-    editSField(EventProducerFieldMask);
+GetEventHandlePtr ParticleSystemBase::getHandleParticleGeneratedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<ParticleGeneratedEventType>(
+             const_cast<ParticleGeneratedEventType *>(&_ParticleGeneratedEvent),
+             _producerType.getEventDescription(ParticleGeneratedEventId),
+             const_cast<ParticleSystemBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ParticleSystemBase::getHandleParticleKilledSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<ParticleKilledEventType>(
+             const_cast<ParticleKilledEventType *>(&_ParticleKilledEvent),
+             _producerType.getEventDescription(ParticleKilledEventId),
+             const_cast<ParticleSystemBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ParticleSystemBase::getHandleParticleStolenSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<ParticleStolenEventType>(
+             const_cast<ParticleStolenEventType *>(&_ParticleStolenEvent),
+             _producerType.getEventDescription(ParticleStolenEventId),
+             const_cast<ParticleSystemBase *>(this)));
 
     return returnValue;
 }

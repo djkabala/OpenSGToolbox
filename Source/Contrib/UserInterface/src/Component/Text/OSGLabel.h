@@ -80,9 +80,9 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Label : public LabelBase
     /*! \}                                                                 */
 
 	Vec2f getContentRequestedSize(void) const;
-	virtual void mouseClicked(const MouseEventUnrecPtr e);
-	virtual void mousePressed(const MouseEventUnrecPtr e);
-	virtual void mouseDragged(const MouseEventUnrecPtr e);
+	virtual void mouseClicked(MouseEventDetails* const e);
+	virtual void mousePressed(MouseEventDetails* const e);
+	virtual void mouseDragged(MouseEventDetails* const e);
 
     /*=========================  PROTECTED  ===============================*/
 
@@ -113,7 +113,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Label : public LabelBase
 
     /*! \}                                                                 */
 
-	virtual void drawInternal(const GraphicsWeakPtr Graphics, Real32 Opacity = 1.0f) const;
+	virtual void drawInternal(Graphics* const Graphics, Real32 Opacity = 1.0f) const;
 	void calculateTextBounds(const UInt32 StartIndex, const UInt32 EndIndex, Pnt2f& TopLeft, Pnt2f& BottomRight);
     
     /*==========================  PRIVATE  ================================*/

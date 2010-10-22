@@ -43,13 +43,6 @@
 #endif
 
 #include "OSGSliderBase.h"
-#include "OSGChangeListener.h"
-
-#include "OSGMouseAdapter.h"
-#include "OSGKeyAdapter.h"
-#include "OSGMouseMotionAdapter.h"
-
-#include "OSGEventConnection.h"
 #include "OSGBoundedRangeModel.h"
 
 OSG_BEGIN_NAMESPACE
@@ -93,13 +86,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Slider : public SliderBase
     /*! \}                                                                 */
 	
     virtual void updateLayout(void);
-
-    //Adds a listener to the list that is notified each time a change to the model occurs.
-    EventConnection addChangeListener(ChangeListenerPtr l);
-	bool isChangeListenerAttached(ChangeListenerPtr l) const;
-
-    //Removes a ChangeListener from this spinner.
-    void removeChangeListener(ChangeListenerPtr l);
 
 	//Creates a hashtable that will draw text labels starting at the slider minimum using the increment specified.
 	FieldContainerMap createStandardLabels(UInt32 increment);
@@ -174,41 +160,18 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Slider : public SliderBase
 	
 	/*! \}                                                                 */
     
-    //Listener for getting change updates of the BoundedRangeModel
-	class BoundedRangeModelChangeListener : public ChangeListener
-	{
-	public:
-		BoundedRangeModelChangeListener(SliderRefPtr TheSlider);
-        virtual void stateChanged(const ChangeEventUnrecPtr e);
-	private:
-		SliderRefPtr _Slider;
-	};
-
-	friend class BoundedRangeModelChangeListener;
-
-	BoundedRangeModelChangeListener _BoundedRangeModelChangeListener;
-    EventConnection _RangeModelConnection;
+    void handleRangeModelStateChanged(ChangeEventDetails* const e);
+    boost::signals2::connection _RangeModelStateChangedConnection;
 	
-	class KnobDraggedListener : public MouseMotionAdapter, public MouseAdapter, public KeyAdapter
-	{
-	public :
-		KnobDraggedListener(SliderRefPtr TheSlider);
-		virtual void mouseDragged(const MouseEventUnrecPtr e);
-		
-		virtual void mousePressed(const MouseEventUnrecPtr e);
-		virtual void mouseReleased(const MouseEventUnrecPtr e);
-		
-		virtual void keyTyped(const KeyEventUnrecPtr e);
-
-		void disconnect(void);
-	protected :
-		SliderRefPtr _Slider;
-		Int32 _InitialValue;
-	};
-
-	friend class _KnobDraggedListener;
-
-	KnobDraggedListener _KnobDraggedListener;
+	void handleKnobDragMouseDragged(MouseEventDetails* const e);
+	void handleKnobMousePressed(MouseEventDetails* const e);
+	void handleKnobDragMouseReleased(MouseEventDetails* const e);
+	void handleKnobDragKeyTyped(KeyEventDetails* const e);
+    boost::signals2::connection _KnobDragMouseDraggedConnection,
+                                _KnobMousePressedConnection,
+                                _KnobDragMouseReleasedConnection,
+                                _KnobDragkeyTypedConnection;
+    Int32 _InitialValue;
 
 	void updateSliderTrack(void);
 
@@ -217,7 +180,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Slider : public SliderBase
 	Int32 getTrackMax(void) const;
 
 	Pnt2f calculateSliderAlignment(const Pnt2f& Position1, const Vec2f& Size1, const Vec2f& Size2, const Real32& VAlign, const Real32& HAlign);
-	virtual void drawInternal(const GraphicsWeakPtr Graphics, Real32 Opacity = 1.0f) const;
+	virtual void drawInternal(Graphics* const Graphics, Real32 Opacity = 1.0f) const;
 
 	Pnt2f getSliderTrackTopLeft(void) const;
 	Vec2f getSliderTrackSize(void) const;

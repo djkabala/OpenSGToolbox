@@ -40,10 +40,4 @@
 
 OSG_BEGIN_NAMESPACE
 
-inline
-SpinnerDefaultEditor::EditorTextFieldListener::EditorTextFieldListener(SpinnerDefaultEditorRefPtr TheSpinnerDefaultEditor) :
-   _SpinnerDefaultEditor(TheSpinnerDefaultEditor)
-{
-}
-
 OSG_END_NAMESPACE

@@ -85,35 +85,55 @@ void Spinner::initMethod(InitPhase ePhase)
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
-
-EventConnection Spinner::addChangeListener(ChangeListenerPtr l)
-{
-    return _Model->addChangeListener(l);
-}
-
 void Spinner::updateLayout(void)
 {
+    Pnt2f Pos;
+    Vec2f Size;
     if(getOrientation() == Spinner::VERTICAL_ORIENTATION)
     {
         //Next Button
         if(getNextButton() != NULL)
         {
-            getNextButton()->setSize(Vec2f(getNextButton()->getPreferredSize().x(), getSize().y()/2));
-            getNextButton()->setPosition(Pnt2f(getSize().x() - getNextButton()->getSize().x(), 0));
+            Size.setValues(getNextButton()->getPreferredSize().x(), getSize().y()/2);
+            if(getNextButton()->getSize() != Size)
+            {
+                getNextButton()->setSize(Size);
+            }
+            Pos.setValues(getSize().x() - getNextButton()->getSize().x(), 0);
+            if(getNextButton()->getPosition() != Pos)
+            {
+                getNextButton()->setPosition(Pos);
+            }
         }
 
         //Previous Button
         if(getPreviousButton() != NULL)
         {
-            getPreviousButton()->setSize(Vec2f(getPreviousButton()->getPreferredSize().x(), getSize().y()/2));
-            getPreviousButton()->setPosition(Pnt2f(getSize().x() - getPreviousButton()->getSize().x(), getSize().y()/2));
+            Size.setValues(getPreviousButton()->getPreferredSize().x(), getSize().y()/2);
+            if(getPreviousButton()->getSize() != Size)
+            {
+                getPreviousButton()->setSize(Size);
+            }
+            Pos.setValues(getSize().x() - getPreviousButton()->getSize().x(), getSize().y()/2);
+            if(getPreviousButton()->getPosition() != Pos)
+            {
+                getPreviousButton()->setPosition(Pos);
+            }
         }
 
         //Editor
         if(getEditor() != NULL)
         {
-            getEditor()->setSize(Vec2f(getSize().x() - getNextButton()->getSize().x() - getEditorToButtonOffset(), getSize().y()));
-            getEditor()->setPosition(Pnt2f(0,0));
+            Size.setValues(getSize().x() - getNextButton()->getSize().x() - getEditorToButtonOffset(), getSize().y());
+            if(getEditor()->getSize() != Size)
+            {
+                getEditor()->setSize(Size);
+            }
+            Pos.setValues(0,0);
+            if(getEditor()->getPosition() != Pos)
+            {
+                getEditor()->setPosition(Pos);
+            }
         }
 
     }
@@ -122,27 +142,51 @@ void Spinner::updateLayout(void)
         //Next Button
         if(getNextButton() != NULL)
         {
-            getNextButton()->setSize(Vec2f(getSize().x()/2, getNextButton()->getPreferredSize().y()));
-            getNextButton()->setPosition(Pnt2f(0, getSize().y() - getNextButton()->getSize().y()));
+            Size.setValues(getSize().x()/2, getNextButton()->getPreferredSize().y());
+            if(getNextButton()->getSize() != Size)
+            {
+                getNextButton()->setSize(Size);
+            }
+            Pos.setValues(0, getSize().y() - getNextButton()->getSize().y());
+            if(getNextButton()->getPosition() != Pos)
+            {
+                getNextButton()->setPosition(Pos);
+            }
         }
 
         //Previous Button
         if(getPreviousButton() != NULL)
         {
-            getPreviousButton()->setSize(Vec2f(getSize().x()/2, getPreviousButton()->getPreferredSize().y()));
-            getPreviousButton()->setPosition(Pnt2f(getSize().x()/2, getSize().y() - getPreviousButton()->getSize().y()));
+            Size.setValues(getSize().x()/2, getPreviousButton()->getPreferredSize().y());
+            if(getPreviousButton()->getSize() != Size)
+            {
+                getPreviousButton()->setSize(Size);
+            }
+            Pos.setValues(getSize().x()/2, getSize().y() - getPreviousButton()->getSize().y());
+            if(getPreviousButton()->getPosition() != Pos)
+            {
+                getPreviousButton()->setPosition(Pos);
+            }
         }
 
         //Editor
         if(getEditor() != NULL)
         {
-            getEditor()->setSize(Vec2f(getSize().x(), getSize().y() - getNextButton()->getSize().y() - getEditorToButtonOffset()));
-            getEditor()->setPosition(Pnt2f(0,0));
+            Size.setValues(getSize().x(), getSize().y() - getNextButton()->getSize().y() - getEditorToButtonOffset());
+            if(getEditor()->getSize() != Size)
+            {
+                getEditor()->setSize(Size);
+            }
+            Pos.setValues(0,0);
+            if(getEditor()->getPosition() != Pos)
+            {
+                getEditor()->setPosition(Pos);
+            }
         }
     }
 }
 
-ComponentRefPtr Spinner::createEditor(SpinnerModelPtr model)
+ComponentTransitPtr Spinner::createEditor(SpinnerModelPtr model)
 {
     //TODO: Implement
     SpinnerDefaultEditorRefPtr TheEditor;
@@ -158,14 +202,14 @@ ComponentRefPtr Spinner::createEditor(SpinnerModelPtr model)
     {
         TheEditor = SpinnerDefaultEditor::create();
     }
-    TheEditor->setSpinner(SpinnerRefPtr(this));
-    return TheEditor;
+    TheEditor->setSpinner(this);
+    return ComponentTransitPtr(TheEditor.get());
 }
 
 void Spinner::setModel(SpinnerModelPtr model)
 {
     _Model = model;
-    setEditor(createEditor(_Model));
+    setEditor(ComponentUnrecPtr(createEditor(_Model)));
 }
 
 void Spinner::setEditable(bool Editable)
@@ -214,20 +258,24 @@ void Spinner::onDestroy()
 {
 }
 
+void Spinner::resolveLinks(void)
+{
+    Inherited::resolveLinks();
+
+    _NextButtonActionConnection.disconnect();
+    _PreviousButtonActionConnection.disconnect();
+}
+
 /*----------------------- constructors & destructors ----------------------*/
 
 Spinner::Spinner(void) :
-    Inherited(),
-    _NextButtonActionListener(this),
-    _PreviousButtonActionListener(this)
+    Inherited()
 {
 }
 
 Spinner::Spinner(const Spinner &source) :
     Inherited(source),
-    _Model(source._Model),
-    _NextButtonActionListener(this),
-    _PreviousButtonActionListener(this)
+    _Model(source._Model)
 {
 }
 
@@ -263,14 +311,22 @@ void Spinner::changed(ConstFieldMaskArg whichField,
 
     }
 
-    if(whichField & NextButtonFieldMask && getNextButton() != NULL)
+    if(whichField & NextButtonFieldMask)
     {
-        getNextButton()->addMousePressedActionListener(&_NextButtonActionListener);
+        _NextButtonActionConnection.disconnect();
+        if(getNextButton() != NULL)
+        {
+            _NextButtonActionConnection = getNextButton()->connectMousePressedActionPerformed(boost::bind(&Spinner::handleNextButtonAction, this, _1));
+        }
     }
 
-    if(whichField & PreviousButtonFieldMask && getPreviousButton() != NULL)
+    if(whichField & PreviousButtonFieldMask)
     {
-        getPreviousButton()->addMousePressedActionListener(&_PreviousButtonActionListener);
+        _PreviousButtonActionConnection.disconnect();
+        if(getPreviousButton() != NULL)
+        {
+            _PreviousButtonActionConnection = getPreviousButton()->connectMousePressedActionPerformed(boost::bind(&Spinner::handlePreviousButtonAction, this, _1));
+        }
     }
 }
 
@@ -280,21 +336,21 @@ void Spinner::dump(      UInt32    ,
     SLOG << "Dump Spinner NI" << std::endl;
 }
 
-void Spinner::NextButtonActionListener::actionPerformed(const ActionEventUnrecPtr e)
+void Spinner::handleNextButtonAction(ActionEventDetails* const e)
 {
-    boost::any NewValue(_Spinner->getNextValue());
+    boost::any NewValue(getNextValue());
     if(!NewValue.empty())
     {
-        _Spinner->setValue(NewValue);
+        setValue(NewValue);
     }
 }
 
-void Spinner::PreviousButtonActionListener::actionPerformed(const ActionEventUnrecPtr e)
+void Spinner::handlePreviousButtonAction(ActionEventDetails* const e)
 {
-    const boost::any& NewValue(_Spinner->getPreviousValue());
+    const boost::any& NewValue(getPreviousValue());
     if(!NewValue.empty())
     {
-        _Spinner->setValue(NewValue);
+        setValue(NewValue);
     }
 }
 

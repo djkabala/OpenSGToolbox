@@ -80,17 +80,26 @@ class OSG_CONTRIBLUA_DLLMAPPING LuaActivity : public LuaActivityBase
 
     /*! \}                                                                 */
 
-    virtual void eventProduced(const EventUnrecPtr EventDetails, UInt32 ProducedEventId);
+    virtual void eventProduced(EventDetails* const details,
+                               UInt32 producedEventId);
 
     static FieldContainerTransitPtr createLuaActivity( const BoostPath& FilePath );
 
-    static LuaActivityRefPtr addLuaCallback(FieldContainerRefPtr producerObject,
+    static boost::signals2::connection addLuaCallback(FieldContainerRefPtr producerObject,
                                             std::string funcName,
-                                            UInt32 producedMethodId);
+                                            UInt32 producedEventId);
+    
+    static boost::signals2::connection addLuaCallback(FieldContainerRefPtr producerObject,
+                                            std::string funcName,
+                                            const std::string& producedEventName);
 
     static void removeLuaCallback(FieldContainerRefPtr producerObject,
-                                  LuaActivityRefPtr toRemove,
-                                  UInt32 producedMethodId);
+                                  std::string funcName,
+                                  UInt32 producedEventId);
+    
+    static void removeLuaCallback(FieldContainerRefPtr producerObject,
+                                  std::string funcName,
+                                  const std::string& producedEventName);
 
     /*=========================  PROTECTED  ===============================*/
 
@@ -120,6 +129,25 @@ class OSG_CONTRIBLUA_DLLMAPPING LuaActivity : public LuaActivityBase
     static void initMethod(InitPhase ePhase);
 
     /*! \}                                                                 */
+    std::vector< std::string > _EntryFunctionPath;
+
+    struct LuaFuncGroup
+    {
+        LuaFuncGroup(FieldContainer* EventProducer, std::string Function, UInt32 ProducedEventID);
+        
+        FieldContainer* _EventProducer;
+        std::string     _Function;
+        UInt32          _ProducedEventID;
+    };
+
+    struct LuaFuncComp
+    {
+        bool operator()(const LuaFuncGroup& Left, const LuaFuncGroup& Right) const;
+    };
+
+    typedef std::pair<LuaActivityUnrecPtr, boost::signals2::connection> ActivityConnectionPair;
+    typedef std::map<LuaFuncGroup, ActivityConnectionPair, LuaFuncComp > FuncMap;
+    static FuncMap _GlobalLuaActivities;
     /*==========================  PRIVATE  ================================*/
 
   private:

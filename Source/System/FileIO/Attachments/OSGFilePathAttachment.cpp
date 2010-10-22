@@ -48,7 +48,7 @@
 #include "OSGFilePathAttachment.h"
 #include "OSGImageFileHandler.h"
 #include "OSGSceneFileHandler.h"
-#include "OSGProxyGroup.h"
+//#include "OSGProxyGroup.h"
 #include "OSGFCFileHandler.h"
 
 #include <boost/filesystem/operations.hpp>
@@ -119,7 +119,7 @@ void   FilePathAttachment::setFilePath(      AttachmentContainer*  container,
 
     if(att != NULL)
     {
-        container->subAttachment(PathAttachment);
+        container->subAttachment(att);
     }
 
     PathAttachment = FilePathAttachment::create();
@@ -156,6 +156,17 @@ bool isFileXML(std::string FilePath)
     return Extension.compare("xml") == 0;
 }
 
+bool FilePathAttachment::shouldUseOnlyFileHandler(const FieldContainerType &FCType)
+{
+    //Check Handler first
+    if(_HandlerMap.find(FCType.getCName()) != _HandlerMap.end())
+    {
+        return (_HandlerMap.find(FCType.getCName())->second.second);
+    }
+
+    return true;
+}
+
 FieldContainerUnrecPtr FilePathAttachment::loadFromFilePath(BoostPath &LoadFilePath, const FieldContainerType &FCType)
 {
     FieldContainerUnrecPtr Result(NULL);
@@ -166,7 +177,7 @@ FieldContainerUnrecPtr FilePathAttachment::loadFromFilePath(BoostPath &LoadFileP
             //Check Handler first
             if(_HandlerMap.find(FCType.getCName()) != _HandlerMap.end())
             {
-                Result = (_HandlerMap.find(FCType.getCName())->second)(LoadFilePath);
+                Result = (_HandlerMap.find(FCType.getCName())->second.first)(LoadFilePath);
             }
 
             //Image
@@ -191,7 +202,7 @@ FieldContainerUnrecPtr FilePathAttachment::loadFromFilePath(BoostPath &LoadFileP
                 Result = TheNode;
             }
             //ProxyGroup Core
-            else if(FCType.isDerivedFrom(ProxyGroup::getClassType()))
+            /*else if(FCType.isDerivedFrom(ProxyGroup::getClassType()))
             {
                 ProxyGroupUnrecPtr TheProxyGroup = ProxyGroup::create();
                 TheProxyGroup->setUrl(LoadFilePath.string().c_str());
@@ -199,7 +210,7 @@ FieldContainerUnrecPtr FilePathAttachment::loadFromFilePath(BoostPath &LoadFileP
                 TheProxyGroup->setConcurrentLoad(true);
 
                 Result = TheProxyGroup;
-            }
+            }*/
 
             //If not loaded, try loading as a generic FC file
             if(Result == NULL && isFileXML(LoadFilePath.string()))  //Other
@@ -224,10 +235,18 @@ FieldContainerUnrecPtr FilePathAttachment::loadFromFilePath(BoostPath &LoadFileP
         return NULL;
     }
 
+    if(Result != NULL &&
+       Result->getType().isDerivedFrom(AttachmentContainer::getClassType()))
+    {
+        setFilePath(dynamic_pointer_cast<AttachmentContainer>(Result), LoadFilePath);
+    }
+
     return Result;
 }
 
-bool FilePathAttachment::registerHandler(const FieldContainerType& TheType, FileAttachmentHandler TheHandler)
+bool FilePathAttachment::registerHandler(const FieldContainerType& TheType,
+                                 FileAttachmentHandler TheHandler,
+                                 bool UseOnlyFileHandler)
 {
     if(_HandlerMap.find(TheType.getCName()) != _HandlerMap.end())
     {
@@ -236,7 +255,7 @@ bool FilePathAttachment::registerHandler(const FieldContainerType& TheType, File
     }
     else
     {
-        _HandlerMap[TheType.getCName()] = TheHandler;
+        _HandlerMap[TheType.getCName()] = HandlerPair(TheHandler,UseOnlyFileHandler);
         return true;
     }
 }

@@ -77,32 +77,7 @@ void DefaultComboBoxEditor::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-EventConnection DefaultComboBoxEditor::addActionListener(ActionListenerPtr Listener)
-{
-	if(getEditor() != NULL)
-	{
-		return getEditor()->addActionListener(Listener);
-	}
-    return EventConnection();
-}
-
-void DefaultComboBoxEditor::removeActionListener(ActionListenerPtr Listener)
-{
-	if(getEditor() != NULL)
-	{
-		getEditor()->removeActionListener(Listener);
-	}
-}
-
-bool DefaultComboBoxEditor::isActionListenerAttached(ActionListenerPtr Listener) const
-{
-	if(getEditor() != NULL)
-	{
-		return getEditor()->isActionListenerAttached(Listener);
-	}
-}
-
-ComponentRefPtr DefaultComboBoxEditor::getEditorComponent(void)
+Component* DefaultComboBoxEditor::getEditorComponent(void)
 {
 	return getEditor();
 }
@@ -114,7 +89,6 @@ boost::any DefaultComboBoxEditor::getItem(void)
 
 void DefaultComboBoxEditor::selectAll(void)
 {
-	//TODO: Implement
 	if(getEditor() != NULL)
 	{
 		getEditor()->selectAll();
@@ -134,6 +108,19 @@ void DefaultComboBoxEditor::setItem(const boost::any& anObject)
         //Could not convert to string
     }
     getEditor()->setText(TheText);
+}
+
+boost::signals2::connection DefaultComboBoxEditor::connectActionPerformed(const Button::ActionPerformedEventType::slot_type &listener,
+                                           boost::signals2::connect_position at)
+{
+    return getEditor()->connectActionPerformed(listener, at);
+}
+
+boost::signals2::connection DefaultComboBoxEditor::connectActionPerformed(const Button::ActionPerformedEventType::group_type &group,
+                                                       const Button::ActionPerformedEventType::slot_type &listener,
+                                                       boost::signals2::connect_position at)
+{
+    return getEditor()->connectActionPerformed(group, listener, at);
 }
 
 /*-------------------------------------------------------------------------*\
@@ -158,14 +145,12 @@ void DefaultComboBoxEditor::onDestroy()
 /*----------------------- constructors & destructors ----------------------*/
 
 DefaultComboBoxEditor::DefaultComboBoxEditor(void) :
-    Inherited(),
-    _TextFieldListener(this)
+    Inherited()
 {
 }
 
 DefaultComboBoxEditor::DefaultComboBoxEditor(const DefaultComboBoxEditor &source) :
-    Inherited(source),
-    _TextFieldListener(this)
+    Inherited(source)
 {
 }
 
@@ -183,7 +168,8 @@ void DefaultComboBoxEditor::changed(ConstFieldMaskArg whichField,
 
 	if((whichField & EditorFieldMask) && getEditor() != NULL)
 	{
-		getEditor()->addFocusListener(&_TextFieldListener);
+        _TextFieldFocusGainedConnection = getEditor()->connectFocusGained(boost::bind(&DefaultComboBoxEditor::handleTextFieldFocusGained, this, _1));
+        _TextFieldFocusLostConnection = getEditor()->connectFocusLost(boost::bind(&DefaultComboBoxEditor::handleTextFieldFocusLost, this, _1));
 	}
 }
 
@@ -193,13 +179,13 @@ void DefaultComboBoxEditor::dump(      UInt32    ,
     SLOG << "Dump DefaultComboBoxEditor NI" << std::endl;
 }
 
-void DefaultComboBoxEditor::TextFieldListener::focusGained(const FocusEventUnrecPtr e)
+void DefaultComboBoxEditor::handleTextFieldFocusGained(FocusEventDetails* const e)
 {
 	//TODO: Implement
-	_DefaultComboBoxEditor->selectAll();
+	selectAll();
 }
 
-void DefaultComboBoxEditor::TextFieldListener::focusLost(const FocusEventUnrecPtr e)
+void DefaultComboBoxEditor::handleTextFieldFocusLost(FocusEventDetails* const e)
 {
 	//TODO: Implement
 }

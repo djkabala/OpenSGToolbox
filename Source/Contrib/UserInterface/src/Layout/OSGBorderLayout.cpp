@@ -76,7 +76,7 @@ void BorderLayout::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void BorderLayout::updateLayout(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+void BorderLayout::updateLayout(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
 	Pnt2f borderTopLeft, borderBottomRight;
 	dynamic_cast<const ComponentContainer*>(ParentComponent)->getInsideInsetsBounds(borderTopLeft, borderBottomRight);
@@ -114,6 +114,7 @@ void BorderLayout::updateLayout(const MFUnrecComponentPtr* Components, const Com
 			}
 		}
 	}
+    Pnt2f Pos;
 	// this second pass sets its size and draws them
 	for(UInt32 i = 0 ; i<Components->size(); ++i)
     {
@@ -213,13 +214,20 @@ void BorderLayout::updateLayout(const MFUnrecComponentPtr* Components, const Com
 			size[0] = osgMin(osgMax(size[0], (*Components)[i]->getMinSize().x()), (*Components)[i]->getMaxSize().x());
 			size[1] = osgMin(osgMax(size[1], (*Components)[i]->getMinSize().y()), (*Components)[i]->getMaxSize().y());
             // now set the position and size of the button
-            (*Components)[i]->setSize(size);
-            (*Components)[i]->setPosition(borderTopLeft + Vec2f(offset));
+            if((*Components)[i]->getSize() != size)
+            {
+                (*Components)[i]->setSize(size);
+            }
+            Pos = borderTopLeft + Vec2f(offset);
+            if((*Components)[i]->getPosition() != Pos)
+            {
+                (*Components)[i]->setPosition(Pos);
+            }
 		}
 	}
 }
 
-Vec2f BorderLayout::layoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
+Vec2f BorderLayout::layoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
 {
     Vec2f Result(0.0,0.0);
 
@@ -268,22 +276,22 @@ Vec2f BorderLayout::layoutSize(const MFUnrecComponentPtr* Components, const Comp
     return Result;
 }
 
-Vec2f BorderLayout::minimumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f BorderLayout::minimumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MIN_SIZE);
 }
 
-Vec2f BorderLayout::requestedContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f BorderLayout::requestedContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, REQUESTED_SIZE);
 }
 
-Vec2f BorderLayout::preferredContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f BorderLayout::preferredContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, PREFERRED_SIZE);
 }
 
-Vec2f BorderLayout::maximumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f BorderLayout::maximumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MAX_SIZE);
 }

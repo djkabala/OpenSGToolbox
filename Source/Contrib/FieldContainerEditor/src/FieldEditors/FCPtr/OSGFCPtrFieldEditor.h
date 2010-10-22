@@ -43,9 +43,11 @@
 #endif
 
 #include "OSGFCPtrFieldEditorBase.h"
-#include "OSGTextField.h"
-#include "OSGMenuButton.h"
-#include "OSGDialogWindowListener.h"
+#include "OSGTextFieldFields.h"
+#include "OSGMenuButtonFields.h"
+#include "OSGLabelFields.h"
+#include "OSGActionEventDetailsFields.h"
+#include "OSGDialogWindowEventDetailsFields.h"
 #include "OSGFCPtrEditorStore.h"
 
 OSG_BEGIN_NAMESPACE
@@ -125,6 +127,13 @@ class OSG_CONTRIBFIELDCONTAINEREDITOR_DLLMAPPING FCPtrFieldEditor : public FCPtr
 	void onDestroy();
 	
 	/*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                       Sync                                   */
+    /*! \{                                                                 */
+
+    virtual void resolveLinks(void);
+
+    /*! \}                                                                 */
     virtual bool internalAttachField (FieldContainer* fc, UInt32 fieldId, UInt32 index);
     virtual bool internalDettachField(void);
 
@@ -135,76 +144,31 @@ class OSG_CONTRIBFIELDCONTAINEREDITOR_DLLMAPPING FCPtrFieldEditor : public FCPtr
     virtual void updateLayout(void);
 
     static std::vector<const DataType*> _EditableTypes;
+    LabelRefPtr _NameTypeLabel;
     TextFieldRefPtr _EditingTextField;
     MenuButtonRefPtr _EditingMenuButton;
     std::string _InitialValue;
     
-    class TextFieldListener : public FocusListener, public ActionListener, public KeyAdapter
-    {
-      public :
-           TextFieldListener(FCPtrFieldEditor * ptr);
-           virtual void focusGained    (const FocusEventUnrecPtr  e);
-           virtual void focusLost      (const FocusEventUnrecPtr  e);
-           virtual void actionPerformed(const ActionEventUnrecPtr e);
-           virtual void keyTyped       (const KeyEventUnrecPtr    e);
+    virtual void openCreateHandler(void);
+    virtual void openFindContainerHandler(void);
 
-      protected :
-        FCPtrFieldEditor *_FCPtrFieldEditor;
-    };
+    void handleTextFieldFocusGained    (FocusEventDetails* const details);
+    void handleTextFieldFocusLost      (FocusEventDetails* const details);
+    void handleTextFieldActionPerformed(ActionEventDetails* const details);
+    void handleTextFieldKeyTyped       (KeyEventDetails* const details);
+    boost::signals2::connection _TextFieldFocusGainedConnection,
+                                _TextFieldFocusLostConnection,
+                                _TextFieldActionPerformedConnection,
+                                _TextFieldKeyTypedConnection;
 
-    friend class TextFieldListener;
+    void handleMenuButtonAction(ActionEventDetails* const details);
+    boost::signals2::connection _MenuButtonActionConnection;
 
-    TextFieldListener _TextFieldListener;
+    void handleCreateContainerDialogClosed(DialogWindowEventDetails* const details);
+    boost::signals2::connection _CreateContainerDialogClosedConnection;
 
-    class MenuButtonFieldListener : public ActionListener
-    {
-      public :
-           MenuButtonFieldListener(FCPtrFieldEditor * ptr);
-           virtual void actionPerformed(const ActionEventUnrecPtr e);
-
-      protected :
-        FCPtrFieldEditor *_FCPtrFieldEditor;
-    };
-
-    MenuButtonFieldListener _MenuButtonFieldListener;
-    void handleMenuSelected(const ActionEventUnrecPtr e);
-
-    class CreateContainerDialogListener : public DialogWindowListener
-    {
-      public:
-        CreateContainerDialogListener(FCPtrFieldEditor * ptr);
-
-        virtual void dialogClosing(const DialogWindowEventUnrecPtr e);
-
-        virtual void dialogClosed(const DialogWindowEventUnrecPtr e);
-
-      protected :
-        FCPtrFieldEditor *_FCPtrFieldEditor;
-    };
-    friend class CreateContainerDialogListener;
-
-    CreateContainerDialogListener _CreateContainerDialogListener;
-
-    void handleCreateContainerClosed(const DialogWindowEventUnrecPtr e);
-
-    class FindContainerDialogListener : public DialogWindowListener
-    {
-      public:
-        FindContainerDialogListener(FCPtrFieldEditor * ptr);
-
-        virtual void dialogClosing(const DialogWindowEventUnrecPtr e);
-
-        virtual void dialogClosed(const DialogWindowEventUnrecPtr e);
-
-      protected :
-        FCPtrFieldEditor *_FCPtrFieldEditor;
-    };
-    friend class FindContainerDialogListener;
-
-    FindContainerDialogListener _FindContainerDialogListener;
-
-    void handleFindContainerClosed(const DialogWindowEventUnrecPtr e);
-
+    void handleFindContainerDialogClosed(DialogWindowEventDetails* const details);
+    boost::signals2::connection _FindContainerDialogClosedConnection;
 
     FCPtrEditorStorePtr _FindFCStore;
 

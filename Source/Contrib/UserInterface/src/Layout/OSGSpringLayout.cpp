@@ -88,7 +88,8 @@ bool SpringLayout::xmlReadHandler (rapidxml::xml_node<char>& SpringLayoutRoot, c
 {
 	rapidxml::xml_attribute<char> *curAttribute;
 
-	ComponentRefPtr Component1RefPtr, Component2RefPtr;
+	Component* Component1RefPtr;
+    Component* Component2RefPtr;
 	LayoutSpringRefPtr LayoutSpring1RefPtr;
 	XMLFCFileType::IDLookupMap::const_iterator IDItor;
 
@@ -192,7 +193,7 @@ bool SpringLayout::xmlWriteHandler (const FieldContainerRefPtr& SpringLayoutFC)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void SpringLayout::updateLayout(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+void SpringLayout::updateLayout(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
 	Pnt2f ParentInsetsTopLeft, ParentInsetsBottomRight;
 	dynamic_cast<const ComponentContainer*>(ParentComponent)->getInsideInsetsBounds(ParentInsetsTopLeft, ParentInsetsBottomRight);
@@ -216,13 +217,25 @@ void SpringLayout::updateLayout(const MFUnrecComponentPtr* Components, const Com
         Real32 width = getDecycledSpring(TheConstraints->getWidth())->getValue();
         Real32 height = getDecycledSpring(TheConstraints->getHeight())->getValue();
         
+        if((*Components)[i]->getPosition().x() != x ||
+           (*Components)[i]->getPosition().y() != y)
+        {
             (*Components)[i]->setPosition(Pnt2f(x,y));
+        }
+        if((*Components)[i]->getSize().x() != width ||
+           (*Components)[i]->getSize().y() != height)
+        {
             (*Components)[i]->setSize(Vec2f(width, height));
+        }
      }
 }
 
+void SpringLayout::clearConstraints(void)
+{
+    editConstraints().clear();
+}
 
-Vec2f SpringLayout::minimumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f SpringLayout::minimumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     /*SpringLayoutConstraintsRefPtr TheConstraints = getConstraint( ParentComponent );
     Real32 width = getDecycledSpring(TheConstraints->getWidth())->getMinimumValue();
@@ -232,7 +245,7 @@ Vec2f SpringLayout::minimumContentsLayoutSize(const MFUnrecComponentPtr* Compone
     return ParentComponent->getMinSize();
 }
 
-Vec2f SpringLayout::requestedContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f SpringLayout::requestedContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     /*SpringLayoutConstraintsRefPtr TheConstraints = getConstraint( ParentComponent );
     Real32 width = getDecycledSpring(TheConstraints->getWidth())->getPreferredValue();
@@ -242,7 +255,7 @@ Vec2f SpringLayout::requestedContentsLayoutSize(const MFUnrecComponentPtr* Compo
     return ParentComponent->getPreferredSize();
 }
 
-Vec2f SpringLayout::preferredContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f SpringLayout::preferredContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     /*SpringLayoutConstraintsRefPtr TheConstraints = getConstraint( ParentComponent );
     Real32 width = getDecycledSpring(TheConstraints->getWidth())->getPreferredValue();
@@ -252,7 +265,7 @@ Vec2f SpringLayout::preferredContentsLayoutSize(const MFUnrecComponentPtr* Compo
     return ParentComponent->getPreferredSize();
 }
 
-Vec2f SpringLayout::maximumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f SpringLayout::maximumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     /*SpringLayoutConstraintsRefPtr TheConstraints = getConstraint( ParentComponent );
     Real32 width = getDecycledSpring(TheConstraints->getWidth())->getMaximumValue();
@@ -288,7 +301,7 @@ bool SpringLayout::isCyclic(const LayoutSpring* TheSpring) const
     return Result;
 }
 
-SpringLayoutConstraintsRefPtr SpringLayout::getConstraint(ComponentUnrecPtr TheComponent) const
+SpringLayoutConstraintsRefPtr SpringLayout::getConstraint(Component* const TheComponent) const
 {
     FieldContainerMap::const_iterator
         SearchItor(getConstraints().find(static_cast<FieldContainerMap::key_type>(TheComponent->getId())));
@@ -309,7 +322,7 @@ SpringLayoutConstraintsRefPtr SpringLayout::getConstraint(ComponentUnrecPtr TheC
     }
 }
 
-LayoutSpringRefPtr SpringLayout::getConstraint(const UInt32 Edge, ComponentUnrecPtr TheComponent) const
+LayoutSpringRefPtr SpringLayout::getConstraint(const UInt32 Edge, Component* const TheComponent) const
 {
     ProxyLayoutSpringUnrecPtr ConstPtr(ProxyLayoutSpring::create(Edge,
                                                                  TheComponent,
@@ -317,12 +330,12 @@ LayoutSpringRefPtr SpringLayout::getConstraint(const UInt32 Edge, ComponentUnrec
     return ConstPtr;
 }
 
-void SpringLayout::putConstraint(const UInt32 e1, ComponentRefPtr c1, const Real32& pad, const UInt32 e2, ComponentRefPtr c2)
+void SpringLayout::putConstraint(const UInt32 e1, Component* const c1, const Real32& pad, const UInt32 e2, Component* const c2)
 {
     putConstraint(e1, c1, LayoutSpring::constant(pad), e2, c2);
 }
 
-void SpringLayout::putConstraint(const UInt32 e1, ComponentRefPtr c1, LayoutSpringRefPtr s, const UInt32 e2, ComponentRefPtr c2)
+void SpringLayout::putConstraint(const UInt32 e1, Component* const c1, LayoutSpringRefPtr s, const UInt32 e2, Component* const c2)
 {
     putConstraint(e1, c1, LayoutSpring::sum(s, getConstraint(e2, c2)));
 }
@@ -331,7 +344,7 @@ void SpringLayout::putConstraint(const UInt32 e1, ComponentRefPtr c1, LayoutSpri
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
 
-void SpringLayout::putConstraint(const UInt32 e, ComponentRefPtr c, LayoutSpringRefPtr s)
+void SpringLayout::putConstraint(const UInt32 e, Component* const c, LayoutSpringRefPtr s)
 {
     if(s != NULL)
     {
@@ -381,7 +394,7 @@ void SpringLayout::setParent(ComponentContainerRefPtr p)
     }
 }
 
-SpringLayoutConstraintsRefPtr SpringLayout::applyDefaults(ComponentUnrecPtr c, SpringLayoutConstraintsRefPtr constraints)
+SpringLayoutConstraintsRefPtr SpringLayout::applyDefaults(Component* const c, SpringLayoutConstraintsRefPtr constraints)
 {
     if(constraints == NULL)
     {
@@ -455,6 +468,11 @@ void SpringLayout::changed(ConstFieldMaskArg whichField,
                             BitVector         details)
 {
     Inherited::changed(whichField, origin, details);
+
+    if(whichField & ConstraintsFieldMask)
+    {
+        updateParentContainers();
+    }
 }
 
 void SpringLayout::dump(      UInt32    ,

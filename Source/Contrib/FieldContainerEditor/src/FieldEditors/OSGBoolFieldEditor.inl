@@ -40,9 +40,4 @@
 
 OSG_BEGIN_NAMESPACE
 
-inline
-BoolFieldEditor::CheckboxListener::CheckboxListener(BoolFieldEditor * ptr) : _BoolFieldEditor(ptr)
-{
-}
-
 OSG_END_NAMESPACE

@@ -78,7 +78,7 @@ void ToolTip::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void ToolTip::drawInternal(const GraphicsWeakPtr TheGraphics, Real32 Opacity) const
+void ToolTip::drawInternal(Graphics* const TheGraphics, Real32 Opacity) const
 {
     if(getText() != "" && getFont() != NULL)
     {
@@ -148,7 +148,10 @@ void ToolTip::changed(ConstFieldMaskArg whichField,
     if(whichField & TextFieldMask)
     {
         setPreferredSize(calculatePreferredSize());
-        setSize(getPreferredSize());
+        if(getSize() != getPreferredSize())
+        {
+            setSize(getPreferredSize());
+        }
     }
 }
 

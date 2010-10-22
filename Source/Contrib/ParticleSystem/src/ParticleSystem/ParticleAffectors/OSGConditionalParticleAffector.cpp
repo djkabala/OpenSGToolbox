@@ -81,42 +81,44 @@ bool ConditionalParticleAffector::affect(ParticleSystemRefPtr System, Int32 Part
 {
     bool returnStatus(false), runAffectors(false);
 
-    UInt8 Operator(getConditionalOperator());
+	UInt32 condVal = System->getAttribute(ParticleIndex,getConditionalAttribute());
+
     switch(getConditionalOperator())
     {
-        case 1: // equals
-            if(System->getAttribute(ParticleIndex,getConditionalAttribute()) == getConditionalValue()) 
+        case EQUALS: // equals
+            if(condVal == getConditionalValue()) 
                 runAffectors = true;
             break;
 
-        case 2: // not equal
-            if(System->getAttribute(ParticleIndex,getConditionalAttribute()) != getConditionalValue()) 
+        case NOT_EQUAL: // not equal
+            if(condVal != getConditionalValue()) 
                 runAffectors = true;
             break;
 
-        case 3: // less than
-            if(System->getAttribute(ParticleIndex,getConditionalAttribute()) < getConditionalValue()) 
+        case LESS_THAN: // less than
+            if(condVal < getConditionalValue()) 
                 runAffectors = true;
             break;
 
-        case 4: // greater than
-            if(System->getAttribute(ParticleIndex,getConditionalAttribute()) > getConditionalValue()) 
+        case GREATER_THAN: // greater than
+            if(condVal > getConditionalValue()) 
                 runAffectors = true;
             break;
 
-        case 5: // less than or equal
-            if(System->getAttribute(ParticleIndex,getConditionalAttribute()) <= getConditionalValue()) 
+        case LESS_THAN_EQUAL: // less than or equal
+            if(condVal <= getConditionalValue()) 
                 runAffectors = true;
             break;
 
-        case 6: // greater than or equal
-            if(System->getAttribute(ParticleIndex,getConditionalAttribute()) >= getConditionalValue()) 
+        case GREATER_THAN_EQUAL: // greater than or equal
+            if(condVal >= getConditionalValue()) 
                 runAffectors = true;
             break;
 
         default: // error
             returnStatus = false;
             runAffectors = false;
+            SWARNING << "Operator " << getConditionalOperator() << " not supported." << std::endl;
             break;
     }
 
@@ -125,7 +127,9 @@ bool ConditionalParticleAffector::affect(ParticleSystemRefPtr System, Int32 Part
         for(unsigned int i(0); i < getMFAffectors()->size();i++)
         {
             if(getAffectors(i)->affect(System,ParticleIndex,elps))
+            {
                 returnStatus = true;
+            }
         }
     }
 

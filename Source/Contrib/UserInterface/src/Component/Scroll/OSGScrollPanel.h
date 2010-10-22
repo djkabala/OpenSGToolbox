@@ -43,11 +43,8 @@
 #endif
 
 #include "OSGScrollPanelBase.h"
-#include "OSGAdjustmentListener.h"
-#include "OSGChangeListener.h"
-#include "OSGScrollPanelBase.h"
-#include "OSGButton.h"
-#include "OSGDefaultBoundedRangeModel.h"
+#include "OSGButtonFields.h"
+#include "OSGChangeEventDetailsFields.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -110,11 +107,17 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ScrollPanel : public ScrollPanelBase
     
     virtual void updateLayout(void);
 
-    void setViewComponent(ComponentRefPtr TheComponent);
+    void setViewComponent(Component* const TheComponent);
     Component * getViewComponent  (void) const;
 
     //Mouse Wheel Events
-    virtual void mouseWheelMoved(const MouseWheelEventUnrecPtr e);
+    virtual void mouseWheelMoved(MouseWheelEventDetails* const e);
+
+    //Scrolling
+    void scrollHorizontalUnit(Int32 Units);
+    void scrollHorizontalBlock(Int32 Blocks);
+    void scrollVerticalUnit(Int32 Units);
+    void scrollVerticalBlock(Int32 Blocks);
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -151,39 +154,20 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ScrollPanel : public ScrollPanelBase
 	
 	/*! \}                                                                 */
 
-    //Listener for getting change updates of the UIViewport
-    class ViewportChangeListener : public ChangeListener
-    {
-      public:
-        ViewportChangeListener(ScrollPanelRefPtr TheScrollPanel);
-        virtual void stateChanged(const ChangeEventUnrecPtr e);
-      private:
-        ScrollPanelRefPtr _ScrollPanel;
-    };
+    //UIViewport Changes
+    void handleViewportStateChanged(ChangeEventDetails* const e);
+    boost::signals2::connection _ViewportStateChangedConnection;
 
-    friend class ViewportChangeListener;
-
-    ViewportChangeListener _ViewportChangeListener;
-
-    //Listener for getting change updates of the UIViewport Range Model
-    class ViewportRangeModelChangeListener : public ChangeListener
-    {
-      public:
-        ViewportRangeModelChangeListener(ScrollPanelRefPtr TheScrollPanel);
-        virtual void stateChanged(const ChangeEventUnrecPtr e);
-      private:
-        ScrollPanelRefPtr _ScrollPanel;
-    };
-
-    friend class ViewportRangeModelChangeListener;
-
-    ViewportRangeModelChangeListener _ViewportRangeModelChangeListener;
+    //RangeModel Changes
+    void handleRangeModelStateChanged(ChangeEventDetails* const e);
+    boost::signals2::connection _VertRangeModelStateChangedConnection,
+                                _HorzRangeModelStateChangedConnection;
 
     void updateRangeModels(void);
 
-    ScrollBarRefPtr getVerticalScrollBar(void);
+    ScrollBar* getVerticalScrollBar(void);
 
-    ScrollBarRefPtr getHorizontalScrollBar(void);
+    ScrollBar* getHorizontalScrollBar(void);
     /*==========================  PRIVATE  ================================*/
 
   private:
@@ -201,6 +185,7 @@ OSG_END_NAMESPACE
 
 #include "OSGUIViewport.h"
 #include "OSGScrollBar.h"
+#include "OSGDefaultBoundedRangeModel.h"
 
 #include "OSGScrollPanelBase.inl"
 #include "OSGScrollPanel.inl"

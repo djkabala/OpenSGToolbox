@@ -46,7 +46,8 @@
 #include <OSGConfig.h>
 
 #include "OSGAnimation.h"
-#include "OSGUpdateEvent.h"
+#include "OSGUpdateEventDetails.h"
+#include "OSGStatCollector.h"
 #include <boost/bind.hpp>
 
 OSG_BEGIN_NAMESPACE
@@ -59,6 +60,13 @@ OSG_BEGIN_NAMESPACE
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
+
+StatElemDesc<StatTimeElem> Animation::statAnimUpdateTime("AnimUpdateTime", 
+                                                         "time to update all animations");
+
+StatElemDesc<StatIntElem> Animation::statNAnimations("NAnimations", 
+                                                     "number of animations updated");
+
 
 /***************************************************************************\
  *                           Class methods                                 *
@@ -80,9 +88,9 @@ void Animation::initMethod(InitPhase ePhase)
 
 Real32 Animation::getLength(void) const
 {
-    if(getCycles() > 0)
+    if(getCycling() > 0)
     {
-        return getCycleLength() * getCycles();
+        return getCycleLength() * static_cast<Real32>(getCycling());
     }
     else
     {
@@ -90,12 +98,39 @@ Real32 Animation::getLength(void) const
     }
 }
 
-EventConnection Animation::addAnimationListener(AnimationListenerPtr Listener)
+Real32 Animation::getCycleLength(void) const
 {
-   _AnimationListeners.insert(Listener);
-   return EventConnection(
-       boost::bind(&Animation::isAnimationListenerAttached, this, Listener),
-       boost::bind(&Animation::removeAnimationListener, this, Listener));
+    Real32 UnclippedCycleLength;
+    if(getSpan() > 0.0f)
+    {
+        UnclippedCycleLength = getSpan();
+    }
+    else
+    {
+        UnclippedCycleLength = getUnclippedCycleLength();
+    }
+
+    if(UnclippedCycleLength < 0.0f ||
+       getScale() == 0.0f)
+    {
+        return -1.0f;
+    }
+    else
+    {
+        return UnclippedCycleLength / getScale();
+    }
+}
+
+Real32 Animation::getUnclippedLength(void) const
+{
+    if(getCycling() > 0)
+    {
+        return getUnclippedCycleLength() * static_cast<Real32>(getCycling());
+    }
+    else
+    {
+        return -1.0f;
+    }
 }
 
 void Animation::start(const Time& StartTime)
@@ -107,8 +142,11 @@ void Animation::start(const Time& StartTime)
 
     _CurrentTime = _PrevTime = StartTime;
     setCycles(0);
-    commitChanges();
+    //commitChanges();
     _IsPlaying = true;
+
+    update(0.0);
+
     produceAnimationStarted();
 }
 
@@ -154,29 +192,48 @@ bool Animation::update(const Time& ElapsedTime)
         return false;
     }
 
+    //Increment the updated animations statistic
+    StatIntElem *NAnimationsStatElem = StatCollector::getGlobalElem(statNAnimations);
+    if(NAnimationsStatElem) { NAnimationsStatElem->inc(); }
+
+    //Start the  animation update time statistic
+    StatTimeElem *AnimUpdateTimeStatElem = StatCollector::getGlobalElem(statAnimUpdateTime);
+    if(AnimUpdateTimeStatElem) { AnimUpdateTimeStatElem->start(); }
+
     _CurrentTime += getScale()*ElapsedTime;
     UInt32 PreUpdateCycleCount(getCycles());
 	if(getCycling() < 0 || PreUpdateCycleCount < getCycling())
 	{
-		Real32 CycleLength(getCycleLength()),
-			   t(_CurrentTime + getOffset());
+		Real32 CycleLength(getCycleLength() * getScale());
         
 		//Check if the Animation Time is past the end
-		if(t >= CycleLength)
+		if(_CurrentTime >= CycleLength)
 		{
 			//Update the number of cycles completed
-            setCycles( (CycleLength <= 0.0f) ? (0): (static_cast<UInt32>( osgFloor( t / CycleLength ) )) );
-            commitChanges();
+            setCycles( (CycleLength <= 0.0f) ? (0): (static_cast<UInt32>( osgFloor( _CurrentTime / CycleLength ) )) );
+            //commitChanges();
 		}
-		//Internal Update
+        Real32 t(_CurrentTime);
+
 		if(getCycling() > 0 && getCycles() >= getCycling())
 		{
-			internalUpdate(CycleLength-.0001, _PrevTime);
+            if(getSpan() > 0.0f)
+            {
+                t = getSpan();
+            }
+            t -= 0.0001f;
 		}
 		else
 		{
-			internalUpdate(t, _PrevTime);
+            if(getSpan() > 0.0f)
+            {
+                t -= osgFloor(_CurrentTime/getSpan())*getSpan();
+            }
 		}
+        t += getOffset();
+
+		//Internal Update
+        internalUpdate(t, _PrevTime);
 
 
 		//If the number of cycles has changed
@@ -184,140 +241,90 @@ bool Animation::update(const Time& ElapsedTime)
 		{
 			if(getCycling() > 0 && getCycles() >= getCycling())
 			{
+                //Animation has reached the end
+                //Remove the Animation from it's update producer
                 _UpdateEventConnection.disconnect();
                 _IsPlaying = false;
+
+                //Produce the Ended event
 				produceAnimationEnded();
 			}
 			else
 			{
+                //Animation hasn't finished yet
+                //Produce the Cycled event
 				produceAnimationCycled();
 			}
 		}
 	}
 
     _PrevTime = _CurrentTime;
+
+    //Stp[ the  animation update time statistic
+    if(AnimUpdateTimeStatElem) { AnimUpdateTimeStatElem->stop(); }
+
 	//Return true if the animation has completed its number of cycles, false otherwise
 	return (getCycling() > 0 && getCycles() >= getCycling());
 }
 
-//bool Animation::update(const AnimationAdvancerPtr& advancer)
-//{
-	//UInt32 PreUpdateCycleCount(getCycles());
-	//if(getCycling() < 0 || PreUpdateCycleCount < getCycling())
-	//{
-		//Real32 CycleLength(getCycleLength()),
-			   //t(advancer->getValue());
-        
-		////Check if the Animation Time is past the end
-		//if(t >= CycleLength)
-		//{
-			////Update the number of cycles completed
-            //setCycles( (CycleLength <= 0.0f) ? (0): (static_cast<UInt32>( osg::osgfloor( t / CycleLength ) )) );
-            //commitChanges();
-		//}
-		////Internal Update
-		//if(getCycling() > 0 && getCycles() >= getCycling())
-		//{
-			//internalUpdate(CycleLength-.0001, advancer->getPrevValue());
-		//}
-		//else
-		//{
-			//internalUpdate(t, advancer->getPrevValue());
-		//}
-
-
-		////If the number of cycles has changed
-		//if(getCycles() != PreUpdateCycleCount)
-		//{
-			//if(getCycling() > 0 && getCycles() >= getCycling())
-			//{
-				//produceAnimationEnded();
-			//}
-			//else
-			//{
-				//produceAnimationCycled();
-			//}
-		//}
-	//}
-
-	////Return true if the animation has completed its number of cycles, false otherwise
-	//return (getCycling() > 0 && getCycles() >= getCycling());
-
-//}
-
-void Animation::removeAnimationListener(AnimationListenerPtr Listener)
-{
-   AnimationListenerSetItor EraseIter(_AnimationListeners.find(Listener));
-   if(EraseIter != _AnimationListeners.end())
-   {
-      _AnimationListeners.erase(EraseIter);
-   }
-}
-
 void Animation::produceAnimationStarted(void)
 {
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationRefPtr(this),getTimeStamp());
-	AnimationListenerSet Listeners(_AnimationListeners);
-    for(AnimationListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->animationStarted(e);
-    }
-    _Producer.produceEvent(AnimationStartedMethodId,e);
+    AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceAnimationStarted(Details);
 }
 
 void Animation::produceAnimationStopped(void)
 {
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationRefPtr(this),getTimeStamp());
-	AnimationListenerSet Listeners(_AnimationListeners);
-    for(AnimationListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->animationStopped(e);
-    }
-    _Producer.produceEvent(AnimationStoppedMethodId,e);
+    AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceAnimationStopped(Details);
 }
 
 void Animation::produceAnimationPaused(void)
 {
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationRefPtr(this),getTimeStamp());
-	AnimationListenerSet Listeners(_AnimationListeners);
-    for(AnimationListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->animationPaused(e);
-    }
-    _Producer.produceEvent(AnimationPausedMethodId,e);
+    AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceAnimationPaused(Details);
 }
 
 void Animation::produceAnimationUnpaused(void)
 {
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationRefPtr(this),getTimeStamp());
-	AnimationListenerSet Listeners(_AnimationListeners);
-    for(AnimationListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->animationUnpaused(e);
-    }
-    _Producer.produceEvent(AnimationUnpausedMethodId,e);
+    AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceAnimationUnpaused(Details);
 }
 
 void Animation::produceAnimationEnded(void)
 {
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationRefPtr(this),getTimeStamp());
-	AnimationListenerSet Listeners(_AnimationListeners);
-    for(AnimationListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->animationEnded(e);
-    }
-    _Producer.produceEvent(AnimationEndedMethodId,e);
+    AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceAnimationEnded(Details);
 }
 
 void Animation::produceAnimationCycled(void)
 {
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationRefPtr(this),getTimeStamp());
-    AnimationListenerSet Listeners(_AnimationListeners);
-    for(AnimationListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
+    AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceAnimationCycled(Details);
+}
+
+void Animation::attachUpdateProducer(ReflexiveContainer* const producer)
+{
+    if(_UpdateEventConnection.connected())
     {
-        (*SetItor)->animationCycled(e);
+        _UpdateEventConnection.disconnect();
     }
-    _Producer.produceEvent(AnimationCycledMethodId,e);
+    //Get the Id of the UpdateEvent
+    const EventDescription* Desc(producer->getProducerType().findEventDescription("Update"));
+    if(Desc == NULL)
+    {
+        SWARNING << "There is no Update event defined on " << producer->getType().getName() << " types." << std::endl;
+    }
+    else
+    {
+        _UpdateEventConnection = producer->connectEvent(Desc->getEventId(), boost::bind(&Animation::attachedUpdate, this, _1));
+    }
 }
 
 /*-------------------------------------------------------------------------*\
@@ -328,7 +335,6 @@ void Animation::produceAnimationCycled(void)
 
 Animation::Animation(void) :
     Inherited(),
-    _UpdateHandler(AnimationRefPtr(this)),
     _CurrentTime(0.0),
     _PrevTime(0.0),
     _IsPlaying(false),
@@ -338,12 +344,10 @@ Animation::Animation(void) :
 
 Animation::Animation(const Animation &source) :
     Inherited(source),
-    _UpdateHandler(AnimationRefPtr(this)),
     _CurrentTime(0.0),
     _PrevTime(0.0),
     _IsPlaying(false),
     _IsPaused(false)
-
 {
 }
 
@@ -366,9 +370,10 @@ void Animation::dump(      UInt32    ,
     SLOG << "Dump Animation NI" << std::endl;
 }
 
-void Animation::UpdateHandler::eventProduced(const EventUnrecPtr EventDetails, UInt32 ProducedEventId)
+void Animation::attachedUpdate(EventDetails* const details)
 {
-    _AttachedAnimation->update(dynamic_pointer_cast<UpdateEvent>(EventDetails)->getElapsedTime());
+	Time elapsed = dynamic_cast<UpdateEventDetails* const>(details)->getElapsedTime();
+    update(elapsed);
 }
 
 OSG_END_NAMESPACE

@@ -69,8 +69,9 @@ void UIFont::initMethod(InitPhase ePhase)
 {
     Inherited::initMethod(ePhase);
 
-    if(ePhase == TypeObject::SystemPost)
+    if(ePhase == TypeObject::SystemPre)
     {
+        FilePathAttachment::registerHandler(getClassType(), boost::bind(&UIFont::loadFromFileHandler, _1), false);
     }
 }
 
@@ -79,6 +80,11 @@ FieldContainerTransitPtr UIFont::createFont( const BoostPath& FilePath )
     UIFont* Result = UIFont::createEmpty();
     FilePathAttachment::setFilePath(Result, FilePath);
     return FieldContainerTransitPtr(Result);
+}
+
+FieldContainerUnrecPtr UIFont::loadFromFileHandler( const BoostPath& FilePath )
+{
+    return createFont(FilePath);
 }
 
 /***************************************************************************\
@@ -90,7 +96,7 @@ void UIFont::initText(void)
     // Create the font
 
     //Check if I have a FilePathAttachment
-    const BoostPath* FilePath(FilePathAttachment::getFilePath(UIFontRefPtr(this)));
+    const BoostPath* FilePath(FilePathAttachment::getFilePath(this));
     if(FilePath != NULL)
     {
         //Create the font from a file

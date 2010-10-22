@@ -94,6 +94,8 @@ class OSG_CONTRIBFIELDCONTAINEREDITOR_DLLMAPPING FieldEditorComponent : public F
     void              setCommandManager(CommandManagerPtr manager);
     CommandManagerPtr getCommandManager(void                     ) const;
 
+    virtual UInt32 getNumRequestedRows(void) const = 0;
+
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -120,6 +122,12 @@ class OSG_CONTRIBFIELDCONTAINEREDITOR_DLLMAPPING FieldEditorComponent : public F
     /*! \{                                                                 */
 
     static void initMethod(InitPhase ePhase);
+
+    /*! \}                                                                 */
+    /*! \name                      Sync                                    */
+    /*! \{                                                                 */
+
+    virtual void resolveLinks(void);
 
     /*! \}                                                                 */
             void fieldChanged         (FieldContainer *fc, 

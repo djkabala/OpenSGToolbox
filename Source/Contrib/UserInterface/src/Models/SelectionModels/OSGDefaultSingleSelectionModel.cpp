@@ -77,24 +77,6 @@ void DefaultSingleSelectionModel::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-EventConnection DefaultSingleSelectionModel::addSelectionListener(SelectionListenerPtr listener)
-{
-   _SelectionListeners.insert(listener);
-   return EventConnection(
-       boost::bind(&DefaultSingleSelectionModel::isSelectionListenerAttached, this, listener),
-       boost::bind(&DefaultSingleSelectionModel::removeSelectionListener, this, listener));
-}
-
-void DefaultSingleSelectionModel::removeSelectionListener(SelectionListenerPtr Listener)
-{
-   SelectionListenerSetItor EraseIter(_SelectionListeners.find(Listener));
-   if(EraseIter != _SelectionListeners.end())
-   {
-      _SelectionListeners.erase(EraseIter);
-   }
-}
-
-
 void DefaultSingleSelectionModel::clearSelection(void)
 {
     if(getInternalSelectedIndex() != -1)
@@ -126,25 +108,20 @@ void DefaultSingleSelectionModel::setSelectedIndex(Int32 index)
 
 void DefaultSingleSelectionModel::produceSelectionChanged(const Int32& SelectedIndex, const Int32& PreviouslySelectedIndex)
 {
-    std::vector<Int32> Selected;
+    std::vector<UInt32> Selected;
     if(SelectedIndex != -1)
     {
         Selected.push_back(SelectedIndex);
     }
-    std::vector<Int32> PreviouslySelected;
+    std::vector<UInt32> PreviouslySelected;
     if(PreviouslySelectedIndex != -1)
     {
         PreviouslySelected.push_back(PreviouslySelectedIndex);
     }
 
-    const SelectionEventUnrecPtr TheEvent = SelectionEvent::create(DefaultSingleSelectionModelRefPtr(this), getTimeStamp(), Selected, PreviouslySelected, false);
-
-    SelectionListenerSet Listeners(_SelectionListeners);
-   for(SelectionListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-   {
-	   (*SetItor)->selectionChanged(TheEvent);
-   }
-   _Producer.produceEvent(SelectionChangedMethodId,TheEvent);
+    SelectionEventDetailsUnrecPtr Details = SelectionEventDetails::create(this, getTimeStamp(), Selected, PreviouslySelected, false);
+   
+    Inherited::produceSelectionChanged(Details);
 }
 
 /*-------------------------------------------------------------------------*\

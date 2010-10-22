@@ -48,6 +48,7 @@
  *****************************************************************************
 \*****************************************************************************/
 
+
 OSG_BEGIN_NAMESPACE
 
 
@@ -97,6 +98,31 @@ void ListBase::setOrientation(const UInt32 value)
     editSField(OrientationFieldMask);
 
     _sfOrientation.setValue(value);
+}
+//! Get the value of the List::_sfSelectable field.
+
+inline
+bool &ListBase::editSelectable(void)
+{
+    editSField(SelectableFieldMask);
+
+    return _sfSelectable.getValue();
+}
+
+//! Get the value of the List::_sfSelectable field.
+inline
+      bool  ListBase::getSelectable(void) const
+{
+    return _sfSelectable.getValue();
+}
+
+//! Set the value of the List::_sfSelectable field.
+inline
+void ListBase::setSelectable(const bool value)
+{
+    editSField(SelectableFieldMask);
+
+    _sfSelectable.setValue(value);
 }
 //! Get the value of the List::_sfCellMajorAxisLength field.
 
@@ -181,6 +207,22 @@ void ListBase::setAutoScrollToFocused(const bool value)
     _sfAutoScrollToFocused.setValue(value);
 }
 
+//! Get the value of the List::_sfSelectionModel field.
+inline
+ListSelectionModel * ListBase::getSelectionModel(void) const
+{
+    return _sfSelectionModel.getValue();
+}
+
+//! Set the value of the List::_sfSelectionModel field.
+inline
+void ListBase::setSelectionModel(ListSelectionModel * const value)
+{
+    editSField(SelectionModelFieldMask);
+
+    _sfSelectionModel.setValue(value);
+}
+
 
 #ifdef OSG_MT_CPTR_ASPECT
 inline
@@ -195,6 +237,9 @@ void ListBase::execSync (      ListBase *pFrom,
     if(FieldBits::NoField != (OrientationFieldMask & whichField))
         _sfOrientation.syncWith(pFrom->_sfOrientation);
 
+    if(FieldBits::NoField != (SelectableFieldMask & whichField))
+        _sfSelectable.syncWith(pFrom->_sfSelectable);
+
     if(FieldBits::NoField != (CellMajorAxisLengthFieldMask & whichField))
         _sfCellMajorAxisLength.syncWith(pFrom->_sfCellMajorAxisLength);
 
@@ -206,6 +251,9 @@ void ListBase::execSync (      ListBase *pFrom,
 
     if(FieldBits::NoField != (AutoScrollToFocusedFieldMask & whichField))
         _sfAutoScrollToFocused.syncWith(pFrom->_sfAutoScrollToFocused);
+
+    if(FieldBits::NoField != (SelectionModelFieldMask & whichField))
+        _sfSelectionModel.syncWith(pFrom->_sfSelectionModel);
 }
 #endif
 

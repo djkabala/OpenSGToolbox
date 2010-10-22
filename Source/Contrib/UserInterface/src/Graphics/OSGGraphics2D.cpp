@@ -49,7 +49,7 @@
 #include "OSGGL.h"
 #include "OSGTextLayoutParam.h"
 #include "OSGTextLayoutResult.h"
-#include "OSGTextureObjChunk.h"
+#include "OSGTextureBaseChunk.h"
 #include "OSGDepthChunk.h"
 #include "OSGPrimeMaterial.h"
 
@@ -159,6 +159,7 @@ void Graphics2D::preDraw()
     {
         glEnable(GL_POLYGON_SMOOTH);
     }
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glClearStencil(0);
     glClear(GL_STENCIL_BUFFER_BIT);
 }
@@ -239,16 +240,17 @@ void Graphics2D::drawQuad(const Pnt2f& p1, const Pnt2f& p2, const Pnt2f& p3, con
 
 void Graphics2D::drawQuad(const Pnt2f& p1, const Pnt2f& p2, const Pnt2f& p3, const Pnt2f& p4, 
                           const Vec2f& t1, const Vec2f& t2, const Vec2f& t3, const Vec2f& t4,
-                          const Color4f& color, const TextureObjChunkUnrecPtr Texture,
+                          const Color4f& color, const TextureBaseChunkUnrecPtr Texture,
                           const Real32& Opacity) const
 {
     Real32 Alpha( Opacity * getOpacity() * color.alpha());
-    if(Alpha < 1.0 || Texture->getImage()->hasAlphaChannel())
-    {
+    //if(Alpha < 1.0 ||
+       //(Texture-> && Texture->getImage()->hasAlphaChannel()))
+    //{
         //Setup the Blending equations properly
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
-    }
+    //}
 
     if(Texture != NULL)
     {
@@ -272,15 +274,15 @@ void Graphics2D::drawQuad(const Pnt2f& p1, const Pnt2f& p2, const Pnt2f& p3, con
         Texture->deactivate(getDrawEnv());
     }
 
-    if(Alpha < 1.0 || Texture->getImage()->hasAlphaChannel())
-    {
+    //if(Alpha < 1.0 || Texture->getImage()->hasAlphaChannel())
+    //{
         glDisable(GL_BLEND);
-    }
+    //}
 }
 
 void Graphics2D::drawQuad(const Pnt2f& p1, const Pnt2f& p2, const Pnt2f& p3, const Pnt2f& p4, 
                           const Vec2f& t1, const Vec2f& t2, const Vec2f& t3, const Vec2f& t4,
-                          const MaterialUnrecPtr Material,
+                          Material* const Material,
                           const Real32& Opacity) const
 {
     Real32 Alpha( Opacity * getOpacity());
@@ -467,7 +469,7 @@ void Graphics2D::drawArc(const Pnt2f& Center, const Real32& Width, const Real32&
     glLineWidth(previousLineWidth);
 }
 
-void Graphics2D::drawTextUnderline(const Pnt2f& Position, const std::string& Text, const UIFontUnrecPtr TheFont, const Color4f& Color, const Real32& Opacity) const
+void Graphics2D::drawTextUnderline(const Pnt2f& Position, const std::string& Text, UIFont* const TheFont, const Color4f& Color, const Real32& Opacity) const
 {
     Pnt2f TextTopLeft, TextBottomRight;
     TheFont->getBounds(Text, TextTopLeft, TextBottomRight);
@@ -483,7 +485,7 @@ void Graphics2D::drawTextUnderline(const Pnt2f& Position, const std::string& Tex
     drawRect(LineStart, LineEnd, Color, Opacity);
 }
 
-void Graphics2D::drawText(const Pnt2f& Position, const std::string& Text, const UIFontUnrecPtr TheFont, const Color4f& Color, const Real32& Opacity) const
+void Graphics2D::drawText(const Pnt2f& Position, const std::string& Text, UIFont* const TheFont, const Color4f& Color, const Real32& Opacity) const
 {
     TextLayoutParam layoutParam;
     layoutParam.spacing = 1.1;
@@ -515,7 +517,7 @@ void Graphics2D::drawText(const Pnt2f& Position, const std::string& Text, const 
     glPopAttrib();
 }
 
-void Graphics2D::drawCharacters( const TextLayoutResult& layoutResult, const UIFontUnrecPtr TheFont) const
+void Graphics2D::drawCharacters( const TextLayoutResult& layoutResult, UIFont* const TheFont) const
 {
     glBegin(GL_QUADS);
 

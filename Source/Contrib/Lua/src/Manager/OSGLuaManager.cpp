@@ -50,7 +50,8 @@
 #include "OSGBaseFunctions.h"
 #include "OSGBaseInitFunctions.h"
 #include "OSGLog.h"
-#include "OSGEvent.h"
+#include "OSGEventDetails.h"
+#include "OSGStatCollector.h"
 
 #include "OSGLuaManager.h"
 #include <boost/bind.hpp>
@@ -86,15 +87,16 @@ struct AddLuaInitFuncs
 LuaManager *LuaManager::_the  = NULL;
 lua_State *LuaManager::_State = NULL;
 
-//! WindowEventProducer Produced Methods
+//! WindowEventProducer Produced Events
 
-MethodDescription *LuaManager::_methodDesc[] =
+EventDescription *LuaManager::_eventDesc[] =
 {
-    new MethodDescription("LuaError", 
+    new EventDescription("LuaError", 
                           "Lua Error",
-                          LuaErrorMethodId, 
-                          SFUnrecEventPtr::getClassType(),
-                          FunctorAccessMethod())
+                          LuaErrorEventId, 
+                          FieldTraits<LuaErrorEventDetails *>::getType(),
+                          true,
+                          NULL),
 };
 
 EventProducerType LuaManager::_producerType(
@@ -102,8 +104,11 @@ EventProducerType LuaManager::_producerType(
                                             "EventProducerType",
                                             "",
                                             InitEventProducerFunctor(),
-                                            _methodDesc,
-                                            sizeof(_methodDesc));
+                                            _eventDesc,
+                                            sizeof(_eventDesc));
+
+StatElemDesc<StatTimeElem> LuaManager::statScriptsRunTime("ScriptsRunTime", 
+                                                         "time to run the lua scripts");
 
 /***************************************************************************\
  *                           Class methods                                 *
@@ -249,8 +254,12 @@ void LuaManager::FunctionHook(lua_State *l, lua_Debug *ar)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void LuaManager::runScript(const std::string& Script)
+int LuaManager::runScript(const std::string& Script)
 {
+    //Start the  scripts run time statistic
+    StatTimeElem *ScriptsRunTimeStatElem = StatCollector::getGlobalElem(statScriptsRunTime);
+    if(ScriptsRunTimeStatElem) { ScriptsRunTimeStatElem->start(); }
+
     //If Stack Trace is enabled
     if(_EnableStackTrace)
     {
@@ -265,17 +274,29 @@ void LuaManager::runScript(const std::string& Script)
     //Load the Script
     int s = luaL_loadstring(_State, Script.c_str());
     checkError(s);
-    if(s != 0) {return;}            //Error loading the string exit
+    if(s != 0)
+    {
+        //Error loading the string
+        if(ScriptsRunTimeStatElem) { ScriptsRunTimeStatElem->stop(); }
+        return s;
+    }
 
     // execute Lua program
     s = lua_pcall(_State, 0, LUA_MULTRET, 0);
     checkError(s);
+
+    if(ScriptsRunTimeStatElem) { ScriptsRunTimeStatElem->stop(); }
+    return s;
 }
 
-void LuaManager::runScript(const BoostPath& ScriptPath)
+int LuaManager::runScript(const BoostPath& ScriptPath)
 {
     if(boost::filesystem::exists(ScriptPath))
     {
+        //Start the  scripts run time statistic
+        StatTimeElem *ScriptsRunTimeStatElem = StatCollector::getGlobalElem(statScriptsRunTime);
+        if(ScriptsRunTimeStatElem) { ScriptsRunTimeStatElem->start(); }
+
         //If Stack Trace is enabled
         if(_EnableStackTrace)
         {
@@ -290,34 +311,50 @@ void LuaManager::runScript(const BoostPath& ScriptPath)
         //Load the Script
         int s = luaL_loadfile(_State, ScriptPath.string().c_str());
         checkError(s);
-        if(s != 0) {return;}            //Error loading the string exit
+        if(s != 0)
+        {
+            //Error loading the string
+            if(ScriptsRunTimeStatElem) { ScriptsRunTimeStatElem->stop(); }
+            return s;
+        }
 
         // execute Lua program
         s = lua_pcall(_State, 0, LUA_MULTRET, 0);
         checkError(s);
+
+        if(ScriptsRunTimeStatElem) { ScriptsRunTimeStatElem->stop(); }
+        return s;
     }
     else
     {
         SWARNING << "LuaManager::runScript(): File by path: " << ScriptPath.string() << ", does not exist." << std::endl;
+        return 0;
     }
 }
 
-EventConnection LuaManager::addLuaListener(LuaListenerRefPtr Listener)
+int LuaManager::runPushedFunction(UInt32 NumArgs, UInt32 NumReturns)
 {
-    _LuaListeners.insert(Listener);
+    //Start the  scripts run time statistic
+    StatTimeElem *ScriptsRunTimeStatElem = StatCollector::getGlobalElem(statScriptsRunTime);
+    if(ScriptsRunTimeStatElem) { ScriptsRunTimeStatElem->start(); }
 
-    return EventConnection(
-                           boost::bind(&LuaManager::isLuaListenerAttached, this, Listener),
-                           boost::bind(&LuaManager::removeLuaListener, this, Listener));
-}
-
-void LuaManager::removeLuaListener(LuaListenerRefPtr Listener)
-{
-    LuaListenerSetItor EraseIter(_LuaListeners.find(Listener));
-    if(EraseIter != _LuaListeners.end())
+    //If Stack Trace is enabled
+    if(_EnableStackTrace)
     {
-        _LuaListeners.erase(EraseIter);
+        _LuaStack.clear();
+        lua_sethook(_State,&LuaManager::FunctionHook,LUA_MASKCALL | LUA_MASKRET,0);
     }
+    else
+    {
+        lua_sethook(_State,NULL,LUA_MASKCALL | LUA_MASKRET,0);
+    }
+
+    int s = lua_pcall(_State, NumArgs, NumReturns, 0);
+    checkError(s);
+
+    //Stop the  scripts run time statistic
+    if(ScriptsRunTimeStatElem) { ScriptsRunTimeStatElem->stop(); }
+    return s;
 }
 
 void LuaManager::checkError(int Status)
@@ -330,35 +367,35 @@ void LuaManager::checkError(int Status)
         case LUA_ERRSYNTAX:
             //Syntax Error
             SWARNING << "Lua Syntax Error: " << lua_tostring(_State, -1) << std::endl;
-            produceError(Status);
+            produceLuaError(Status);
             lua_pop(_State, 1); // remove error message
             break;
         case LUA_ERRFILE:
             //File Read Error
             SWARNING << "Lua File Load Error: " << lua_tostring(_State, -1) << std::endl;
             printStackTrace();
-            produceError(Status);
+            produceLuaError(Status);
             lua_pop(_State, 1); // remove error message
             break;
         case LUA_ERRMEM:
             //Memory Allocation Error
             SWARNING << "Lua Memory Allocation Error: " << lua_tostring(_State, -1) << std::endl;
             printStackTrace();
-            produceError(Status);
+            produceLuaError(Status);
             lua_pop(_State, 1); // remove error message
             break;
         case LUA_ERRRUN:
             //Memory Allocation Error
             SWARNING << "Lua Runtime Error: " << lua_tostring(_State, -1) << std::endl;
             printStackTrace();
-            produceError(Status);
+            produceLuaError(Status);
             lua_pop(_State, 1); // remove error message
             break;
         case LUA_ERRERR:
             //Memory Allocation Error
             SWARNING << "Lua Error in Error Handler: " << lua_tostring(_State, -1) << std::endl;
             printStackTrace();
-            produceError(Status);
+            produceLuaError(Status);
             lua_pop(_State, 1); // remove error message
             break;
     }
@@ -386,15 +423,11 @@ void LuaManager::printStackTrace(void) const
 }
 
 
-void LuaManager::produceError(int Status)
+void LuaManager::produceLuaError(int Status)
 {
-    LuaErrorEventUnrecPtr TheEvent = LuaErrorEvent::create( NULL, getSystemTime(), _State, Status, _LuaStack, _EnableStackTrace);
-    LuaListenerSet ListenerSet(_LuaListeners);
-    for(LuaListenerSetConstItor SetItor(ListenerSet.begin()) ; SetItor != ListenerSet.end() ; ++SetItor)
-    {
-        (*SetItor)->error(TheEvent);
-    }
-    _Producer.produceEvent(LuaErrorMethodId,TheEvent);
+    LuaErrorEventDetailsUnrecPtr Details = LuaErrorEventDetails::create(NULL, getSystemTime(), _State, Status, _LuaStack, _EnableStackTrace);
+   
+    produceLuaError(Details);
 }
 
 void LuaManager::setPackagePath(const std::string& Pattern)
@@ -480,14 +513,12 @@ std::string LuaManager::getPackageCPath(void) const
 /*----------------------- constructors & destructors ----------------------*/
 
 LuaManager::LuaManager(void) : 
-    _EnableStackTrace(true),
-    _Producer(&_producerType)
+    _EnableStackTrace(true)
 {	
 }
 
 LuaManager::LuaManager(const LuaManager &source) : 
-    _EnableStackTrace(source._EnableStackTrace),
-    _Producer(&_producerType)
+    _EnableStackTrace(source._EnableStackTrace)
 {
     assert(false && "Sould NOT CALL LuaManager copy constructor");
 }

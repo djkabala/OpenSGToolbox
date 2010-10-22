@@ -43,12 +43,6 @@
 #endif
 
 #include "OSGTextAreaBase.h"
-#include <vector>
-#include <string>
-#include "OSGWindowEventProducer.h"
-#include "OSGMouseAdapter.h"
-#include "OSGMouseMotionAdapter.h"
-#include "OSGKeyAdapter.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -93,12 +87,12 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING TextArea : public TextAreaBase
 		Real32 _RightHorizontalOffset;
 	};
 
-	virtual void keyTyped(const KeyEventUnrecPtr e);
-	virtual void mouseClicked(const MouseEventUnrecPtr e);
-	virtual void mousePressed(const MouseEventUnrecPtr e);
+	virtual void keyTyped(KeyEventDetails* const e);
+	virtual void mouseClicked(MouseEventDetails* const e);
+	virtual void mousePressed(MouseEventDetails* const e);
 	
-	virtual void focusGained(const FocusEventUnrecPtr e);
-	virtual void focusLost(const FocusEventUnrecPtr e);
+	virtual void focusGained(FocusEventDetails* const e);
+	virtual void focusLost(FocusEventDetails* const e);
 
     //Components that display logical rows or columns should compute the scroll increment that will completely expose one block of rows or columns, depending on the value of orientation.
     virtual Int32 getScrollableBlockIncrement(const Pnt2f& VisibleRectTopLeft, const Pnt2f& VisibleRectBottomRight, const UInt32& orientation, const Int32& direction);
@@ -166,45 +160,19 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING TextArea : public TextAreaBase
 
     /*! \}                                                                 */
 
-	virtual void drawInternal(const GraphicsWeakPtr Graphics, Real32 Opacity = 1.0f) const;
+	virtual void drawInternal(Graphics* const Graphics, Real32 Opacity = 1.0f) const;
     
 	mutable Time _CurrentCaretBlinkElps;
+	
+    void handleCaretUpdate(UpdateEventDetails* const e);
+    boost::signals2::connection _CaretUpdateConnection;
 
-	class CaretUpdateListener : public UpdateListener
-	{
-	public:
-		CaretUpdateListener(TextAreaRefPtr TheTextArea);
-        virtual void update(const UpdateEventUnrecPtr e);
-
-        void disconnect(void);
-	private:
-		TextAreaRefPtr _TextArea;
-	};
-
-	friend class CarentUpdateListener;
-
-	CaretUpdateListener _CaretUpdateListener;
-
-	class MouseDownListener : public MouseAdapter,public MouseMotionAdapter,public KeyAdapter
-	{
-	public :
-		MouseDownListener(TextAreaRefPtr TheTextArea);
-		
-        virtual void keyTyped(const KeyEventUnrecPtr e);
-
-        virtual void mouseReleased(const MouseEventUnrecPtr e);
-        virtual void mouseDragged(const MouseEventUnrecPtr e);
-
-        void disconnect(void);
-	protected :
-		TextAreaRefPtr _TextArea;
-	};
-
-	friend class MouseDownListener;
-
-	MouseDownListener _MouseDownListener;
-
-    void mouseDraggedAfterArming(const MouseEventUnrecPtr e);
+    void handleMouseDownKeyTyped(KeyEventDetails* const e);
+    void handleMouseDownMouseReleased(MouseEventDetails* const e);
+    void handleMouseDownMouseDragged(MouseEventDetails* const e);
+    boost::signals2::connection _MouseDownKeyTypedConnection,
+                                _MouseDownMouseReleasedConnection,
+                                _MouseDownMouseDraggedConnection;
     /*==========================  PRIVATE  ================================*/
 
   private:

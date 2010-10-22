@@ -51,6 +51,7 @@
 #include "OSGSimpleGeometry.h"
 #include "OSGColorMaskChunk.h"
 #include "OSGPolygonChunk.h"
+#include "OSGBlendChunk.h"
 
 #include "OSGUIDrawingSurface.h"
 
@@ -104,13 +105,19 @@ void UIRectangle::initMethod(InitPhase ePhase)
 
 Action::ResultE UIRectangle::renderActionEnterHandler(Action *action)
 {
+    if(getDrawingSurface() == NULL ||
+       getDrawingSurface()->getGraphics() == NULL)
+    {
+        return Action::Continue;
+    }
+
     RenderAction *a = dynamic_cast<RenderAction *>(action);
 
     DrawEnv::DrawFunctor func;
 
     func = boost::bind(&UIRectangle::drawPrimitives, this, _1);
 
-    a->dropFunctor(func, _State, 0, false);
+    a->dropFunctor(func, _Mat, true);
 
     if(a->pushVisibility())
     {
@@ -126,15 +133,14 @@ Action::ResultE UIRectangle::renderActionEnterHandler(Action *action)
 
 Action::ResultE UIRectangle::renderActionLeaveHandler(Action *action)
 {
-    RenderAction *a = dynamic_cast<RenderAction *>(action);
-    
-    a->popVisibility();
+    dynamic_cast<RenderAction *>(action)->popVisibility();
     
     return Action::Continue;
 }
 
 void UIRectangle::drawPrimitives          (DrawEnv *pEnv  )
 {
+
     glPushMatrix();
 
     glTranslatef(getPoint().x(),getPoint().y()+getHeight(),getPoint().z());
@@ -164,7 +170,7 @@ void UIRectangle::drawPrimitives          (DrawEnv *pEnv  )
 	getRectPolygon()->activate(pEnv);
     Pnt2f TopLeft,BottomRight;
 	glBegin(GL_QUADS);
-        //Draw all of the InternalWindows
+        //Draw depth for each of the InternalWindows
         for(UInt32 i(0) ; i<getDrawingSurface()->getMFInternalWindows()->size() ; ++i)
         {
             TopLeft = getDrawingSurface()->getInternalWindows(i)->getPosition();
@@ -248,7 +254,11 @@ void UIRectangle::onCreate(const UIRectangle * Id)
     }
 
 	
-	_State = State::create();
+	_Mat = ChunkMaterial::create();
+    BlendChunkUnrecPtr BlendForTransparency = BlendChunk::create();
+    BlendForTransparency->setSrcFactor(GL_SRC_ALPHA);
+    BlendForTransparency->setDestFactor(GL_ONE_MINUS_SRC_ALPHA);
+    _Mat->addChunk(BlendForTransparency);
 }
 
 void UIRectangle::onDestroy()
@@ -298,6 +308,11 @@ void UIRectangle::changed(ConstFieldMaskArg whichField,
     {
         getDrawingSurface()->setMouseTransformFunctor(getMouseTransformFunctor());
 	}
+
+    if(whichField & SortKeyFieldMask)
+    {
+        _Mat->setSortKey(getSortKey());
+    }
 }
 
 void UIRectangle::dump(      UInt32    ,

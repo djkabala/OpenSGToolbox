@@ -43,11 +43,6 @@
 #endif
 
 #include "OSGProgressBarBase.h"
-#include "OSGChangeListener.h"
-#include <set>
-#include "OSGUpdateListener.h"
-
-#include "OSGEventConnection.h"
 #include "OSGBoundedRangeModel.h"
 
 OSG_BEGIN_NAMESPACE
@@ -89,13 +84,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ProgressBar : public ProgressBarBase
                       const BitVector  bvFlags  = 0) const;
 
     /*! \}                                                                 */
-
-	//Adds the specified ChangeListener to the progress bar.
-	EventConnection addChangeListener(ChangeListenerPtr Listener);
-	bool isChangeListenerAttached(ChangeListenerPtr Listener) const;
-
-	//Removes a ChangeListener from the progress bar.
-	void removeChangeListener(ChangeListenerPtr Listener);
 
 	//Returns the progress bar's maximum value, which is stored in the progress bar's BoundedRangeModel.
 	Int32 getMaximum(void) const;
@@ -151,40 +139,19 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ProgressBar : public ProgressBarBase
     static void initMethod(InitPhase ePhase);
 
     /*! \}                                                                 */
-    virtual void drawInternal(const GraphicsWeakPtr Graphics, Real32 Opacity = 1.0f) const;
+    virtual void drawInternal(Graphics* const Graphics, Real32 Opacity = 1.0f) const;
     virtual Color4f getDrawnTextColor(void) const;
-    virtual UIDrawObjectCanvasRefPtr getDrawnDrawObject(void) const;
+    virtual UIDrawObjectCanvas* getDrawnDrawObject(void) const;
 
     void setupProgressBar();
     void setupIndeterminateProgressBar(const Time& Elps);
 
-    //Listener for getting change updates of the UIViewport
-    class ModelChangeListener : public ChangeListener
-    {
-      public:
-        ModelChangeListener(ProgressBarRefPtr TheProgressBar);
-        virtual void stateChanged(const ChangeEventUnrecPtr e);
-      private:
-        ProgressBarRefPtr _ProgressBar;
-    };
+    void handleProgressStateChanged(ChangeEventDetails* const e);
+    boost::signals2::connection _ProgressStateChangedConnection;
 
-    friend class ModelChangeListener;
+    void handleProgressUpdate(UpdateEventDetails* const e);
+    boost::signals2::connection _ProgressUpdateConnection;
 
-    ModelChangeListener _ModelChangeListener;
-    EventConnection _RangeModelConnection;
-
-    class IndeterminateUpdateListener : public UpdateListener
-    {
-      public:
-        IndeterminateUpdateListener(ProgressBarRefPtr TheProgressBar);
-        virtual void update(const UpdateEventUnrecPtr e);
-      private:
-        ProgressBarRefPtr _ProgressBar;
-    };
-
-    friend class IndeterminateUpdateListener;
-
-    IndeterminateUpdateListener _IndeterminateUpdateListener;
     Real32 _IndeterminateBarPosition;
 
     Pnt2f _ProgressBarPosition;

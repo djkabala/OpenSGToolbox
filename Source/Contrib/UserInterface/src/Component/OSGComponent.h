@@ -45,19 +45,10 @@
 #include "OSGComponentBase.h"
 #include "OSGGraphics.h"
 
-#include "OSGKeyListener.h"
-#include "OSGMouseListener.h"
-#include "OSGMouseWheelListener.h"
-#include "OSGMouseMotionListener.h"
-#include "OSGUpdateListener.h"
-#include "OSGEventConnection.h"
-
-#include <set>
-
-#include "OSGFocusListener.h"
-#include "OSGComponentListener.h"
-
 #include "OSGToolTipFields.h"
+#include "OSGInternalWindowFields.h"
+#include "OSGComponentContainerFields.h"
+#include "OSGUpdateEventDetailsFields.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -95,7 +86,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Component : public ComponentBase
                       const BitVector  bvFlags  = 0) const;
 
     /*! \}                                                                 */
-	virtual void draw(const GraphicsWeakPtr Graphics, Real32 Opacity = 1.0f) const;
+	virtual void draw(Graphics* const Graphics, Real32 Opacity = 1.0f) const;
 
     virtual void getBounds(Pnt2f& TopLeft, Pnt2f& BottomRight) const;
 	virtual void getClipBounds(Pnt2f& TopLeft, Pnt2f& BottomRight) const;
@@ -108,54 +99,32 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Component : public ComponentBase
 	virtual Vec2f getBorderingLength(void) const;
 	
 	//Mouse Events
-    virtual void mouseClicked(const MouseEventUnrecPtr e);
-    virtual void mouseEntered(const MouseEventUnrecPtr e);
-    virtual void mouseExited(const MouseEventUnrecPtr e);
-    virtual void mousePressed(const MouseEventUnrecPtr e);
-    virtual void mouseReleased(const MouseEventUnrecPtr e);
+    virtual void mouseClicked(MouseEventDetails* const e);
+    virtual void mouseEntered(MouseEventDetails* const e);
+    virtual void mouseExited(MouseEventDetails* const e);
+    virtual void mousePressed(MouseEventDetails* const e);
+    virtual void mouseReleased(MouseEventDetails* const e);
 
 	//Mouse Motion Events
-    virtual void mouseMoved(const MouseEventUnrecPtr e);
-    virtual void mouseDragged(const MouseEventUnrecPtr e);
+    virtual void mouseMoved(MouseEventDetails* const e);
+    virtual void mouseDragged(MouseEventDetails* const e);
 
 	//Mouse Wheel Events
-    virtual void mouseWheelMoved(const MouseWheelEventUnrecPtr e);
+    virtual void mouseWheelMoved(MouseWheelEventDetails* const e);
 
 	//Key Events
-	virtual void keyPressed(const KeyEventUnrecPtr e);
-	virtual void keyReleased(const KeyEventUnrecPtr e);
-	virtual void keyTyped(const KeyEventUnrecPtr e);
+	virtual void keyPressed(KeyEventDetails* const e);
+	virtual void keyReleased(KeyEventDetails* const e);
+	virtual void keyTyped(KeyEventDetails* const e);
 
 	//Focus Events
-	virtual void focusGained(const FocusEventUnrecPtr e);
-	virtual void focusLost(const FocusEventUnrecPtr e);
+	virtual void focusGained(FocusEventDetails* const e);
+	virtual void focusLost(FocusEventDetails* const e);
 
     //Detach From Event Producer
     //This method should disconnect all Event Connection to
     //the WindowEventProducer referenced by this Component
     virtual void detachFromEventProducer(void);
-	
-    EventConnection addMouseMotionListener(MouseMotionListenerPtr Listener);
-    void removeMouseMotionListener(MouseMotionListenerPtr Listener);
-    EventConnection addMouseWheelListener(MouseWheelListenerPtr Listener);
-    void removeMouseWheelListener(MouseWheelListenerPtr Listener);
-    EventConnection addMouseListener(MouseListenerPtr Listener);
-    void removeMouseListener(MouseListenerPtr Listener);
-    EventConnection addKeyListener(KeyListenerPtr Listener);
-    void removeKeyListener(KeyListenerPtr Listener);
-    
-    EventConnection addFocusListener(FocusListenerPtr Listener);
-    void removeFocusListener(FocusListenerPtr Listener);
-
-    EventConnection addComponentListener(ComponentListenerPtr Listener);
-    void removeComponentListener(ComponentListenerPtr Listener);
-    
-    bool isMouseListenerAttached(MouseListenerPtr Listener) const;
-    bool isMouseMotionListenerAttached(MouseMotionListenerPtr Listener) const;
-    bool isMouseWheelListenerAttached(MouseWheelListenerPtr Listener) const;
-    bool isKeyListenerAttached(KeyListenerPtr Listener) const;
-    bool isFocusListenerAttached(FocusListenerPtr Listener) const;
-    bool isComponentListenerAttached(ComponentListenerPtr Listener) const;
 
 	void setMouseContained(bool Value);
 	bool getMouseContained(void);
@@ -168,7 +137,8 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Component : public ComponentBase
 
     //Returns the tooltip location in this component's coordinate system
     virtual Pnt2f getToolTipLocation(Pnt2f MousePosition);
-    virtual ToolTipRefPtr createToolTip(void);
+
+    virtual ToolTipTransitPtr createToolTip(void);
     
     //Scrollable Interface
     //Returns the preferred size of the viewport for a view component.
@@ -195,17 +165,23 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Component : public ComponentBase
 	virtual void scrollToPoint(const Pnt2f& PointInComponent);
 
     static const OSG::BitVector BordersFieldMask;
-	virtual void setBorders(BorderRefPtr TheBorder);
+	virtual void setBorders(Border * const TheBorder);
 
     static const OSG::BitVector BackgroundsFieldMask;
-	virtual void setBackgrounds(LayerRefPtr TheBackground);
+	virtual void setBackgrounds(Layer* const TheBackground);
     
     static const OSG::BitVector ForegroundsFieldMask;
-	virtual void setForegrounds(LayerRefPtr TheForeground);
+	virtual void setForegrounds(Layer* const TheForeground);
 
     virtual Pnt2f getParentToLocal(const Pnt2f& Location) const;
 
     virtual Pnt2f getLocalToParent(const Pnt2f& Location) const;
+
+    virtual InternalWindow* getParentWindow(void) const;
+
+    virtual void setParentWindow(InternalWindow* const parent);
+
+    virtual ComponentContainer* getParentContainer(void) const;
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -235,65 +211,38 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Component : public ComponentBase
 
     /*! \}                                                                 */
 
-	virtual bool setupClipping(const GraphicsWeakPtr Graphics) const;
-    virtual void drawBorder(const GraphicsWeakPtr TheGraphics, const BorderRefPtr Border, Real32 Opacity) const;
-    virtual void drawBackground(const GraphicsWeakPtr TheGraphics, const LayerRefPtr Background, Real32 Opacity) const;
-    virtual void drawForeground(const GraphicsWeakPtr TheGraphics, const LayerRefPtr Foreground, Real32 Opacity) const;
+	virtual bool setupClipping(Graphics* const Graphics) const;
+    virtual void drawBorder(Graphics* const TheGraphics, const Border* Border, Real32 Opacity) const;
+    virtual void drawBackground(Graphics* const TheGraphics, const Layer* Background, Real32 Opacity) const;
+    virtual void drawForeground(Graphics* const TheGraphics, const Layer* Foreground, Real32 Opacity) const;
     
-	virtual void drawInternal(const GraphicsWeakPtr Graphics, Real32 Opacity = 1.0f) const = 0;
-	virtual void drawUnclipped(const GraphicsWeakPtr TheGraphics, Real32 Opacity) const;
+	virtual void drawInternal(Graphics* const Graphics, Real32 Opacity = 1.0f) const = 0;
+	virtual void drawUnclipped(Graphics* const TheGraphics, Real32 Opacity) const;
 	
-    virtual bool giveFocus(ComponentRefPtr NewFocusedComponent, bool Temporary= false);
-    virtual BorderRefPtr getDrawnBorder(void) const;
-    virtual LayerRefPtr getDrawnBackground(void) const;
-    virtual LayerRefPtr getDrawnForeground(void) const;
+    virtual bool giveFocus(Component* const NewFocusedComponent, bool Temporary= false);
+    virtual Border* getDrawnBorder(void) const;
+    virtual Layer* getDrawnBackground(void) const;
+    virtual Layer* getDrawnForeground(void) const;
 
-    class ComponentUpdater : public UpdateListener
-    {
-    public:
-        ComponentUpdater(ComponentRefPtr TheComponent);
+    virtual bool useBoundsForClipping(void) const;
 
-        virtual void update(const UpdateEventUnrecPtr e);
-    private:
-        ComponentRefPtr _Component;
-    };
+    void handleUpdate(UpdateEventDetails* const e);
+    void handleMouseEntered(MouseEventDetails* const e);
+    void handleMouseExited(MouseEventDetails* const e);
 
-    class DeactivateToolTipListener : public MouseListener
-    {
-    public:
-        DeactivateToolTipListener(ComponentRefPtr TheComponent);
+    void deactivateTooltip(MouseEventDetails* const e);
 
-        virtual void mouseClicked(const MouseEventUnrecPtr e);
-        virtual void mouseEntered(const MouseEventUnrecPtr e);
-        virtual void mouseExited(const MouseEventUnrecPtr e);
-        virtual void mousePressed(const MouseEventUnrecPtr e);
-        virtual void mouseReleased(const MouseEventUnrecPtr e);
-    private:
-        ComponentRefPtr _Component;
-    };
-
-    class ActivateToolTipListener : public MouseListener
-    {
-    public:
-        ActivateToolTipListener(ComponentRefPtr TheComponent);
-
-        virtual void mouseClicked(const MouseEventUnrecPtr e);
-        virtual void mouseEntered(const MouseEventUnrecPtr e);
-        virtual void mouseExited(const MouseEventUnrecPtr e);
-        virtual void mousePressed(const MouseEventUnrecPtr e);
-        virtual void mouseReleased(const MouseEventUnrecPtr e);
-
-        void disconnect(void);
-    private:
-        ComponentRefPtr _Component;
-    };
+    boost::signals2::connection _UpdateConnection;
     
-    friend class ComponentUpdater;
+    boost::signals2::connection _MouseEnterConnection,
+                                _MouseExitConnection;
+
+    boost::signals2::connection _ActiveTooltipClickConnection,
+                                _ActiveTooltipExitConnection,
+                                _ActiveTooltipPressConnection,
+                                _ActiveTooltipReleaseConnection;
 
     Real32 _TimeSinceMouseEntered;
-    ComponentUpdater _ComponentUpdater;
-    ActivateToolTipListener _ActivateToolTipListener;
-    DeactivateToolTipListener _DeactivateToolTipListener;
     
 	bool _MouseInComponentLastMouse;
 
@@ -304,6 +253,15 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Component : public ComponentBase
     virtual void setClipTopLeft    (const Pnt2f &value);
     virtual void setClipBottomRight(const Pnt2f &value);
 
+    InternalWindow* _ParentWindow;
+
+    void produceComponentResized (void);
+    void produceComponentMoved   (void);
+    void produceComponentEnabled (void);
+    void produceComponentDisabled(void);
+    void produceComponentVisible (void);
+    void produceComponentHidden  (void);
+
     /*==========================  PRIVATE  ================================*/
 
   private:
@@ -313,65 +271,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Component : public ComponentBase
 
     // prohibit default functions (move to 'public' if you need one)
     void operator =(const Component &source);
-	
-	typedef std::set<MouseMotionListenerPtr> MouseMotionListenerSet;
-    typedef MouseMotionListenerSet::iterator MouseMotionListenerSetItor;
-    typedef MouseMotionListenerSet::const_iterator MouseMotionListenerSetConstItor;
-	
-    MouseMotionListenerSet       _MouseMotionListeners;
-	
-    virtual void produceMouseMoved(const MouseEventUnrecPtr e);
-    virtual void produceMouseDragged(const MouseEventUnrecPtr e);
-
-	typedef std::set<MouseWheelListenerPtr> MouseWheelListenerSet;
-    typedef MouseWheelListenerSet::iterator MouseWheelListenerSetItor;
-    typedef MouseWheelListenerSet::const_iterator MouseWheelListenerSetConstItor;
-	
-    MouseWheelListenerSet       _MouseWheelListeners;
-	
-    void produceMouseWheelMoved(const MouseWheelEventUnrecPtr e);
-	
-	typedef std::set<MouseListenerPtr> MouseListenerSet;
-    typedef MouseListenerSet::iterator MouseListenerSetItor;
-    typedef MouseListenerSet::const_iterator MouseListenerSetConstItor;
-	
-    MouseListenerSet       _MouseListeners;
-	
-    void produceMouseClicked(const MouseEventUnrecPtr e);
-    void produceMouseEntered(const MouseEventUnrecPtr e);
-    void produceMouseExited(const MouseEventUnrecPtr e);
-    void produceMousePressed(const MouseEventUnrecPtr e);
-    void produceMouseReleased(const MouseEventUnrecPtr e);
-	
-	typedef std::set<KeyListenerPtr> KeyListenerSet;
-    typedef KeyListenerSet::iterator KeyListenerSetItor;
-    typedef KeyListenerSet::const_iterator KeyListenerSetConstItor;
-	
-    KeyListenerSet       _KeyListeners;
-	
-    void produceKeyPressed(const KeyEventUnrecPtr e);
-    void produceKeyReleased(const KeyEventUnrecPtr e);
-    void produceKeyTyped(const KeyEventUnrecPtr e);
-    
-	typedef std::set<FocusListenerPtr> FocusListenerSet;
-    typedef FocusListenerSet::iterator FocusListenerSetItor;
-    typedef FocusListenerSet::const_iterator FocusListenerSetConstItor;
-	
-    FocusListenerSet       _FocusListeners;
-    void produceFocusGained(const FocusEventUnrecPtr e);
-    void produceFocusLost(const FocusEventUnrecPtr e);
-    
-	typedef std::set<ComponentListenerPtr> ComponentListenerSet;
-    typedef ComponentListenerSet::iterator ComponentListenerSetItor;
-    typedef ComponentListenerSet::const_iterator ComponentListenerSetConstItor;
-	
-    ComponentListenerSet       _ComponentListeners;
-    void produceComponentHidden(const ComponentEventUnrecPtr e);
-    void produceComponentVisible(const ComponentEventUnrecPtr e);
-    void produceComponentMoved(const ComponentEventUnrecPtr e);
-    void produceComponentResized(const ComponentEventUnrecPtr e);
-    void produceComponentEnabled(const ComponentEventUnrecPtr e);
-    void produceComponentDisabled(const ComponentEventUnrecPtr e);
 };
 
 typedef Component *ComponentP;

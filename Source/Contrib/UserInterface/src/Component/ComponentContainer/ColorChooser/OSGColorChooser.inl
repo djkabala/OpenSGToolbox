@@ -40,10 +40,4 @@
 
 OSG_BEGIN_NAMESPACE
 
-inline
-ColorChooser::ColorSelectedChangeListener::ColorSelectedChangeListener(ColorChooserRefPtr TheColorChooser) :
-_ColorChooser(TheColorChooser)
-{
-}
-
 OSG_END_NAMESPACE

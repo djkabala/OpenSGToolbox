@@ -43,14 +43,7 @@
 #endif
 
 #include "OSGAbstractWindowBase.h"
-
-#include "OSGMouseAdapter.h"
-#include "OSGMouseMotionAdapter.h"
-#include "OSGKeyAdapter.h"
-
-#include "OSGWindowListener.h"
-
-#include "OSGEventConnection.h"
+#include "OSGUIDrawingSurfaceFields.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -87,28 +80,30 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING AbstractWindow : public AbstractWindow
 
     /*! \}                                                                 */
 
-    EventConnection addWindowListener(WindowListenerPtr Listener);
-	bool isWindowListenerAttached(WindowListenerPtr Listener) const;
-    void removeWindowListener(WindowListenerPtr Listener);
-
 	virtual bool isAlignableInDrawingSurface(void) const;
 	virtual bool isScalableInDrawingSurface(void) const;
 	
     virtual void updateContainerLayout(void);
 	virtual void updateClipBounds(void);
 	
-    virtual void mouseEntered(const MouseEventUnrecPtr e);
-    virtual void mouseExited(const MouseEventUnrecPtr e);
+    virtual void mouseEntered(MouseEventDetails* const e);
+    virtual void mouseExited(MouseEventDetails* const e);
 
 	//Focus Events
-	virtual void focusGained(const FocusEventUnrecPtr e);
-	virtual void focusLost(const FocusEventUnrecPtr e);
+	virtual void focusGained(FocusEventDetails* const e);
+	virtual void focusLost(FocusEventDetails* const e);
 
 	void vetoWindowClose(void);
 
 	virtual void open(void) = 0;
 
 	virtual void close(void) = 0;
+
+    bool isOpen(void) const;
+
+    UIDrawingSurface* getParentDrawingSurface(void) const;
+
+    bool operator<(const AbstractWindow& right) const;
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -138,15 +133,9 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING AbstractWindow : public AbstractWindow
 
     /*! \}                                                                 */
     
-    virtual BorderRefPtr getDrawnBorder(void) const;
-    virtual LayerRefPtr getDrawnBackground(void) const;
-    virtual LayerRefPtr getDrawnForeground(void) const;
-	
-	typedef std::set<WindowListenerPtr> WindowListenerSet;
-    typedef WindowListenerSet::iterator WindowListenerSetItor;
-    typedef WindowListenerSet::const_iterator WindowListenerSetConstItor;
-	
-    WindowListenerSet       _WindowListeners;
+    virtual Border* getDrawnBorder(void) const;
+    virtual Layer* getDrawnBackground(void) const;
+    virtual Layer* getDrawnForeground(void) const;
 	
     void produceWindowOpened     ( void);
     void produceWindowClosing    ( void);
@@ -178,7 +167,6 @@ typedef AbstractWindow *AbstractWindowP;
 OSG_END_NAMESPACE
 
 #include "OSGUIDrawObjectCanvas.h"
-#include "OSGUIDrawingSurface.h"
 
 #include "OSGAbstractWindowBase.inl"
 #include "OSGAbstractWindow.inl"

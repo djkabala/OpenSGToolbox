@@ -1,12 +1,13 @@
 
 %module OSGToolbox
+%include <std_except.i>
 %import  <OSGBase.i>
 %import  <OSGSystem.i>
 %include <lua/std_map.i>
 %include <lua/std_vector.i>
 %{
 #include "OSGWindowEventProducer.h"
-#include "OSGKeyEvent.h"
+#include "OSGKeyEventDetails.h"
 
 #include "OSGSound.h"
 #include "OSGSoundGroup.h"
@@ -15,6 +16,9 @@
 #include "OSGAnimation.h"
 
 #include "OSGComponent.h"
+#include "OSGInternalWindow.h"
+#include "OSGUIDrawingSurface.h"
+#include "OSGScrollPanel.h"
 
 #include "OSGParticleSystem.h"
 #include "OSGDistribution1D.h"
@@ -54,11 +58,10 @@
 #include "OSGContainerUtils.h"
 #include "OSGActivity.h"
 #include "OSGEventProducerType.h"
-#include "OSGEventProducer.h"
 #include "OSGActivity.h"
 #include "OSGWindow.h"
 #include "OSGLuaActivity.h"
-#include "OSGGenericEvent.h"
+#include "OSGGenericEventDetails.h"
 #include "OSGCgFXMaterial.h"
         
 %}
@@ -75,6 +78,9 @@ namespace OSG {
     class Sound;
     class Animation;
     class Component;
+    class ScrollPanel;
+    class InternalWindow;
+    class UIDrawingSurface;
     class ParticleSystem;
     class PhysicsBody;
     class PhysicsHandler;
@@ -106,7 +112,7 @@ namespace OSG {
     /******************************************************/
     /*                       WindowEventProducer                       */
     /******************************************************/ 
-    class WindowEventProducer : public AttachmentContainerRefPtr
+    class WindowEventProducer : public AttachmentContainer
     {
       public:
 
@@ -295,14 +301,20 @@ namespace OSG {
     class PhysicsHandler : public FieldContainer
     {
       public:
-        //void attachUpdateProducer(EventProducerPtr TheProducer);
-        //void detachUpdateProducer(EventProducerPtr TheProducer);
+        void detachUpdateProducer(void);
 
       protected:
         PhysicsHandler(void);
         PhysicsHandler(const PhysicsHandler &source);
 
         virtual ~PhysicsHandler(void);
+    };
+    %extend PhysicsHandler
+    {
+        void attachUpdateProducer(FieldContainerRefPtr producer)
+        {
+            ($self)->attachUpdateProducer(producer);
+        }
     };
 
     /******************************************************/
@@ -485,7 +497,7 @@ namespace OSG {
     /******************************************************/
     /*                 Key Bindings                       */
     /******************************************************/
-    class KeyEvent
+    class KeyEventDetails
     {
       public:
 
@@ -682,10 +694,10 @@ namespace OSG {
               KEY_STATE_TOGGLED = 3 
           };
       protected:
-        KeyEvent(void);
-        KeyEvent(const PhysicsHandler &source);
+        KeyEventDetails(void);
+        KeyEventDetails(const PhysicsHandler &source);
 
-        virtual ~KeyEvent(void);
+        virtual ~KeyEventDetails(void);
     };
 
     /******************************************************/
@@ -724,7 +736,7 @@ namespace OSG {
         UInt32 getNumParticles(void) const;
         const Pnt3f& getPosition(const UInt32& Index) const;
         const Pnt3f& getSecPosition(const UInt32& Index) const;
-        const Vec3f getPositionChange(const UInt32& Index) const;
+        Vec3f getPositionChange(const UInt32& Index) const;
         const Vec3f& getNormal(const UInt32& Index) const;
         const Color4f& getColor(const UInt32& Index) const;
         const Vec3f& getSize(const UInt32& Index) const;
@@ -732,9 +744,11 @@ namespace OSG {
         Real32 getAge(const UInt32& Index) const;
         const Vec3f& getVelocity(const UInt32& Index) const;
         const Vec3f& getSecVelocity(const UInt32& Index) const;
-        const Vec3f getVelocityChange(const UInt32& Index) const;
+        Vec3f getVelocityChange(const UInt32& Index) const;
         const Vec3f& getAcceleration(const UInt32& Index) const;
         UInt32 getAttribute(const UInt32& Index, const std::string& AttributeKey) const;
+        UInt32 getID(const UInt32& Index) const;
+        Int64 getIndex(UInt32 ParticleID) const;
         const std::map<std::string, OSG::UInt32>& getAttributes(const UInt32& Index) const;
     
         void setPosition(const Pnt3f& Pos, const UInt32& Index);
@@ -791,10 +805,8 @@ namespace OSG {
                          const Vec3f& Acceleration);
     
         bool killParticle(UInt32 Index, bool KillNextUpdate = false);
+        bool killParticleByID(UInt32 ID, bool KillNextUpdate = false);
     
-        bool attachUpdateListener(WindowEventProducerRefPtr UpdateProducer);
-        void dettachUpdateListener(WindowEventProducerRefPtr UpdateProducer);
-        void attachUpdateProducer(EventProducerPtr TheProducer);
         void detachUpdateProducer(void);
         
         std::vector<UInt32> intersect(const Line& Ray, Real32 MinDistFromRay, Real32 MinDistFromRayOrigin, bool sort = false, NodeRefPtr Beacon = NullFC) const;
@@ -807,6 +819,13 @@ namespace OSG {
             ParticleSystem(const ParticleSystem &source);
     
             virtual ~ParticleSystem(void);
+    };
+    %extend ParticleSystem
+    {
+        void attachUpdateProducer(FieldContainerRefPtr producer)
+        {
+            ($self)->attachUpdateProducer(producer);
+        }
     };
 
     /******************************************************/
@@ -848,29 +867,6 @@ namespace OSG {
         virtual Vec2f getRequestedSize(void) const;
         virtual Vec2f getContentRequestedSize(void) const;
         virtual Vec2f getBorderingLength(void) const;
-        
-        //Mouse Events
-        //virtual void mouseClicked(const MouseEventRefPtr e);
-        //virtual void mouseEntered(const MouseEventRefPtr e);
-        ///virtual void mouseExited(const MouseEventRefPtr e);
-        //virtual void mousePressed(const MouseEventRefPtr e);
-        //virtual void mouseReleased(const MouseEventRefPtr e);
-    
-        //Mouse Motion Events
-        //virtual void mouseMoved(const MouseEventRefPtr e);
-        //virtual void mouseDragged(const MouseEventRefPtr e);
-    
-        //Mouse Wheel Events
-        //virtual void mouseWheelMoved(const MouseWheelEventRefPtr e);
-    
-        //Key Events
-        //virtual void keyPressed(const KeyEventRefPtr e);
-        //virtual void keyReleased(const KeyEventRefPtr e);
-        //virtual void keyTyped(const KeyEventRefPtr e);
-    
-        //Focus Events
-        //virtual void focusGained(const FocusEventRefPtr e);
-        //virtual void focusLost(const FocusEventRefPtr e);
     
         void setMouseContained(bool Value);
         bool getMouseContained(void);
@@ -914,6 +910,209 @@ namespace OSG {
             Component(const Component &source);
     
             virtual ~Component(void);
+    };
+    
+    /******************************************************/
+    /*                 InternalWindowRefPtr                       */
+    /******************************************************/
+    class InternalWindowRefPtr : public ComponentRefPtr
+    {
+      public:
+         InternalWindowRefPtr(void);
+         InternalWindowRefPtr(const InternalWindowRefPtr               &source);
+         
+        ~InternalWindowRefPtr(void); 
+        InternalWindow *operator->(void);
+    };
+    %extend InternalWindowRefPtr
+    {
+        static InternalWindowRefPtr dcast(const FieldContainerRefPtr oIn)
+        {
+            return OSG::dynamic_pointer_cast<OSG::InternalWindow>(oIn);
+        }
+    };
+    
+    /******************************************************/
+    /*                 InternalWindow                              */
+    /******************************************************/
+    class InternalWindow : public Component
+    {
+      public:
+    
+        //bool giveFocus(Component* const NewFocusedComponent, bool Temporary = false);
+        bool takeFocus(bool Temporary = false);
+    
+        // boost::signals2::connection connectKeyAccelerator(KeyEventDetails::Key TheKey, 
+                                                          // UInt32 Modifiers,
+                                                          // const KeyPressedEventType::slot_type &listener,
+                                                          // boost::signals2::connect_position at= boost::signals2::at_front);
+    // 
+        // boost::signals2::connection connectKeyAccelerator(KeyEventDetails::Key TheKey, 
+                                                          // UInt32 Modifiers,
+                                                          // const KeyPressedEventType::group_type &group,
+                                                          // const KeyPressedEventType::slot_type &listener,
+                                                          // boost::signals2::connect_position at= boost::signals2::at_front);
+    // 
+        virtual void open(void);
+    
+        virtual void close(void);
+    
+        void detachFromEventProducer(void);
+    
+        // virtual InternalWindow* getParentWindow(void) const;
+    // 
+        // virtual void setParentWindow(InternalWindow* const parent);
+    // 
+        // virtual void updateContainerLayout(void);
+      private:
+        InternalWindow(void);
+        InternalWindow(const InternalWindow &source);
+
+        virtual ~InternalWindow(void);
+    
+    };
+    %extend InternalWindow
+    {
+        virtual void giveFocus(ComponentRefPtr const NewFocusedComponent, bool Temporary = false)
+        {
+            ($self)->giveFocus(NewFocusedComponent, Temporary);
+        }
+    };
+    
+    /******************************************************/
+    /*                 UIDrawingSurfaceRefPtr                       */
+    /******************************************************/
+    class UIDrawingSurfaceRefPtr : public AttachmentContainerRefPtr
+    {
+      public:
+         UIDrawingSurfaceRefPtr(void);
+         UIDrawingSurfaceRefPtr(const UIDrawingSurfaceRefPtr               &source);
+         
+        ~UIDrawingSurfaceRefPtr(void); 
+        UIDrawingSurface *operator->(void);
+    };
+    %extend UIDrawingSurfaceRefPtr
+    {
+        static UIDrawingSurfaceRefPtr dcast(const FieldContainerRefPtr oIn)
+        {
+            return OSG::dynamic_pointer_cast<OSG::UIDrawingSurface>(oIn);
+        }
+    };
+    
+    /******************************************************/
+    /*                 UIDrawingSurface                              */
+    /******************************************************/
+    class UIDrawingSurface : public AttachmentContainer
+    {
+      public:
+        void detachFromEventProducer(void);
+    
+        virtual Pnt2f getMousePosition(void) const;
+    
+        virtual UInt32 getNumWindowLayers(void) const;
+        /* virtual Int32 getWindowLayer(InternalWindow* const TheWindow) const;
+        virtual InternalWindow* getWindowAtLayer(const UInt32& Layer) const;
+        virtual void setWindowToLayer(InternalWindow* const TheWindow, const UInt32& Layer);
+        virtual void moveWindowUp(InternalWindow* const TheWindow);
+        virtual void moveWindowDown(InternalWindow* const TheWindow);
+        virtual void moveWindowToTop(InternalWindow* const TheWindow);
+        virtual void moveWindowToBottom(InternalWindow* const TheWindow);
+    
+        virtual void openWindow(InternalWindow* const TheWindow, const Int32 Layer = -1);
+        virtual void closeWindow(InternalWindow* const TheWindow);
+    
+        void updateWindowLayouts(void);
+        void updateWindowLayout(InternalWindow* const TheWindow); */
+      private:
+        UIDrawingSurface(void);
+        UIDrawingSurface(const UIDrawingSurface &source);
+
+        virtual ~UIDrawingSurface(void);
+    
+    };
+    %extend UIDrawingSurface
+    {
+        virtual void openWindow(InternalWindowRefPtr const TheWindow, const Int32 Layer = -1)
+        {
+            ($self)->openWindow(TheWindow, Layer);
+        }
+        
+        virtual void closeWindow(InternalWindowRefPtr const TheWindow)
+        {
+            ($self)->closeWindow(TheWindow);
+        }
+    };
+    
+    /******************************************************/
+    /*                 ScrollPanelRefPtr                       */
+    /******************************************************/
+    class ScrollPanelRefPtr : public ComponentRefPtr
+    {
+      public:
+         ScrollPanelRefPtr(void);
+         ScrollPanelRefPtr(const ScrollPanelRefPtr               &source);
+         
+        ~ScrollPanelRefPtr(void); 
+        ScrollPanel *operator->(void);
+    };
+    %extend ScrollPanelRefPtr
+    {
+        static ScrollPanelRefPtr dcast(const FieldContainerRefPtr oIn)
+        {
+            return OSG::dynamic_pointer_cast<OSG::ScrollPanel>(oIn);
+        }
+    };
+    
+    /******************************************************/
+    /*                 ScrollPanel                              */
+    /******************************************************/
+    class ScrollPanel : public Component
+    {
+      public:
+        enum ScrollBarDisplayPolicy
+        {
+            SCROLLBAR_AS_NEEDED = 0,
+            SCROLLBAR_AS_ALWAYS = 1,
+            SCROLLBAR_AS_NEVER  = 2
+        };
+    
+        enum ResizePolicy
+        {
+            NO_RESIZE      = 0,
+            RESIZE_TO_VIEW = 1
+        };
+    
+        enum HorizontalAlign
+        {
+            SCROLLBAR_ALIGN_TOP    = 0,
+            SCROLLBAR_ALIGN_BOTTOM = 1
+        };
+    
+        enum VerticalAlign
+        {
+            SCROLLBAR_ALIGN_LEFT  = 0,
+            SCROLLBAR_ALIGN_RIGHT = 1
+        };
+        
+        virtual void updateLayout(void);
+    
+        //void setViewComponent(Component* const TheComponent);
+        //Component * getViewComponent  (void) const;
+    
+        //Mouse Wheel Events
+        //virtual void mouseWheelMoved(MouseWheelEventDetails* const e);
+    
+        //Scrolling
+        void scrollHorizontalUnit(Int32 Units);
+        void scrollHorizontalBlock(Int32 Blocks);
+        void scrollVerticalUnit(Int32 Units);
+        void scrollVerticalBlock(Int32 Blocks);
+      private:
+        ScrollPanel(void);
+        ScrollPanel(const ScrollPanel &source);
+
+        virtual ~ScrollPanel(void);
+    
     };
     
     /******************************************************/
@@ -1003,13 +1202,19 @@ namespace OSG {
         virtual void setCamera(CameraRefPtr TheCamera);
         virtual CameraRefPtr getCamera(void) const;
     
-        void attachUpdateProducer(WindowEventProducerRefPtr TheProducer);
-        void detachUpdateProducer(WindowEventProducerRefPtr TheProducer);
+        void detachUpdateProducer(void);
     
       protected:
         SoundManager(void);
         SoundManager(const SoundManager &source);
         virtual ~SoundManager(void); 
+    };
+    %extend SoundManager
+    {
+        void attachUpdateProducer(FieldContainerRefPtr producer)
+        {
+            ($self)->attachUpdateProducer(producer);
+        }
     };
     
     /******************************************************/
@@ -1097,12 +1302,18 @@ namespace OSG {
         virtual bool isPlaying(void) const;
         virtual void stop(bool DisconnectFromEventProducer = true);
         
-        void attachUpdateProducer(EventProducerPtr TheProducer);
         void detachUpdateProducer(void);
       protected:
         Animation(void);
         Animation(const Animation &source);
         virtual ~Animation(void); 
+    };
+    %extend Animation
+    {
+        void attachUpdateProducer(FieldContainerRefPtr producer)
+        {
+            ($self)->attachUpdateProducer(producer);
+        }
     };
 
     
@@ -1112,41 +1323,57 @@ namespace OSG {
     class VideoWrapper : public AttachmentContainer
     {
       public:
-        //virtual bool open(const BoostPath& ThePath);
-        virtual bool open(const std::string& ThePath, WindowRefPtr window) = 0;
+        //virtual bool open(const std::string& ThePath, Window* const TheWindow) = 0;
     
-        virtual bool seek(Int64 SeekPos) = 0;
-        virtual bool jump(Int64 Amount) = 0;
-        virtual bool setRate(Real32 Rate) = 0;
-        virtual Real32 getRate(void) const = 0;
+        virtual bool seek(Real64 SeekPos) = 0;
+        virtual bool jump(Real64 Amount) = 0;
+        virtual bool setRate(Real64 Rate) = 0;
+        virtual Real64 getRate(void) const = 0;
         virtual bool play(void) = 0;
         virtual bool pause(void) = 0;
         virtual bool unpause(void) = 0;
         virtual bool pauseToggle(void) = 0;
         virtual bool stop(void) = 0;
         virtual bool close(void) = 0;
-        
         virtual bool isPlaying(void) const = 0;
-        virtual bool isStopped(void) const = 0;
         virtual bool isPaused(void) const = 0;
         virtual bool isInitialized(void) const = 0;
+        virtual bool isStopped(void) const = 0;
+        
+        virtual bool canSeekForward(void) const = 0;
+        virtual bool canSeekBackward(void) const = 0;
+        virtual Real64 getPosition(void) const = 0;
+        virtual Real64 getDuration(void) const = 0;
+        virtual UInt32 getWidth(void) const = 0;
+        virtual UInt32 getHeight(void) const = 0;
     
-        virtual Int64 getPosition(void) const = 0;
-        virtual Int64 getDuration(void) const = 0;
+        virtual bool hasAudio(void) const = 0;
+        virtual void enableAudio(void) = 0;
+        virtual void disableAudio(void) = 0;
+        virtual bool isAudioEnabled(void) const = 0;
     
-        virtual ImageRefPtr getCurrentFrame(void) = 0;
+        virtual Real32 getAudioVolume(void) const = 0;
+        virtual void setAudioVolume(Real32 volume) = 0;
+    
         virtual bool updateImage(void) = 0;
-        virtual bool updateTexture(TextureObjChunkRefPtr TheTexture);
     
-        ImageRefPtr getImage(void) const;
-    
-        //Events
-        //void addVideoListener(VideoListenerRefPtr Listener);
-        //void removeVideoListener(VideoListenerRefPtr Listener);
+        //void attachUpdateProducer(ReflexiveContainer* const producer);
+        void detachUpdateProducer(void);
       protected:
         VideoWrapper(void);
         VideoWrapper(const VideoWrapper &source);
         virtual ~VideoWrapper(void); 
+    };
+    %extend VideoWrapper
+    {
+        bool open(const std::string& ThePath, FieldContainerRefPtr TheWindow)
+        {
+            return ($self)->open(ThePath, OSG::dynamic_pointer_cast<OSG::Window>(TheWindow));
+        }
+        void attachUpdateProducer(FieldContainerRefPtr producer)
+        {
+            ($self)->attachUpdateProducer(producer);
+        }
     };
     
 

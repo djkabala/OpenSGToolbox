@@ -80,7 +80,7 @@ void ComponentMenuItem::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void ComponentMenuItem::drawInternal(const GraphicsWeakPtr TheGraphics, Real32 Opacity) const
+void ComponentMenuItem::drawInternal(Graphics* const TheGraphics, Real32 Opacity) const
 {
     if(getComponent() != NULL)
     {
@@ -127,8 +127,15 @@ void ComponentMenuItem::updateComponentBounds(void)
         Pnt2f InsideBorderTopLeft, InsideBorderBottomRight;
         getInsideBorderBounds(InsideBorderTopLeft, InsideBorderBottomRight);
 
-        getComponent()->setPosition(InsideBorderTopLeft);
-        getComponent()->setSize(InsideBorderBottomRight - InsideBorderTopLeft);
+        if(getComponent()->getPosition() != InsideBorderTopLeft)
+        {
+            getComponent()->setPosition(InsideBorderTopLeft);
+        }
+        Vec2f Size(InsideBorderBottomRight - InsideBorderTopLeft);
+        if(getComponent()->getSize() != Size)
+        {
+            getComponent()->setSize(Size);
+        }
     }
 }
 

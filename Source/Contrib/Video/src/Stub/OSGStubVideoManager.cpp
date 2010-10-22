@@ -41,19 +41,22 @@ VideoManager *StubVideoManager::the(void)
     return _the;
 }
 
-VideoWrapperRefPtr StubVideoManager::createVideoWrapper(void) const
+VideoWrapperTransitPtr StubVideoManager::createVideoWrapper(void) const
 {
-	return StubVideoWrapper::create();
+    VideoWrapperUnrecPtr Video(StubVideoWrapper::create());
+	return VideoWrapperTransitPtr(Video.get());
 }
 
-void StubVideoManager::init(int   argc, char *argv[])
+bool StubVideoManager::init(int   argc, char *argv[])
 {
     SLOG << "Video Stub Manager Initialized" << std::endl;
+    return true;
 }
 
-void StubVideoManager::exit(void)
+bool StubVideoManager::exit(void)
 {
     SLOG << "Video Stub Manager Exited" << std::endl;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

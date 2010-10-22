@@ -43,10 +43,7 @@
 #endif
 
 #include "OSGTabPanelBase.h"
-#include "OSGFocusListener.h"
 #include "OSGSingleSelectionModel.h"
-
-#include "OSGEventConnection.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -54,7 +51,7 @@ OSG_BEGIN_NAMESPACE
            PageContribUserInterfaceTabPanel for a description.
 */
 
-class OSG_CONTRIBUSERINTERFACE_DLLMAPPING TabPanel : public TabPanelBase, public FocusListener
+class OSG_CONTRIBUSERINTERFACE_DLLMAPPING TabPanel : public TabPanelBase
 {
   protected:
 
@@ -98,30 +95,22 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING TabPanel : public TabPanelBase, public
 
     /*! \}                                                                 */
 
-	virtual void focusGained(const FocusEventUnrecPtr e);
-	virtual void focusLost(const FocusEventUnrecPtr e);
-	virtual void drawInternal(const GraphicsWeakPtr Graphics, Real32 Opacity = 1.0f) const;
+	virtual void drawInternal(Graphics* const Graphics, Real32 Opacity = 1.0f) const;
 
-	virtual void addTab(const ComponentRefPtr Tab, const ComponentRefPtr TabContent);
-	virtual void removeTab(const ComponentRefPtr Tab);
+	virtual void addTab(Component* const Tab, Component* const TabContent);
+	virtual void removeTab(Component* const Tab);
 	virtual void removeTab(const UInt32 TabIndex);
 	virtual void removeAllTabs(void);
-	virtual void insertTab(const ComponentRefPtr TabInsert, const ComponentRefPtr Tab, const ComponentRefPtr TabContent);
-	virtual void insertTab(const UInt32 TabIndex, const ComponentRefPtr Tab, const ComponentRefPtr TabContent);
+	virtual void insertTab(Component* const TabInsert, Component* const Tab, Component* const TabContent);
+	virtual void insertTab(const UInt32 TabIndex, Component* const Tab, Component* const TabContent);
     
     //Returns the currently selected component for this tabpanel.
-    ComponentRefPtr getSelectedComponent(void) const;
+    Component* getSelectedComponent(void) const;
 
     //Returns the currently selected index for this tabpanel.
     Int32 getSelectedIndex(void) const;
     //Returns the currently selected index for this tabpanel.
     void setSelectedIndex(const Int32& Index);
-
-    //Adds listener as a listener to changes in the model.
-    EventConnection addSelectionListener(SelectionListenerPtr listener);
-	bool isSelectionListenerAttached(SelectionListenerPtr listener) const;
-    //Removes listener as a listener to changes in the model.
-    void removeSelectionListener(SelectionListenerPtr listener);
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -160,44 +149,38 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING TabPanel : public TabPanelBase, public
     virtual void updateLayout(void);
 
 	//Mouse Events
-    virtual void mouseClicked(const MouseEventUnrecPtr e);
-    virtual void mouseEntered(const MouseEventUnrecPtr e);
-    virtual void mouseExited(const MouseEventUnrecPtr e);
-    virtual void mousePressed(const MouseEventUnrecPtr e);
-    virtual void mouseReleased(const MouseEventUnrecPtr e);
+    virtual void mouseClicked(MouseEventDetails* const e);
+    virtual void mouseEntered(MouseEventDetails* const e);
+    virtual void mouseExited(MouseEventDetails* const e);
+    virtual void mousePressed(MouseEventDetails* const e);
+    virtual void mouseReleased(MouseEventDetails* const e);
 
 	//Mouse Motion Events
-    virtual void mouseMoved(const MouseEventUnrecPtr e);
-    virtual void mouseDragged(const MouseEventUnrecPtr e);
+    virtual void mouseMoved(MouseEventDetails* const e);
+    virtual void mouseDragged(MouseEventDetails* const e);
 
 	//Mouse Wheel Events
-    virtual void mouseWheelMoved(const MouseWheelEventUnrecPtr e);
+    virtual void mouseWheelMoved(MouseWheelEventDetails* const e);
 
-	void calculateTabBorderLengths(BorderRefPtr TheBorder, Real32& Left, Real32& Right, Real32& Top, Real32& Bottom) const;
+	void calculateTabBorderLengths(Border* const TheBorder, Real32& Left, Real32& Right, Real32& Top, Real32& Bottom) const;
 	void calculateMaxTabBorderLengths(Real32& Left, Real32& Right, Real32& Top, Real32& Bottom) const;
 
-	void calculateContentBorderLengths(BorderRefPtr TheBorder, Real32& Left, Real32& Right, Real32& Top, Real32& Bottom) const;
+	void calculateContentBorderLengths(Border* const TheBorder, Real32& Left, Real32& Right, Real32& Top, Real32& Bottom) const;
 
-    virtual BorderRefPtr getDrawnTabBorder(const UInt32& Index) const;
-    virtual LayerRefPtr getDrawnTabBackground(const UInt32& Index) const;
-    virtual BorderRefPtr getDrawnContentBorder(void) const;
-    virtual LayerRefPtr getDrawnContentBackground(void) const;
+    virtual Border* getDrawnTabBorder(const UInt32& Index) const;
+    virtual Layer* getDrawnTabBackground(const UInt32& Index) const;
+    virtual Border* getDrawnContentBorder(void) const;
+    virtual Layer* getDrawnContentBackground(void) const;
 
 	Int32 _MouseInTabLastMouse;
+   
+    void handleTabSelectionChanged(SelectionEventDetails* const e);
+    boost::signals2::connection _TabSelectionChangedConnection;
     
-	class TabSelectionListener : public SelectionListener
-	{
-	public:
-		TabSelectionListener(TabPanelRefPtr TheTabPanel);
-        virtual void selectionChanged(const SelectionEventUnrecPtr e);
-	private:
-		TabPanelRefPtr _TabPanel;
-	};
-
-	friend class TabSelectionListener;
-
-	TabSelectionListener _TabSelectionListener;
-    /*==========================  PRIVATE  ================================*/
+	void handleTabFocusGained(FocusEventDetails* const e);
+    std::vector<boost::signals2::connection> _TabFocusGainedConnections;
+    void updateTabFocusConnections(void);
+   /*==========================  PRIVATE  ================================*/
 
   private:
 

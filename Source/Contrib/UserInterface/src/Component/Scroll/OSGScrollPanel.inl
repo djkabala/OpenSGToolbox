@@ -54,15 +54,27 @@ Component * ScrollPanel::getViewComponent  (void) const
 }
 
 inline
-ScrollPanel::ViewportChangeListener::ViewportChangeListener(ScrollPanelRefPtr TheScrollPanel) :
-   _ScrollPanel(TheScrollPanel)
+void ScrollPanel::scrollHorizontalUnit(Int32 Units)
 {
+    getHorizontalScrollBar()->scrollUnit(Units);
 }
 
 inline
-ScrollPanel::ViewportRangeModelChangeListener::ViewportRangeModelChangeListener(ScrollPanelRefPtr TheScrollPanel) :
-   _ScrollPanel(TheScrollPanel)
+void ScrollPanel::scrollHorizontalBlock(Int32 Blocks)
 {
+    getHorizontalScrollBar()->scrollBlock(Blocks);
+}
+
+inline
+void ScrollPanel::scrollVerticalUnit(Int32 Units)
+{
+    getVerticalScrollBar()->scrollUnit(Units);
+}
+
+inline
+void ScrollPanel::scrollVerticalBlock(Int32 Blocks)
+{
+    getVerticalScrollBar()->scrollBlock(Blocks);
 }
 
 OSG_END_NAMESPACE

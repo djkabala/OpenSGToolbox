@@ -50,6 +50,7 @@
 #include "OSGButton.h"
 #include "OSGLabel.h"
 #include "OSGUIDrawUtils.h"
+#include "OSGUIDrawingSurface.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -111,8 +112,14 @@ void Titlebar::updateLayout(void)
     if(getFrameIcon() != NULL)
     {
         FrameIconSize.setValues( getFrameIcon()->getPreferredSize().x(), InsetsSize.y() );
-        getFrameIcon()->setPosition(FrameIconPos);
-        getFrameIcon()->setSize(FrameIconSize);
+        if(getFrameIcon()->getPosition() != FrameIconPos)
+        {
+            getFrameIcon()->setPosition(FrameIconPos);
+        }
+        if(getFrameIcon()->getSize() != FrameIconSize)
+        {
+            getFrameIcon()->setSize(FrameIconSize);
+        }
     }
     Pnt2f CloseButtonPos(InsetsBottomRight.x(), InsetsTopLeft.y()+1);
     Vec2f CloseButtonSize;
@@ -120,8 +127,14 @@ void Titlebar::updateLayout(void)
     {
         CloseButtonSize.setValues(getCloseButton()->getPreferredSize().x(), InsetsSize.y()-2);
         CloseButtonPos -= Vec2f(CloseButtonSize.x(),0) + Vec2f(3,0);
-        getCloseButton()->setPosition(CloseButtonPos);
-        getCloseButton()->setSize(CloseButtonSize);
+        if(getCloseButton()->getPosition() != CloseButtonPos)
+        {
+            getCloseButton()->setPosition(CloseButtonPos);
+        }
+        if(getCloseButton()->getSize() != CloseButtonSize)
+        {
+            getCloseButton()->setSize(CloseButtonSize);
+        }
     }
     Pnt2f MaximizeButtonPos(CloseButtonPos);
     Vec2f MaximizeButtonSize;
@@ -129,8 +142,14 @@ void Titlebar::updateLayout(void)
     {
         MaximizeButtonSize.setValues(getMaximizeButton()->getPreferredSize().x(), InsetsSize.y()-2);
         MaximizeButtonPos -= Vec2f(MaximizeButtonSize.x(),0) + Vec2f(3,0);
-        getMaximizeButton()->setPosition(MaximizeButtonPos);
-        getMaximizeButton()->setSize(MaximizeButtonSize);
+        if(getMaximizeButton()->getPosition() != MaximizeButtonPos)
+        {
+            getMaximizeButton()->setPosition(MaximizeButtonPos);
+        }
+        if(getMaximizeButton()->getSize() != MaximizeButtonSize)
+        {
+            getMaximizeButton()->setSize(MaximizeButtonSize);
+        }
     }
     Pnt2f IconifyButtonPos(MaximizeButtonPos);
     Vec2f IconifyButtonSize;
@@ -138,17 +157,34 @@ void Titlebar::updateLayout(void)
     {
         IconifyButtonSize.setValues(getIconifyButton()->getPreferredSize().x(), InsetsSize.y()-2);
         IconifyButtonPos -= Vec2f(IconifyButtonSize.x(),0) + Vec2f(3,0);
-        getIconifyButton()->setPosition(IconifyButtonPos);
-        getIconifyButton()->setSize(IconifyButtonSize);
+        if(getIconifyButton()->getPosition() != IconifyButtonPos)
+        {
+            getIconifyButton()->setPosition(IconifyButtonPos);
+        }
+        if(getIconifyButton()->getSize() != IconifyButtonSize)
+        {
+            getIconifyButton()->setSize(IconifyButtonSize);
+        }
     }
     Pnt2f TitleLabelPos(FrameIconPos + FrameIconSize);
     Vec2f TitleLabelSize;
     if(getTitleLabel() != NULL)
     {
         TitleLabelSize.setValues(IconifyButtonPos.x()-1-FrameIconPos.x()-FrameIconSize.x(), InsetsSize.y());
-        getTitleLabel()->setPosition(TitleLabelPos);
-        getTitleLabel()->setSize(TitleLabelSize);
+        if(getTitleLabel()->getPosition() != TitleLabelPos)
+        {
+            getTitleLabel()->setPosition(TitleLabelPos);
+        }
+        if(getTitleLabel()->getSize() != TitleLabelSize)
+        {
+            getTitleLabel()->setSize(TitleLabelSize);
+        }
     }
+}
+
+ComponentContainer* Titlebar::getParentContainer(void) const
+{
+    return getParentWindow();
 }
 
 void Titlebar::updateClipBounds(void)
@@ -173,35 +209,64 @@ void Titlebar::updateClipBounds(void)
 
         //Get Parent Container's Clip Bounds
         Pnt2f ContainerClipTopLeft, ContainerClipBottomRight;
-        dynamic_cast<InternalWindow*>(getParentWindow())->getClipBounds(ContainerClipTopLeft,ContainerClipBottomRight);
+        if(dynamic_cast<InternalWindow*>(getParentWindow()))
+        {
+            dynamic_cast<InternalWindow*>(getParentWindow())->getClipBounds(ContainerClipTopLeft,ContainerClipBottomRight);
 
-        //Parent Container's Clip Bounds are in the Parent Container's Coordinate space
-        //We need to convert them to this Components Coordinate space
-        ContainerClipTopLeft -= Vec2f(getPosition());
-        ContainerClipBottomRight -= Vec2f(getPosition());
+            //Parent Container's Clip Bounds are in the Parent Container's Coordinate space
+            //We need to convert them to this Components Coordinate space
+            ContainerClipTopLeft -= Vec2f(getPosition());
+            ContainerClipBottomRight -= Vec2f(getPosition());
 
-        //Get Parent Container's Titlebar Bounds
-        Pnt2f ContainerInsetTopLeft, ContainerInsetBottomRight;
-        dynamic_cast<InternalWindow*>(getParentWindow())->getTitlebarBounds(ContainerInsetTopLeft, ContainerInsetBottomRight);
+            //Get Parent Container's Titlebar Bounds
+            Pnt2f ContainerInsetTopLeft, ContainerInsetBottomRight;
+            dynamic_cast<InternalWindow*>(getParentWindow())->getTitlebarBounds(ContainerInsetTopLeft, ContainerInsetBottomRight);
 
-        //Parent Container's Inset Bounds are in the Parent Container's Coordinate space
-        //We need to convert them to this Components Coordinate space
-        ContainerInsetTopLeft -= Vec2f(getPosition());
-        ContainerInsetBottomRight -= Vec2f(getPosition());
+            //Parent Container's Inset Bounds are in the Parent Container's Coordinate space
+            //We need to convert them to this Components Coordinate space
+            ContainerInsetTopLeft -= Vec2f(getPosition());
+            ContainerInsetBottomRight -= Vec2f(getPosition());
 
-        //Get the intersection of my bounds with my parent containers clip bounds
-        quadIntersection(MyTopLeft,MyBottomRight,
-                         ContainerClipTopLeft,ContainerClipBottomRight,
-                         TopLeft, BottomRight);
+            //Get the intersection of my bounds with my parent containers clip bounds
+            quadIntersection(MyTopLeft,MyBottomRight,
+                             ContainerClipTopLeft,ContainerClipBottomRight,
+                             TopLeft, BottomRight);
 
-        quadIntersection(TopLeft,BottomRight,
-                         ContainerInsetTopLeft,ContainerInsetBottomRight,
-                         TopLeft, BottomRight);
+            quadIntersection(TopLeft,BottomRight,
+                             ContainerInsetTopLeft,ContainerInsetBottomRight,
+                             TopLeft, BottomRight);
+        }
     }
     //The Clip Bounds calculated are in my Parent Containers coordinate space
     //Translate these bounds into my own coordinate space
     setClipTopLeft(TopLeft);
     setClipBottomRight(BottomRight);
+}
+
+void Titlebar::setParentWindow(InternalWindow* const parent)
+{
+    Inherited::setParentWindow(parent);
+    
+    if(getParentWindow() != NULL &&
+       getIconifyButton() != NULL &&
+       getParentWindow()->getIconable() != getIconifyButton()->getEnabled())
+    {
+        getIconifyButton()->setEnabled(getParentWindow()->getIconable());
+    }
+
+    if(getParentWindow() != NULL &&
+       getMaximizeButton() != NULL &&
+       getParentWindow()->getMaximizable() != getMaximizeButton()->getEnabled())
+    {
+        getMaximizeButton()->setEnabled(getParentWindow()->getMaximizable());
+    }
+
+    if(getParentWindow() != NULL &&
+       getCloseButton() != NULL &&
+       getParentWindow()->getClosable() != getCloseButton()->getEnabled())
+    {
+        getCloseButton()->setEnabled(getParentWindow()->getClosable());
+    }
 }
 
 /*-------------------------------------------------------------------------*\
@@ -298,8 +363,7 @@ void Titlebar::changed(ConstFieldMaskArg whichField,
         }
     }
 
-    if(((whichField & IconifyButtonFieldMask) ||
-        (whichField & ParentWindowFieldMask)) &&
+    if((whichField & IconifyButtonFieldMask) &&
        getParentWindow() != NULL &&
        getIconifyButton() != NULL &&
        getParentWindow()->getIconable() != getIconifyButton()->getEnabled())
@@ -307,8 +371,7 @@ void Titlebar::changed(ConstFieldMaskArg whichField,
         getIconifyButton()->setEnabled(getParentWindow()->getIconable());
     }
 
-    if(((whichField & MaximizeButtonFieldMask) ||
-        (whichField & ParentWindowFieldMask)) &&
+    if((whichField & MaximizeButtonFieldMask) &&
        getParentWindow() != NULL &&
        getMaximizeButton() != NULL &&
        getParentWindow()->getMaximizable() != getMaximizeButton()->getEnabled())
@@ -316,8 +379,7 @@ void Titlebar::changed(ConstFieldMaskArg whichField,
         getMaximizeButton()->setEnabled(getParentWindow()->getMaximizable());
     }
 
-    if(((whichField & CloseButtonFieldMask) ||
-        (whichField & ParentWindowFieldMask)) &&
+    if((whichField & CloseButtonFieldMask) &&
        getParentWindow() != NULL &&
        getCloseButton() != NULL &&
        getParentWindow()->getClosable() != getCloseButton()->getEnabled())

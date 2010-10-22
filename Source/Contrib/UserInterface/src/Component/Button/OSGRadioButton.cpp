@@ -77,7 +77,7 @@ void RadioButton::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-UIDrawObjectCanvasRefPtr RadioButton::getDrawnDrawObject(void) const
+UIDrawObjectCanvas* RadioButton::getDrawnDrawObject(void) const
 {
     if(getEnabled())
     {
@@ -128,12 +128,12 @@ UIDrawObjectCanvasRefPtr RadioButton::getDrawnDrawObject(void) const
     }
 }
 
-UIDrawObjectCanvasRefPtr RadioButton::getBaseDrawObject(void) const
+UIDrawObjectCanvas* RadioButton::getBaseDrawObject(void) const
 {
 	return getRadioDrawObject();          
 }
 
-void RadioButton::actionPreformed(const ActionEventUnrecPtr e)
+void RadioButton::actionPreformed(ActionEventDetails* const e)
 {
     setSelected(true);
 }

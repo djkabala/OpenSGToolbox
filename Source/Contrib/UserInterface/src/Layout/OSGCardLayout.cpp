@@ -77,27 +77,27 @@ void CardLayout::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void CardLayout::first(const ComponentContainerRefPtr TheContainer)
+void CardLayout::first(ComponentContainer* const TheContainer)
 {
     setCard(0);
 }
 
-void CardLayout::last(const ComponentContainerRefPtr TheContainer)
+void CardLayout::last(ComponentContainer* const TheContainer)
 {
     setCard(TheContainer->getMFChildren()->size()-1);
 }
 
-void CardLayout::next(const ComponentContainerRefPtr TheContainer)
+void CardLayout::next(ComponentContainer* const TheContainer)
 {	
     setCard((getCard()+1)%TheContainer->getMFChildren()->size());
 }
 
-void CardLayout::previous(const ComponentContainerRefPtr TheContainer)
+void CardLayout::previous(ComponentContainer* const TheContainer)
 {   
     setCard((getCard()-1)%TheContainer->getMFChildren()->size());
 }
 
-void CardLayout::updateLayout(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+void CardLayout::updateLayout(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     if(getCard() >= Components->size())
     {
@@ -118,9 +118,10 @@ void CardLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compo
 
     for(UInt32 i(0) ; i<Components->size() ; ++i)
     {
-        if((*Components)[i] != curCard)
+        if((*Components)[i] != curCard &&
+            (*Components)[i]->getSize() != Vec2f(0.0f,0.0f))
         {
-            (*Components)[i]->setSize(Vec2f(0,0));
+            (*Components)[i]->setSize(Vec2f(0.0f,0.0f));
         }
     }
     // check each dimension against the max size of the component;
@@ -129,17 +130,24 @@ void CardLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compo
     if (size[1] > curCard->getMaxSize()[1]) 
         size[1] = curCard->getMaxSize()[1];
     // set the component to its parent component's size, or its max size
-    curCard->setSize(size);
+    if(curCard->getSize() != size)
+    {
+        curCard->setSize(size);
+    }
 
     offset[0] = (borderSize.x()-size.x())/2;
     offset[1] = (borderSize.y()-size.y())/2;
 
-    curCard->setPosition(borderTopLeft + Vec2f(offset));
+    Pnt2f Pos(borderTopLeft + Vec2f(offset));
+    if(curCard->getPosition() != Pos)
+    {
+        curCard->setPosition(Pos);
+    }
 
 }
 
 
-Vec2f CardLayout::layoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
+Vec2f CardLayout::layoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
 {
     Vec2f Result(0.0,0.0);
 
@@ -160,22 +168,22 @@ Vec2f CardLayout::layoutSize(const MFUnrecComponentPtr* Components, const Compon
     return Result;
 }
 
-Vec2f CardLayout::minimumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f CardLayout::minimumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MIN_SIZE);
 }
 
-Vec2f CardLayout::requestedContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f CardLayout::requestedContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, REQUESTED_SIZE);
 }
 
-Vec2f CardLayout::preferredContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f CardLayout::preferredContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, PREFERRED_SIZE);
 }
 
-Vec2f CardLayout::maximumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f CardLayout::maximumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MAX_SIZE);
 }
@@ -208,10 +216,9 @@ void CardLayout::changed(ConstFieldMaskArg whichField,
 {
     Inherited::changed(whichField, origin, details);
 
-    if((whichField & CardFieldMask) &&
-       getParentContainer() != NULL)
+    if(whichField & CardFieldMask)
     {
-        getParentContainer()->updateLayout();
+        updateParentContainers();
     }
 }
 

@@ -26,19 +26,23 @@
 #include "OSGTBFileIODef.h"
 
 #include "OSGFieldContainer.h"
-#include "OSGEventProducerType.h"
+#include "OSGFCFileType.h"
 #include <set>
 #include <vector>
 
 OSG_BEGIN_NAMESPACE
 
-std::set<FieldContainerUnrecPtr> OSG_TBFILEIO_DLLMAPPING getAllDependantFCs(const std::set<FieldContainerUnrecPtr>& Containers,
-                                                                            const std::set<FieldContainerUnrecPtr>& IgnoreContainers,
-                                                                            const std::vector<const FieldContainerType*>& IgnoreTypes);
+FCFileType::FCPtrStore
+OSG_TBFILEIO_DLLMAPPING getAllDependantFCs(const FCFileType::FCPtrStore& Containers,
+                                           const FCFileType::FCPtrStore& IgnoreContainers,
+                                           const std::vector<const FieldContainerType*>& IgnoreTypes,
+                                           bool RecurseFilePathAttachedContainers=false);
 
-std::set<FieldContainerUnrecPtr> OSG_TBFILEIO_DLLMAPPING getAllDependantFCs(const std::set<FieldContainerUnrecPtr>& Containers,
-                                                                            const std::set<FieldContainerUnrecPtr>& IgnoreContainers,
-                                                                            const std::vector<UInt32>& IgnoreTypes);
+FCFileType::FCPtrStore
+OSG_TBFILEIO_DLLMAPPING getAllDependantFCs(const FCFileType::FCPtrStore& Containers,
+                                           const FCFileType::FCPtrStore& IgnoreContainers,
+                                           const std::vector<UInt32>& IgnoreTypes,
+                                           bool RecurseFilePathAttachedContainers=false);
 
 OSG_END_NAMESPACE
 

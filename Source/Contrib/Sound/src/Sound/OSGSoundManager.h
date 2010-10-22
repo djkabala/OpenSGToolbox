@@ -44,10 +44,9 @@
 
 #include "OSGConfig.h"
 #include "OSGCamera.h"
-#include "OSGWindowEventProducer.h"
-#include "OSGUpdateListener.h"
 
 #include "OSGSound.h"
+#include "OSGStatElemTypes.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -55,7 +54,7 @@ OSG_BEGIN_NAMESPACE
            PageSoundSoundManager for a description.
 */
 
-class OSG_CONTRIBSOUND_DLLMAPPING SoundManager : public UpdateListener
+class OSG_CONTRIBSOUND_DLLMAPPING SoundManager
 {
   private:
 
@@ -64,14 +63,16 @@ class OSG_CONTRIBSOUND_DLLMAPPING SoundManager : public UpdateListener
     static SoundManager* the(void);
 
 	//create a new sound object by its integer id
-	virtual SoundUnrecPtr createSound(void) const = 0;
+	virtual SoundTransitPtr createSound(void) const = 0;
 
     
-    virtual void setCamera(CameraUnrecPtr TheCamera);
-    virtual CameraUnrecPtr getCamera(void) const;
+    virtual void setCamera(Camera* const TheCamera);
+    virtual Camera* getCamera(void) const;
 
-    void attachUpdateProducer(WindowEventProducerUnrecPtr TheProducer);
-    void detachUpdateProducer(WindowEventProducerUnrecPtr TheProducer);
+    void attachUpdateProducer(ReflexiveContainer* const producer);
+    void detachUpdateProducer(void);
+
+    static StatElemDesc<StatIntElem    > statNChannels;
 
     /*=========================  PROTECTED  ===============================*/
   protected:
@@ -99,8 +100,11 @@ class OSG_CONTRIBSOUND_DLLMAPPING SoundManager : public UpdateListener
 
     static void setSoundManager(SoundManager *manager);
     static SoundManager* getDefaultSoundManager(void);
+    void attachedUpdate(EventDetails* const details);
+    virtual void update(const Time& ElapsedTime) = 0;
 
     CameraUnrecPtr _Camera;
+    boost::signals2::connection _UpdateEventConnection;
 
 	/**
 	* update the sound system with current elapsed time

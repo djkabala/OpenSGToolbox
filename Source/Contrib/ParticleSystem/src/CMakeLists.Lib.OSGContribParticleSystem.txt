@@ -9,7 +9,8 @@ OSG_SELECT_PROJECT()
 # dependencies - OpenSG
 SET(${PROJECT_NAME}_DEP_OSG_LIB OSGDrawable
                                 OSGGroup
-                                OSGState)
+                                OSGState
+                                OSGUtil)
 
 SET(${PROJECT_NAME}_DEP_TEST_OSG_LIB )
 
@@ -36,9 +37,10 @@ OSG_STORE_PROJECT_DEPENDENCIES()
 OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}")
 
 OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/ParticleSystem/Events")
-OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/ParticleSystem/MultipleParticleSystemAffectors")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/ParticleSystem/MultiParticleSystemAffectors")
 OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/ParticleSystem/ParticleSystemAffectors")
 OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/ParticleSystem/ParticleSystemDrawers")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/ParticleSystem/ParticleSystemDrawers/DrawerFunctions")
 OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/ParticleSystem/ParticleGenerators")
 OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/ParticleSystem/ParticleAffectors")
 OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/ParticleSystem")

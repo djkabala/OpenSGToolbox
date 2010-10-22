@@ -78,35 +78,79 @@ void AbsoluteLayout::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void AbsoluteLayout::updateLayout(const MFUnrecComponentPtr* Components,
+void AbsoluteLayout::updateLayout(const MFUnrecChildComponentPtr* Components,
                                   const Component* ParentComponent) const
 {
     Pnt2f ParentInsetsTopLeft, ParentInsetBottomRight;
     dynamic_cast<const ComponentContainer*>(ParentComponent)->getInsideInsetsBounds(ParentInsetsTopLeft, ParentInsetBottomRight);
+	Vec2f borderSize(ParentInsetBottomRight-ParentInsetsTopLeft);
+
+    Vec2f ComponentSize;
+    Pnt2f ComponentPosition;
     for(UInt32 i = 0 ; i<Components->size(); ++i)
     {
         //Calculate the Components Size
-        (*Components)[i]->setSize((*Components)[i]->getPreferredSize());
         if((*Components)[i]->getConstraints() != NULL)
         {
-            //Get the Components Position
-            Pnt2f pos = dynamic_cast<AbsoluteLayoutConstraints*>((*Components)[i]->getConstraints())->getPosition();
-
-            (*Components)[i]->setPosition(ParentInsetsTopLeft + pos.subZero());
+            ComponentPosition = dynamic_cast<AbsoluteLayoutConstraints*>((*Components)[i]->getConstraints())->getPosition();
         }
         else
         {
-            (*Components)[i]->setPosition(ParentInsetsTopLeft);
+            ComponentPosition.setValues(0.0f,0.0f);
+        }
+        ComponentSize = (*Components)[i]->getPreferredSize();
+
+        
+        if(getScaling())
+        {
+            Vec2f DifferenceRatio(borderSize.x() / getOriginalDimensions().x(), borderSize.y() / getOriginalDimensions().y());
+
+            ComponentPosition.setValues(ComponentPosition.x() * DifferenceRatio.x(), ComponentPosition.y() * DifferenceRatio.y());
+            ComponentSize.setValues(ComponentSize.x() * DifferenceRatio.x(), ComponentSize.y() * DifferenceRatio.y());
+        }
+        else
+        {
+            if(ComponentPosition.x() <= 1.0f)
+            {
+                ComponentPosition[0] = ComponentPosition.x() * borderSize.x();
+            }
+            if(ComponentPosition.y() <= 1.0f)
+            {
+                ComponentPosition[1] = ComponentPosition.y() * borderSize.y();
+            }
+
+            if(ComponentSize.x() <= 1.0f)
+            {
+                ComponentSize[0] = ComponentSize.x() * borderSize.x();
+            }
+            if(ComponentSize.y() <= 1.0f)
+            {
+                ComponentSize[1] = ComponentSize.y() * borderSize.y();
+            }
+        }
+
+        ComponentPosition = ParentInsetsTopLeft + ComponentPosition.subZero();
+        if((*Components)[i]->getPosition() != ComponentPosition)
+        {
+            (*Components)[i]->setPosition(ComponentPosition);
+        }
+        if((*Components)[i]->getSize() != ComponentSize)
+        {
+            (*Components)[i]->setSize(ComponentSize);
         }
     }
 }
 
 
-Vec2f AbsoluteLayout::layoutSize(const MFUnrecComponentPtr* Components,
+Vec2f AbsoluteLayout::layoutSize(const MFUnrecChildComponentPtr* Components,
                                  const Component* ParentComponent,
                                  SizeType TheSizeType) const
 {
     Vec2f Result(0.0,0.0);
+
+	Pnt2f borderTopLeft, borderBottomRight;
+	dynamic_cast<const ComponentContainer*>(ParentComponent)->getInsideInsetsBounds(borderTopLeft, borderBottomRight);
+	Vec2f borderSize(borderBottomRight-borderTopLeft);
 
     Vec2f ComponentSize;
     Pnt2f ComponentPosition;
@@ -128,25 +172,25 @@ Vec2f AbsoluteLayout::layoutSize(const MFUnrecComponentPtr* Components,
     return Result;
 }
 
-Vec2f AbsoluteLayout::minimumContentsLayoutSize(const MFUnrecComponentPtr* Components,
+Vec2f AbsoluteLayout::minimumContentsLayoutSize(const MFUnrecChildComponentPtr* Components,
                                                 const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MIN_SIZE);
 }
 
-Vec2f AbsoluteLayout::requestedContentsLayoutSize(const MFUnrecComponentPtr* Components,
+Vec2f AbsoluteLayout::requestedContentsLayoutSize(const MFUnrecChildComponentPtr* Components,
                                                   const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, REQUESTED_SIZE);
 }
 
-Vec2f AbsoluteLayout::preferredContentsLayoutSize(const MFUnrecComponentPtr* Components,
+Vec2f AbsoluteLayout::preferredContentsLayoutSize(const MFUnrecChildComponentPtr* Components,
                                                   const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, PREFERRED_SIZE);
 }
 
-Vec2f AbsoluteLayout::maximumContentsLayoutSize(const MFUnrecComponentPtr* Components,
+Vec2f AbsoluteLayout::maximumContentsLayoutSize(const MFUnrecChildComponentPtr* Components,
                                                 const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MAX_SIZE);
@@ -179,6 +223,11 @@ void AbsoluteLayout::changed(ConstFieldMaskArg whichField,
                             BitVector         details)
 {
     Inherited::changed(whichField, origin, details);
+
+    if(whichField & ( ScalingFieldMask | OriginalDimensionsFieldMask))
+    {
+        updateParentContainers();
+    }
 }
 
 void AbsoluteLayout::dump(      UInt32    ,

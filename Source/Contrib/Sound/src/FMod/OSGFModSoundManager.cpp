@@ -50,6 +50,8 @@
 #ifdef OSG_WITH_FMOD
 #include "OSGFModSound.h"
 
+#include "OSGStatCollector.h"
+
 //fmod include files
 #include "fmod_errors.h"
 
@@ -94,9 +96,9 @@ void FMOD_ERRCHECK(FMOD_RESULT result, std::string Location)
  *                           Instance methods                              *
 \***************************************************************************/
 
-SoundUnrecPtr FModSoundManager::createSound(void) const
+SoundTransitPtr FModSoundManager::createSound(void) const
 {
-    return FModSound::create();
+    return SoundTransitPtr(FModSound::create());
 }
 
 bool FModSoundManager::init(void)
@@ -183,7 +185,7 @@ bool FModSoundManager::uninit(void)
     return true;
 }
 
-void FModSoundManager::update(const UpdateEventUnrecPtr e)
+void FModSoundManager::update(const Time& ElapsedTime)
 {
     FMOD_RESULT result;
 
@@ -223,6 +225,17 @@ void FModSoundManager::update(const UpdateEventUnrecPtr e)
 	//call FMOD's update
 	result = _FModSystem->update();
     FMOD_ERRCHECK(result,"FModSoundManager: update()");
+
+    //Update the number of channels statistic
+    StatIntElem *NChannelsStatElem = StatCollector::getGlobalElem(SoundManager::statNChannels);
+    if(NChannelsStatElem)
+    {
+        int channels;
+        _FModSystem->getChannelsPlaying(&channels);
+        FMOD_ERRCHECK(result,"FModSoundManager: getChannelsPlaying()");
+        NChannelsStatElem->set(channels);
+    }
+
 }
 
 void FModSoundManager::setCamera(CameraUnrecPtr TheCamera)

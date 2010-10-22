@@ -78,7 +78,7 @@ void GridBagLayout::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void GridBagLayout::updateLayout(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+void GridBagLayout::updateLayout(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     Pnt2f ParentInsetsTopLeft, ParentInsetBottomRight;
     dynamic_cast<const ComponentContainer*>(ParentComponent)->getInsideInsetsBounds(ParentInsetsTopLeft, ParentInsetBottomRight);
@@ -266,16 +266,23 @@ void GridBagLayout::updateLayout(const MFUnrecComponentPtr* Components, const Co
             offset[0] += (cellSize[0] - size[0]) * constraints->getHorizontalAlignment();
             offset[1] += (cellSize[1] - size[1]) * constraints->getVerticalAlignment();
         }
-        if (size[0] >= (*Components)[i]->getMinSize().x() && size[1] > (*Components)[i]->getMinSize().y())
+        if (!(size[0] >= (*Components)[i]->getMinSize().x() && size[1] > (*Components)[i]->getMinSize().y()))
+        {
+            size.setValues(0,0);
+        }
+        if((*Components)[i]->getSize() != size)
+        {
             (*Components)[i]->setSize(size);
-        else
-            (*Components)[i]->setSize(Vec2f(0,0));
-        (*Components)[i]->setPosition(Pnt2f(offset));
+        }
+        if((*Components)[i]->getPosition() != Pnt2f(offset))
+        {
+            (*Components)[i]->setPosition(Pnt2f(offset));
+        }
     }
 }
 
 
-Vec2f GridBagLayout::layoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
+Vec2f GridBagLayout::layoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
 {
     Vec2f Result(0.0,0.0);
 
@@ -286,22 +293,22 @@ Vec2f GridBagLayout::layoutSize(const MFUnrecComponentPtr* Components, const Com
     return Result;
 }
 
-Vec2f GridBagLayout::minimumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f GridBagLayout::minimumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MIN_SIZE);
 }
 
-Vec2f GridBagLayout::requestedContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f GridBagLayout::requestedContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, REQUESTED_SIZE);
 }
 
-Vec2f GridBagLayout::preferredContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f GridBagLayout::preferredContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, PREFERRED_SIZE);
 }
 
-Vec2f GridBagLayout::maximumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f GridBagLayout::maximumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MAX_SIZE);
 }
@@ -333,6 +340,16 @@ void GridBagLayout::changed(ConstFieldMaskArg whichField,
                             BitVector         details)
 {
     Inherited::changed(whichField, origin, details);
+
+    if(whichField & ( RowsFieldMask |
+                      ColumnsFieldMask |
+                      ColumnWeightsFieldMask |
+                      ColumnWidthsFieldMask |
+                      RowWeightsFieldMask |
+                      RowHeightsFieldMask))
+    {
+        updateParentContainers();
+    }
 }
 
 void GridBagLayout::dump(      UInt32    ,

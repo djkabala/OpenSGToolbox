@@ -74,7 +74,7 @@ void FlowLayout::initMethod(InitPhase ePhase)
 }
 
 
-Vec2f FlowLayout::getAppropriateComponentSize(ComponentRefPtr TheComponent)
+Vec2f FlowLayout::getAppropriateComponentSize(Component* const TheComponent)
 {
     Vec2f ComponentSize(0.0f,0.0f);
     if(TheComponent != NULL)
@@ -96,7 +96,7 @@ Vec2f FlowLayout::getAppropriateComponentSize(ComponentRefPtr TheComponent)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void FlowLayout::updateLayout(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+void FlowLayout::updateLayout(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     /*!
       totalMajorAxis will hold the width of its container, and cumMajorAxis
@@ -131,14 +131,15 @@ void FlowLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compo
     Real64 offsetY(borderTopLeft.y());
     bool firstOne = true;
 
-    for(UInt32 i=0 ; i<Components->size(); ++i)
-    {
-    }
-
+    Vec2f Size;
     for(UInt32 i=0 ; i<Components->size(); ++i)
     {
         // set the component to its preferred size
-        (*Components)[i]->setSize(getAppropriateComponentSize((*Components)[i]));
+        Size = getAppropriateComponentSize((*Components)[i]);
+        if((*Components)[i]->getSize() != Size)
+        {
+            (*Components)[i]->setSize(Size);
+        }
 
         // if there is only one so far, then it can't draw it using cumMajorAxis
         // because it hasn't been set yet
@@ -161,7 +162,11 @@ void FlowLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compo
                     offsetX += offsetMajorAxis;
                 }
 
-                (*Components)[i]->setPosition(Pnt2f(offsetX, offsetY));
+                if((*Components)[i]->getPosition().x() != offsetX ||
+                    (*Components)[i]->getPosition().y() != offsetY)
+                {
+                    (*Components)[i]->setPosition(Pnt2f(offsetX, offsetY));
+                }
 
                 // get to the next row
                 if (AxisIndex)
@@ -226,7 +231,11 @@ void FlowLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compo
                     offsetY += offsetMinorAxis;
                 }
 
-                (*Components)[j]->setPosition(Pnt2f(offsetX, offsetY));
+                if((*Components)[j]->getPosition().x() != offsetX ||
+                    (*Components)[j]->getPosition().y() != offsetY)
+                {
+                    (*Components)[j]->setPosition(Pnt2f(offsetX, offsetY));
+                }
 
                 // translate to next button
                 if (AxisIndex)
@@ -294,7 +303,11 @@ void FlowLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compo
                 {
                     offsetY += offsetMinorAxis;
                 }
-                (*Components)[j]->setPosition(Pnt2f(offsetX, offsetY));
+                if((*Components)[j]->getPosition().x() != offsetX ||
+                    (*Components)[j]->getPosition().y() != offsetY)
+                {
+                    (*Components)[j]->setPosition(Pnt2f(offsetX, offsetY));
+                }
 
                 if (AxisIndex)
                 {
@@ -329,15 +342,14 @@ void FlowLayout::updateLayout(const MFUnrecComponentPtr* Components, const Compo
     {
         offset = (*Components)[i]->getPosition();
         offset[(AxisIndex+1)%2] += displacement;
-        (*Components)[i]->setPosition(offset);
-    }
-
-    for(UInt32 i=0 ; i<Components->size(); ++i)
-    {
+        if((*Components)[i]->getPosition() != offset)
+        {
+            (*Components)[i]->setPosition(offset);
+        }
     }
 }
 
-Vec2f FlowLayout::layoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
+Vec2f FlowLayout::layoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
 {
     Real32 MinorAxisMax(0.0f);
     Real32 MajorAxisSum(0.0f);
@@ -364,22 +376,22 @@ Vec2f FlowLayout::layoutSize(const MFUnrecComponentPtr* Components, const Compon
     return Result;
 }
 
-Vec2f FlowLayout::minimumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f FlowLayout::minimumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MIN_SIZE);
 }
 
-Vec2f FlowLayout::requestedContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f FlowLayout::requestedContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, REQUESTED_SIZE);
 }
 
-Vec2f FlowLayout::preferredContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f FlowLayout::preferredContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, PREFERRED_SIZE);
 }
 
-Vec2f FlowLayout::maximumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f FlowLayout::maximumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MAX_SIZE);
 }
@@ -411,6 +423,16 @@ void FlowLayout::changed(ConstFieldMaskArg whichField,
                             BitVector         details)
 {
     Inherited::changed(whichField, origin, details);
+
+    if(whichField & ( OrientationFieldMask | 
+                      HorizontalGapFieldMask | 
+                      VerticalGapFieldMask | 
+                      MajorAxisAlignmentFieldMask | 
+                      MinorAxisAlignmentFieldMask | 
+                      ComponentAlignmentFieldMask))
+    {
+        updateParentContainers();
+    }
 }
 
 void FlowLayout::dump(      UInt32    ,

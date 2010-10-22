@@ -77,24 +77,11 @@ void TableColumn::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-EventConnection TableColumn::addFieldChangeListener(FieldChangeListenerPtr Listener)
-{
-    _FieldChangeListeners.insert(Listener);
-    return EventConnection(
-                           boost::bind(&TableColumn::isFieldChangeListenerAttached, this, Listener),
-                           boost::bind(&TableColumn::removeFieldChangeListener, this, Listener));
-}
-
-void TableColumn::produceFieldChanged(FieldContainerWeakPtr TheFieldContainer,
+void TableColumn::produceFieldChanged(FieldContainer* TheFieldContainer,
                                       FieldDescriptionBase* TheDescription)
 {
     //TODO: Implement
-    //const FieldChangeEventUnrecPtr TheEvent = FieldChangeEvent::create(TableColumnRefPtr(this), getSystemTime(), TheField, TheDescription);
-    //FieldChangeListenerSet FieldChangeListenerSet(_FieldChangeListeners);
-    //for(FieldChangeListenerSetConstItor SetItor(FieldChangeListenerSet.begin()) ; SetItor != FieldChangeListenerSet.end() ; ++SetItor)
-    //{
-    //(*SetItor)->fieldChanged(TheEvent);
-    //}
+    //FieldChangeEventDetailsUnrecPtr Details = FieldChangeEventDetails::create(this, getSystemTime(), TheField, TheDescription);
 }
 
 /*-------------------------------------------------------------------------*\
@@ -136,7 +123,7 @@ void TableColumn::changed(ConstFieldMaskArg whichField,
         if(getType().getFieldDesc(i) != NULL &&
             whichField & getType().getFieldDesc(i)->getFieldMask())
         {
-            produceFieldChanged(FieldContainerWeakPtr(this), getType().getFieldDesc(i));
+            produceFieldChanged(this, getType().getFieldDesc(i));
         }
     }
 }

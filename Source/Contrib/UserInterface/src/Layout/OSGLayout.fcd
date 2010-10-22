@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+	name="Layout"
+	parent="AttachmentContainer"
+    library="ContribUserInterface"
+    pointerfieldtypes="both"
+	structure="abstract"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)                             "
+    childFields="single"
+>
+A UI Layout Interface.
+  <Field
+     name="ParentContainers"
+     category="parentpointer"
+     type="FieldContainer"
+     cardinality="multi"
+     access="none"
+     visibility="internal"
+     >
+    Parents of this layout. Layouts can have more than one parent, i.e. in general
+    they may be used in more than one place in the UI Component-graph.
+  </Field>
+</FieldContainer>

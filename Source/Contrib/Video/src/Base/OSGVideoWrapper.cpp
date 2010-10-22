@@ -46,6 +46,7 @@
 #include <OSGConfig.h>
 
 #include "OSGVideoWrapper.h"
+#include <boost/filesystem/operations.hpp>
 
 OSG_BEGIN_NAMESPACE
 
@@ -76,7 +77,30 @@ void VideoWrapper::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-bool VideoWrapper::open(const BoostPath& ThePath, WindowUnrecPtr TheWindow)
+void VideoWrapper::attachUpdateProducer(ReflexiveContainer* const producer)
+{
+    if(_UpdateEventConnection.connected())
+    {
+        _UpdateEventConnection.disconnect();
+    }
+    //Get the Id of the UpdateEvent
+    const EventDescription* Desc(producer->getProducerType().findEventDescription("Update"));
+    if(Desc == NULL)
+    {
+        SWARNING << "There is no Update event defined on " << producer->getType().getName() << " types." << std::endl;
+    }
+    else
+    {
+        _UpdateEventConnection = producer->connectEvent(Desc->getEventId(), boost::bind(&VideoWrapper::handleUpdate, this, _1));
+    }
+}
+
+void VideoWrapper::handleUpdate(EventDetails* const details)
+{
+    updateImage();
+}
+
+bool VideoWrapper::open(const BoostPath& ThePath, Window* const TheWindow)
 {
     //Check if the file exists
     if(boost::filesystem::exists(ThePath))
@@ -85,144 +109,72 @@ bool VideoWrapper::open(const BoostPath& ThePath, WindowUnrecPtr TheWindow)
     }
     else
     {
-        SWARNING << "VideoWrapper::open(): File " << ThePath.file_string() << " could not be opened, because no file by that path exists" << std::endl;
+        SWARNING << "VideoWrapper::open(): File " << ThePath.file_string() << " could not be opened, because no file with that path exists" << std::endl;
         return false;
     }
 }
 
-bool VideoWrapper::updateTexture(TextureObjChunkRefPtr TheTexture)
-{
-    bool Result(updateImage());
-
-    if(_VideoImage != NULL)
-    {
-	    //if(!hasNPOT)
-	    //{
-		//    TheImage->scaleNextPower2(TheImage);
-	    //}
-	    if(TheTexture->getImage() != _VideoImage)
-	    {
-			    TheTexture->setImage(_VideoImage);
-	    }
-	    else
-	    {
-		    //tex->imageContentChanged();
-	    }
-    }
-    return Result;
-}
-
-void VideoWrapper::addVideoListener(VideoListenerPtr Listener)
-{
-   _VideoListeners.insert(Listener);
-}
-
-void VideoWrapper::removeVideoListener(VideoListenerPtr Listener)
-{
-   VideoListenerSetItor EraseIter(_VideoListeners.find(Listener));
-   if(EraseIter != _VideoListeners.end())
-   {
-      _VideoListeners.erase(EraseIter);
-   }
-}
-
 void VideoWrapper::producePaused(void)
 {
-    VideoEventUnrecPtr TheEvent = VideoEvent::create(VideoWrapperRefPtr(this), getSystemTime());
-	VideoListenerSet Listeners(_VideoListeners);
-    for(VideoListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->paused(TheEvent);
-    }
-    _Producer.produceEvent(VideoPausedMethodId,TheEvent);
+    VideoEventDetailsUnrecPtr Details = VideoEventDetails::create(this,getTimeStamp());
+   
+    Inherited::producePaused(Details);
 }
 
 void VideoWrapper::produceUnpaused(void)
 {
-    VideoEventUnrecPtr TheEvent = VideoEvent::create(VideoWrapperRefPtr(this), getSystemTime());
-	VideoListenerSet Listeners(_VideoListeners);
-    for(VideoListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->unpaused(TheEvent);
-    }
-    _Producer.produceEvent(VideoUnpausedMethodId,TheEvent);
+    VideoEventDetailsUnrecPtr Details = VideoEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceUnpaused(Details);
 }
 
 void VideoWrapper::produceStarted(void)
 {
-    VideoEventUnrecPtr TheEvent = VideoEvent::create(VideoWrapperRefPtr(this), getSystemTime());
-	VideoListenerSet Listeners(_VideoListeners);
-    for(VideoListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->started(TheEvent);
-    }
-    _Producer.produceEvent(VideoStartedMethodId,TheEvent);
+    VideoEventDetailsUnrecPtr Details = VideoEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceStarted(Details);
 }
 
 void VideoWrapper::produceStopped(void)
 {
-    VideoEventUnrecPtr TheEvent = VideoEvent::create(VideoWrapperRefPtr(this), getSystemTime());
-	VideoListenerSet Listeners(_VideoListeners);
-    for(VideoListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->stopped(TheEvent);
-    }
-    _Producer.produceEvent(VideoStoppedMethodId,TheEvent);
+    VideoEventDetailsUnrecPtr Details = VideoEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceStopped(Details);
 }
 
 void VideoWrapper::produceOpened(void)
 {
-    VideoEventUnrecPtr TheEvent = VideoEvent::create(VideoWrapperRefPtr(this), getSystemTime());
-	VideoListenerSet Listeners(_VideoListeners);
-    for(VideoListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->opened(TheEvent);
-    }
-    _Producer.produceEvent(VideoOpenedMethodId,TheEvent);
+    VideoEventDetailsUnrecPtr Details = VideoEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceOpened(Details);
 }
 
 void VideoWrapper::produceClosed(void)
 {
-    VideoEventUnrecPtr TheEvent = VideoEvent::create(VideoWrapperRefPtr(this), getSystemTime());
-	VideoListenerSet Listeners(_VideoListeners);
-    for(VideoListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->closed(TheEvent);
-    }
-    _Producer.produceEvent(VideoClosedMethodId,TheEvent);
+    VideoEventDetailsUnrecPtr Details = VideoEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceClosed(Details);
 }
 
 void VideoWrapper::produceEnded(void)
 {
-    VideoEventUnrecPtr TheEvent = VideoEvent::create(VideoWrapperRefPtr(this), getSystemTime());
-	VideoListenerSet Listeners(_VideoListeners);
-    for(VideoListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->ended(TheEvent);
-    }
-    _Producer.produceEvent(VideoEndedMethodId,TheEvent);
+    VideoEventDetailsUnrecPtr Details = VideoEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceEnded(Details);
 }
 
 void VideoWrapper::produceSeeked(void)
 {
-    VideoEventUnrecPtr TheEvent = VideoEvent::create(VideoWrapperRefPtr(this), getSystemTime());
-	VideoListenerSet Listeners(_VideoListeners);
-    for(VideoListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->seeked(TheEvent);
-    }
-    _Producer.produceEvent(VideoSeekedMethodId,TheEvent);
+    VideoEventDetailsUnrecPtr Details = VideoEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceSeeked(Details);
 }
 
 void VideoWrapper::produceCycled(void)
 {
-    VideoEventUnrecPtr TheEvent = VideoEvent::create(VideoWrapperRefPtr(this), getSystemTime());
-	VideoListenerSet Listeners(_VideoListeners);
-    for(VideoListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->cycled(TheEvent);
-    }
-    _Producer.produceEvent(VideoCycledMethodId,TheEvent);
+    VideoEventDetailsUnrecPtr Details = VideoEventDetails::create(this,getTimeStamp());
+   
+    Inherited::produceCycled(Details);
 }
 
 /*-------------------------------------------------------------------------*\

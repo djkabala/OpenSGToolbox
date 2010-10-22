@@ -46,7 +46,7 @@
 #include <OSGConfig.h>
 
 #include "OSGAnimation.h"
-#include "OSGUpdateEvent.h"
+#include "OSGUpdateEventDetails.h"
 #include "OSGAnimationGroup.h"
 
 OSG_BEGIN_NAMESPACE
@@ -78,68 +78,6 @@ void AnimationGroup::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void AnimationGroup::start(const Time& StartTime)
-{
-    if(_IsPlaying)
-    {
-        stop(false);
-    }
-
-    _IsPlaying = true;
-    for(UInt32 i = 0; i < getMFAnimations()->size(); ++i)
-    {
-        getAnimations(i)->start(StartTime);
-    }
-    produceAnimationsStarted();
-}
-
-void AnimationGroup::seek(const Time& SeekTime)
-{
-    if(_IsPlaying)
-    {
-        for(UInt32 i = 0; i < getMFAnimations()->size(); ++i)
-        {
-            getAnimations(i)->seek(SeekTime);
-        }
-    }
-}
-
-void AnimationGroup::pause(bool ShouldPause)
-{
-    for(UInt32 i = 0; i < getMFAnimations()->size(); ++i)
-    {
-        getAnimations(i)->pause(ShouldPause);
-    }
-
-    if(_IsPaused && !ShouldPause)
-    {
-        _IsPaused = ShouldPause;
-        produceAnimationsUnpaused();
-    }
-    if(!_IsPaused && ShouldPause)
-    {
-        _IsPaused = ShouldPause;
-        produceAnimationsPaused();
-    }
-}
-
-void AnimationGroup::stop(bool DisconnectFromEventProducer)
-{
-    if(_IsPlaying)
-    {
-        for(UInt32 i = 0; i < getMFAnimations()->size(); ++i)
-        {
-            getAnimations(i)->stop(true);
-        }
-
-        _IsPlaying = false;
-        if(DisconnectFromEventProducer)
-        {
-            _UpdateEventConnection.disconnect();
-        }
-        produceAnimationsStopped();
-    }
-}
 
 bool AnimationGroup::update(const Time& ElapsedTime)
 {
@@ -147,90 +85,123 @@ bool AnimationGroup::update(const Time& ElapsedTime)
     {
         return false;
     }
+    _CurrentTime += getScale()*ElapsedTime;
 
-    bool Result(true);
+    UInt32 PreUpdateCycleCount(getCycles());
+	if(getCycling() < 0 || PreUpdateCycleCount < getCycling())
+	{
+		Real32 CycleLength(getCycleLength() * getScale());
+        
+		//Check if the Animation Time is past the end
+		if(_CurrentTime >= CycleLength)
+		{
+			//Update the number of cycles completed
+            setCycles( (CycleLength <= 0.0f) ? (0): (static_cast<UInt32>( osgFloor( _CurrentTime / CycleLength ) )) );
+            //commitChanges();
+		}
+        Real32 t(_CurrentTime);
 
-    for(UInt32 i = 0; i < getMFAnimations()->size(); ++i)
+		if(getCycling() > 0 && getCycles() >= getCycling())
+		{
+            if(getSpan() > 0.0f)
+            {
+                t = getSpan();
+            }
+            else
+            {
+                t = CycleLength;
+            }
+            t -= 0.0001f;
+		}
+		else
+		{
+            if(getSpan() > 0.0f)
+            {
+                t -= osgFloor(_CurrentTime/getSpan())*getSpan();
+            }
+		}
+        t += getOffset();
+
+		//Internal Update
+        for(UInt32 i = 0; i < getMFAnimations()->size(); ++i)
+        {
+            getAnimations(i)->internalUpdate(t, _PrevTime);
+        }
+
+		//If the number of cycles has changed
+		if(getCycles() != PreUpdateCycleCount)
+		{
+			if(getCycling() > 0 && getCycles() >= getCycling())
+			{
+                //Animation has reached the end
+                //Remove the Animation from it's update producer
+                _UpdateEventConnection.disconnect();
+                _IsPlaying = false;
+
+                //Produce the Ended event
+				produceAnimationEnded();
+			}
+			else
+			{
+                //Animation hasn't finished yet
+                //Produce the Cycled event
+				produceAnimationCycled();
+			}
+		}
+	}
+
+    _PrevTime = _CurrentTime;
+
+	//Return true if the animation has completed its number of cycles, false otherwise
+	return (getCycling() > 0 && getCycles() >= getCycling());
+}
+
+void AnimationGroup::start(const Time& StartTime)
+{
+    Inherited::start(StartTime);
+}
+
+void AnimationGroup::seek(const Time& SeekTime)
+{
+    Inherited::seek(SeekTime);
+}
+
+void AnimationGroup::pause(bool ShouldPause)
+{
+    Inherited::pause(ShouldPause);
+}
+
+void AnimationGroup::stop(bool DisconnectFromEventProducer)
+{
+    Inherited::stop(DisconnectFromEventProducer);
+}
+
+void AnimationGroup::internalUpdate(Real32 t, const Real32 prev_t)
+{
+}
+
+Real32 AnimationGroup::getUnclippedLength(void) const
+{
+    if(getMFAnimations()->size() > 0)
     {
-        Result = getAnimations(i)->update(ElapsedTime * getScale()) && Result;
+        return getAnimations(0)->getUnclippedLength();
     }
-
-    if(Result)
+    else
     {
-        _UpdateEventConnection.disconnect();
-        _IsPlaying = false;
-        produceAnimationsEnded();
+        return -1.0f;
     }
-
-	return Result;
 }
 
-//bool AnimationGroup::update(const AnimationAdvancerPtr& advancer)
-//{
-    //if(!_IsPlaying || _IsPaused)
-    //{
-        //return false;
-    //}
-
-    //bool Result(true);
-
-    //for(UInt32 i = 0; i < getMFAnimations()->size(); ++i)
-    //{
-        //Result = Result && getAnimations(i)->update(advancer);
-    //}
-
-	//return Result;
-//}
-
-Real32 AnimationGroup::getLength(void) const
+Real32 AnimationGroup::getUnclippedCycleLength(void) const
 {
-    Real32 MaxLength(0.0f);
-    for(UInt32 i = 0; i < getMFAnimations()->size(); ++i)
+    if(getMFAnimations()->size() > 0)
     {
-        MaxLength = osgMax(MaxLength,getAnimations(i)->getLength());
+        return getAnimations(0)->getUnclippedCycleLength();
     }
-    return MaxLength;
-}
-
-void AnimationGroup::eventProduced(const EventUnrecPtr EventDetails, UInt32 ProducedEventId)
-{
-    update(dynamic_pointer_cast<UpdateEvent>(EventDetails)->getElapsedTime());
-}
-
-void AnimationGroup::produceAnimationsStarted(void)
-{
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationGroupUnrecPtr(this),getTimeStamp());
-    _Producer.produceEvent(AnimationsStartedMethodId,e);
-}
-
-void AnimationGroup::produceAnimationsStopped(void)
-{
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationGroupUnrecPtr(this),getTimeStamp());
-    _Producer.produceEvent(AnimationsStoppedMethodId,e);
-}
-
-void AnimationGroup::produceAnimationsPaused(void)
-{
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationGroupUnrecPtr(this),getTimeStamp());
-    _Producer.produceEvent(AnimationsPausedMethodId,e);
-}
-
-void AnimationGroup::produceAnimationsUnpaused(void)
-{
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationGroupUnrecPtr(this),getTimeStamp());
-    _Producer.produceEvent(AnimationsUnpausedMethodId,e);
-}
-
-void AnimationGroup::produceAnimationsEnded(void)
-{
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationGroupUnrecPtr(this),getTimeStamp());
-    _Producer.produceEvent(AnimationsEndedMethodId,e);
-}
-
-void AnimationGroup::produceAnimationsCycled(void)
-{
-    const AnimationEventUnrecPtr e = AnimationEvent::create(AnimationGroupUnrecPtr(this),getTimeStamp());
-    _Producer.produceEvent(AnimationsCycledMethodId,e);
+    else
+    {
+        return -1.0f;
+    }
 }
 
 
@@ -241,20 +212,12 @@ void AnimationGroup::produceAnimationsCycled(void)
 /*----------------------- constructors & destructors ----------------------*/
 
 AnimationGroup::AnimationGroup(void) :
-    Inherited(),
-    _CurrentTime(0.0),
-    _PrevTime(0.0),
-    _IsPlaying(false),
-    _IsPaused(false)
+    Inherited()
 {
 }
 
 AnimationGroup::AnimationGroup(const AnimationGroup &source) :
-    Inherited(source),
-    _CurrentTime(0.0),
-    _PrevTime(0.0),
-    _IsPlaying(false),
-    _IsPaused(false)
+    Inherited(source)
 {
 }
 

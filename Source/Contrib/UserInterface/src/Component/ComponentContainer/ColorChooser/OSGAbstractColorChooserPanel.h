@@ -82,7 +82,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING AbstractColorChooserPanel : public Abs
     /*! \}                                                                 */
 
 	//Returns the model that the chooser panel is editing.
-	ColorSelectionModelPtr getColorSelectionModel(void);
+	ColorSelectionModel* getColorSelectionModel(void);
 
 	//Returns the large display icon for the panel.
 	//virtual Icon getLargeDisplayIcon(void) const = 0;
@@ -93,16 +93,18 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING AbstractColorChooserPanel : public Abs
 	virtual std::string getDisplayText(void) const = 0;
 
 	//Invoked when the panel is added to the chooser.
-	virtual void installChooserPanel(ColorChooserRefPtr enclosingChooser);
+	virtual void installChooserPanel(ColorChooser* const enclosingChooser);
 
 	//Draws the panel.
 	//virtual void paint(Graphics g);
 
 	//Invoked when the panel is removed from the chooser.
-	virtual void uninstallChooserPanel(ColorChooserRefPtr enclosingChooser);
+	virtual void uninstallChooserPanel(ColorChooser* const enclosingChooser);
 
 	//Invoked automatically when the model's state changes.
 	virtual void updateChooser(void) = 0;
+
+    ColorChooser* getParentChooser(void) const;
 
     /*=========================  PROTECTED  ===============================*/
 

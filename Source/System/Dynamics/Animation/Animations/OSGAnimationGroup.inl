@@ -40,32 +40,4 @@
 
 OSG_BEGIN_NAMESPACE
 
-inline
-bool AnimationGroup::isPlaying(void) const
-{
-    return _IsPlaying;
-}
-
-inline
-bool AnimationGroup::isPaused(void) const
-{
-    return _IsPaused;
-}
-
-inline
-void AnimationGroup::attachUpdateProducer(EventProducerPtr TheProducer)
-{
-    if(_UpdateEventConnection.isConnected())
-    {
-        _UpdateEventConnection.disconnect();
-    }
-    _UpdateEventConnection = TheProducer->attachEventListener(this, std::string("Update"));
-}
-
-inline
-void AnimationGroup::detachUpdateProducer(void)
-{
-    _UpdateEventConnection.disconnect();
-}
-
 OSG_END_NAMESPACE

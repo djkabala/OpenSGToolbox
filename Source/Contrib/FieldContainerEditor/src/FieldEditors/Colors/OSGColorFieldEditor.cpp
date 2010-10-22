@@ -53,6 +53,7 @@
 #include "OSGDefaultColorSelectionModel.h"
 #include "OSGDialogWindow.h"
 #include "OSGUIDrawUtils.h"
+#include "OSGUIDrawingSurface.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -83,7 +84,7 @@ void ColorFieldEditor::initMethod(InitPhase ePhase)
         _EditableTypes.push_back(&FieldTraits<Color4ub>::getType());
         for(UInt32 i(0) ; i<_EditableTypes.size(); ++i)
         {
-            FieldEditorFactory::the()->setDefaultEditor(_EditableTypes[i], &getClassType());
+            FieldEditorFactory::the()->setSingleDefaultEditor(_EditableTypes[i], &getClassType());
             FieldEditorFactory::the()->setEditorType(_EditableTypes[i], &getClassType(), "ColorChooserWindow");
         }
     }
@@ -171,9 +172,9 @@ void ColorFieldEditor::internalStartEditing (void)
     Pnt2f CenteredPosition = calculateAlignment(getParentWindow()->getPosition(), getParentWindow()->getSize(), TheDialog->getPreferredSize(), 0.5f, 0.5f);
     TheDialog->setPosition(CenteredPosition);
 
-    TheDialog->addDialogWindowListener(&_DialogListener);
+    _ColorDialogClosedConnection = TheDialog->connectDialogWindowClosed(boost::bind(&ColorFieldEditor::handleColorDialogClosed, this, _1));
 
-    getParentWindow()->getDrawingSurface()->openWindow(TheDialog);
+    getParentWindow()->getParentDrawingSurface()->openWindow(TheDialog);
 }
 
 void ColorFieldEditor::internalStopEditing  (void)
@@ -238,16 +239,12 @@ void ColorFieldEditor::updateLayout(void)
 /*----------------------- constructors & destructors ----------------------*/
 
 ColorFieldEditor::ColorFieldEditor(void) :
-    Inherited(),
-    _ButtonListener(this),
-    _DialogListener(this)
+    Inherited()
 {
 }
 
 ColorFieldEditor::ColorFieldEditor(const ColorFieldEditor &source) :
-    Inherited(source),
-    _ButtonListener(this),
-    _DialogListener(this)
+    Inherited(source)
 {
 }
 
@@ -261,9 +258,9 @@ void ColorFieldEditor::onCreate(const ColorFieldEditor *Id)
 	Inherited::onCreate(Id);
     if(Id != NULL)
     {
-        _ColorModel = ColorSelectionModelPtr(new DefaultColorSelectionModel());
+        _ColorModel = DefaultColorSelectionModel::create();
         _EditingButton = Button::create();
-        _EditingButton->addActionListener(&_ButtonListener);
+        _ButtonActionConnection = _EditingButton->connectActionPerformed(boost::bind(&ColorFieldEditor::handleButtonAction, this, _1));
 
         ColorLayerRefPtr ButtonBG = ColorLayer::create();
         _EditingButton->setBackgrounds(ButtonBG);
@@ -274,6 +271,17 @@ void ColorFieldEditor::onCreate(const ColorFieldEditor *Id)
 
 void ColorFieldEditor::onDestroy()
 {
+}
+
+void ColorFieldEditor::resolveLinks(void)
+{
+    Inherited::resolveLinks();
+
+    _EditingButton = NULL;
+    _ColorModel = NULL;
+
+    _ButtonActionConnection.disconnect();
+    _ColorDialogClosedConnection.disconnect();
 }
 
 void ColorFieldEditor::changed(ConstFieldMaskArg whichField, 
@@ -289,21 +297,18 @@ void ColorFieldEditor::dump(      UInt32    ,
     SLOG << "Dump ColorFieldEditor NI" << std::endl;
 }
 
-void ColorFieldEditor::ButtonListener::actionPerformed(const ActionEventUnrecPtr e)
+void ColorFieldEditor::handleButtonAction(ActionEventDetails* const details)
 {
-    _ColorFieldEditor->internalStartEditing();
+    internalStartEditing();
 }
 
-void ColorFieldEditor::DialogListener::dialogClosing(const DialogWindowEventUnrecPtr e)
+void ColorFieldEditor::handleColorDialogClosed(DialogWindowEventDetails* const details)
 {
-}
-
-void ColorFieldEditor::DialogListener::dialogClosed(const DialogWindowEventUnrecPtr e)
-{
-    if( e->getOption() != DialogWindowEvent::DIALOG_OPTION_CANCEL)
+    if( details->getOption() != DialogWindowEventDetails::DIALOG_OPTION_CANCEL)
     {
-        _ColorFieldEditor->runCommand();
+        runCommand();
     }
+    _ColorDialogClosedConnection.disconnect();
 }
 
 OSG_END_NAMESPACE

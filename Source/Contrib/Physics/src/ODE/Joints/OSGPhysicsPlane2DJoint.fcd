@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+	name="PhysicsPlane2DJoint"
+	parent="PhysicsJoint"
+    library="ContribPhysics"
+    pointerfieldtypes="both"
+    structure="concrete"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    group="PhysicsPlane2DJoint"
+    authors="David Kabala (djkabala@gmail.com),  Behboud Kalantary         "
+>
+</FieldContainer>

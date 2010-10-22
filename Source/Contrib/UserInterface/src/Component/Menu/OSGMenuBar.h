@@ -45,8 +45,6 @@
 #include "OSGMenuBarBase.h"
 #include "OSGSingleSelectionModel.h"
 
-#include "OSGPopupMenuListener.h"
-#include "OSGKeyAdapter.h"
 #include "OSGMenu.h"
 
 OSG_BEGIN_NAMESPACE
@@ -84,19 +82,23 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING MenuBar : public MenuBarBase
 
     /*! \}                                                                 */
 
-    void addMenu(MenuRefPtr Menu);
-    void addMenu(MenuRefPtr Menu, const UInt32& Index);
-    void removeMenu(MenuRefPtr Menu);
+    void addMenu(Menu* const Menu);
+    void addMenu(Menu* const Menu, const UInt32& Index);
+    void removeMenu(Menu* const Menu);
     void removeMenu(const UInt32& Index);
     Menu* getMenu(const UInt32& Index);
     UInt32 getNumMenus(void) const;
     
-    virtual void mousePressed(const MouseEventUnrecPtr e);
+    virtual void mousePressed(MouseEventDetails* const e);
     
     virtual void updateLayout(void);
 	virtual void updateClipBounds(void);
 
     virtual void detachFromEventProducer(void);
+
+    void setParentWindow(InternalWindow* const parent);
+
+    virtual ComponentContainer* getParentContainer(void) const;
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -133,35 +135,25 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING MenuBar : public MenuBarBase
 	
 	/*! \}                                                                 */
     
-	class MenuSelectionListener : public SelectionListener, 
-                                  public MouseMotionListener, 
-                                  public PopupMenuListener,
-                                  public KeyAdapter
-	{
-	public:
-		MenuSelectionListener(MenuBarRefPtr ThePopupMenu);
-        virtual void selectionChanged(const SelectionEventUnrecPtr e);
-        virtual void mouseMoved(const MouseEventUnrecPtr e);
-        virtual void mouseDragged(const MouseEventUnrecPtr e);
-        virtual void popupMenuCanceled(const PopupMenuEventUnrecPtr e);
-        virtual void popupMenuWillBecomeInvisible(const PopupMenuEventUnrecPtr e);
-        virtual void popupMenuWillBecomeVisible(const PopupMenuEventUnrecPtr e);
-		virtual void popupMenuContentsChanged(const PopupMenuEventUnrecPtr e);
-        virtual void keyTyped(const KeyEventUnrecPtr e);
-	private:
-		MenuBarRefPtr _MenuBar;
-	};
+    void handleMenuArmedSelectionChanged(SelectionEventDetails* const e);
+    void handleMenuArmedMouseMoved(MouseEventDetails* const e);
+    void handleMenuArmedMouseDragged(MouseEventDetails* const e);
+    void handleMenuArmedPopupMenuCanceled(PopupMenuEventDetails* const e);
+    void handleMenuArmedKeyTyped(KeyEventDetails* const e);
 
-	friend class MenuSelectionListener;
+    boost::signals2::connection _SelectionChangedConnection,
+                                _MouseMovedConnection,
+                                _MouseDraggedConnection,
+                                _KeyTypedConnection;
 
-	MenuSelectionListener _MenuSelectionListener;
-    EventConnection _SelectionMouseEventConnection;
+    std::map<Menu*, boost::signals2::connection> _PopupMenuCanceledConnections;
     /*==========================  PRIVATE  ================================*/
 
   private:
 
     friend class FieldContainer;
     friend class MenuBarBase;
+    friend class InternalWindow;
 
     // prohibit default functions (move to 'public' if you need one)
     void operator =(const MenuBar &source);

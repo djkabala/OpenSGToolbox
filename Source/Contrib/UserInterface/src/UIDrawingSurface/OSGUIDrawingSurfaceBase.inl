@@ -48,6 +48,7 @@
  *****************************************************************************
 \*****************************************************************************/
 
+
 OSG_BEGIN_NAMESPACE
 
 
@@ -73,6 +74,22 @@ OSG::UInt16 UIDrawingSurfaceBase::getClassGroupId(void)
 
 /*------------------------------ get -----------------------------------*/
 
+
+//! Get the value of the UIDrawingSurface::_sfFocusedWindow field.
+inline
+InternalWindow * UIDrawingSurfaceBase::getFocusedWindow(void) const
+{
+    return _sfFocusedWindow.getValue();
+}
+
+//! Set the value of the UIDrawingSurface::_sfFocusedWindow field.
+inline
+void UIDrawingSurfaceBase::setFocusedWindow(InternalWindow * const value)
+{
+    editSField(FocusedWindowFieldMask);
+
+    _sfFocusedWindow.setValue(value);
+}
 
 //! Get the value of the UIDrawingSurface::_sfEventProducer field.
 inline
@@ -146,6 +163,38 @@ void UIDrawingSurfaceBase::setSize(const Vec2f &value)
 
     _sfSize.setValue(value);
 }
+//! Get the value of the UIDrawingSurface::_sfActive field.
+
+inline
+bool &UIDrawingSurfaceBase::editActive(void)
+{
+    editSField(ActiveFieldMask);
+
+    return _sfActive.getValue();
+}
+
+//! Get the value of the UIDrawingSurface::_sfActive field.
+inline
+      bool  UIDrawingSurfaceBase::getActive(void) const
+{
+    return _sfActive.getValue();
+}
+
+//! Set the value of the UIDrawingSurface::_sfActive field.
+inline
+void UIDrawingSurfaceBase::setActive(const bool value)
+{
+    editSField(ActiveFieldMask);
+
+    _sfActive.setValue(value);
+}
+
+//! Get the value of the \a index element the UIDrawingSurface::_mfInternalWindows field.
+inline
+InternalWindow * UIDrawingSurfaceBase::getInternalWindows(const UInt32 index) const
+{
+    return _mfInternalWindows[index];
+}
 
 
 #ifdef OSG_MT_CPTR_ASPECT
@@ -178,6 +227,9 @@ void UIDrawingSurfaceBase::execSync (      UIDrawingSurfaceBase *pFrom,
 
     if(FieldBits::NoField != (SizeFieldMask & whichField))
         _sfSize.syncWith(pFrom->_sfSize);
+
+    if(FieldBits::NoField != (ActiveFieldMask & whichField))
+        _sfActive.syncWith(pFrom->_sfActive);
 }
 #endif
 

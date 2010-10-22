@@ -53,7 +53,8 @@
 #include "OSGAction.h"
 #include "OSGTransform.h"
 #include "OSGGroup.h"
-#include "OSGAction.h"
+#include "OSGStatCollector.h"
+#include "OSGUpdateEventDetails.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -67,18 +68,17 @@ OSG_BEGIN_NAMESPACE
 //! this action traverses the graph to match the OpenSG representation 
 //! to ODE
 //////////////////////////////////////////////////////////////////////////
-Action::ResultE updateOsgOde(Node* node)
+Action::ResultE updateOsgOde(Node* const node)
 {   
     //SLOG << "entering " << node << endLog;
     TransformUnrecPtr t = dynamic_cast<Transform*>(node->getCore());
-    Matrix m,r;
     if(t!=NULL)
     {
         //SLOG << "found a TransformNode " << endLog;
         AttachmentUnrecPtr a = node->findAttachment(PhysicsBody::getClassType());
         if(a!=NULL)
         {
-            //SLOG << "found a bodyNode " << endLog;
+            Matrix m,r;
             PhysicsBodyUnrecPtr body = dynamic_pointer_cast<PhysicsBody>(a);
             body->updateToODEState();
 
@@ -90,16 +90,9 @@ Action::ResultE updateOsgOde(Node* node)
             r.setRotate(q);
             m.setTransform(p);
             m.mult(r);
-            //CPEdit(t, Transform::MatrixFieldMask);
             t->setMatrix(m);
             //update BB
-            //CPEdit(node, Node::VolumeFieldMask);
             node->updateVolume();
-
-            if(p.z() < -10)
-            {
-                //subRefCP(node);
-            }
         }
     }
 
@@ -111,26 +104,25 @@ Action::ResultE updateOsgOde(Node* node)
 \***************************************************************************/
 StatElemDesc<StatTimeElem> PhysicsHandler::statCollisionTime("collisionTime", 
                                                       "time for collision tests per update");
-StatElemDesc<StatTimeElem> PhysicsHandler::statPerStepCollisionTime("perStepCollisionTime", 
-                                                      "time for collision tests per step");
 
 StatElemDesc<StatTimeElem> PhysicsHandler::statSimulationTime("simulationTime", 
                                                       "time for physics simulation per update");
-StatElemDesc<StatTimeElem> PhysicsHandler::statPerStepSimulationTime("perStepSimulationTime", 
-                                                      "time for physics simulation per step");
+
+StatElemDesc<StatTimeElem> PhysicsHandler::statTransformUpdateTime("transformUpdateTime", 
+                                                                   "time to update scene nodes with physics changes");
 
 StatElemDesc<StatTimeElem> PhysicsHandler::statPhysicsTime("physicsTime", 
                                                       "time for entire physics update");
 
 
 StatElemDesc<StatIntElem> PhysicsHandler::statNPhysicsSteps("NPhysicsSteps", 
-                                                      "number of physics steps performed this update");
+                                                            "number of physics steps performed this update");
 
-StatElemDesc<StatIntElem> PhysicsHandler::statNCollisionTests("NCollisionTests", 
-                                                      "number of collision tests per step");
+StatElemDesc<StatRealElem> PhysicsHandler::statNCollisionTests("NCollisionTests", 
+                                                           "average number of collisions tests per step");
 
-StatElemDesc<StatIntElem> PhysicsHandler::statNCollisions("NCollisions", 
-                                                      "number of collisions per step");
+StatElemDesc<StatRealElem> PhysicsHandler::statNCollisions("NCollisions", 
+                                                           "average number of collisions per step");
 
 /***************************************************************************\
  *                           Class methods                                 *
@@ -150,75 +142,96 @@ void PhysicsHandler::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-StatCollector* PhysicsHandler::getStatistics(void)
+void PhysicsHandler::attachUpdateProducer(ReflexiveContainer* const producer)
 {
-    if(_statistics == NULL)
+    if(_UpdateEventConnection.connected())
     {
-        _statistics = StatCollector::create();
-        _ownStat = true;
+        _UpdateEventConnection.disconnect();
     }
-
-    return _statistics;
+    //Get the Id of the UpdateEvent
+    const EventDescription* Desc(producer->getProducerType().findEventDescription("Update"));
+    if(Desc == NULL)
+    {
+        SWARNING << "There is no Update event defined on " << producer->getType().getName() << " types." << std::endl;
+    }
+    else
+    {
+        _UpdateEventConnection = producer->connectEvent(Desc->getEventId(), boost::bind(&PhysicsHandler::attachedUpdate, this, _1), boost::signals2::at_back);
+    }
 }
 
-void PhysicsHandler::setStatistics(StatCollector *stat)
+void PhysicsHandler::attachedUpdate(EventDetails* const details)
 {
-    if (_ownStat) {
-       delete _statistics;
-    }
-    _statistics = stat;
-    _ownStat = false;
-}
+    commitChanges();
 
-void PhysicsHandler::eventProduced(const EventUnrecPtr EventDetails, UInt32 ProducedEventId)
-{
-    getStatistics()->reset();
-    getStatistics()->getElem(statCollisionTime)->start();
-    getStatistics()->getElem(statCollisionTime)->stop();
-    getStatistics()->getElem(statSimulationTime)->start();
-    getStatistics()->getElem(statSimulationTime)->stop();
+    //Start the physics timing statistic
+    StatTimeElem *PhysicsTimeStatElem = StatCollector::getGlobalElem(statPhysicsTime);
+    if(PhysicsTimeStatElem) { PhysicsTimeStatElem->start(); }
 
-    getStatistics()->getElem(statPhysicsTime)->start();
-    _TimeSinceLast += dynamic_pointer_cast<UpdateEvent>(EventDetails)->getElapsedTime();
+    _TimeSinceLast += dynamic_cast<UpdateEventDetails* const>(details)->getElapsedTime();
 
     if(osgFloor(_TimeSinceLast/getStepSize()) > getMaxStepsPerUpdate())
     {
-        //SWARNING << "Physics Simulation slowing: droping " << osgFloor(_TimeSinceLast/getStepSize())-getMaxStepsPerUpdate() << " steps.\n";
+        SWARNING << "Physics Simulation slowing: dropping " << osgFloor(_TimeSinceLast/getStepSize())-getMaxStepsPerUpdate() << " steps" << std::endl;
         _TimeSinceLast = getMaxStepsPerUpdate()*getStepSize();
     }
 
+    StatIntElem *NPhysicsStepsStatElem = StatCollector::getGlobalElem(statNPhysicsSteps);
+    StatTimeElem *CollisionTimeStatElem = StatCollector::getGlobalElem(statCollisionTime);
+    StatTimeElem *DynamicsTimeStatElem = StatCollector::getGlobalElem(statSimulationTime);
     while(_TimeSinceLast > getStepSize())
     {
-        //Update
-        getStatistics()->getElem(statNPhysicsSteps)->inc();
+        //Increment the steps statistic
+        if(NPhysicsStepsStatElem) { NPhysicsStepsStatElem->inc(); }
 
-        //collide
-        getStatistics()->getElem(statPerStepCollisionTime)->start();
-        getStatistics()->getElem(statNCollisionTests)->reset();
-        getStatistics()->getElem(statNCollisions)->reset();
+        //*********** Collision Checks *************
+        //Start the collision timing statistic
+        if(CollisionTimeStatElem) { CollisionTimeStatElem->start(); }
+
+        //Do collision checks
         for(UInt32 i(0) ; i<getMFSpaces()->size() ; ++i)
         {
             getSpaces(i)->Collide(getWorld());
         }
-        getStatistics()->getElem(statPerStepCollisionTime)->stop();
-        (*getStatistics()->getElem(statCollisionTime)) += *(getStatistics()->getElem(statPerStepCollisionTime));
 
-        //step the world
-        getStatistics()->getElem(statPerStepSimulationTime)->start();
+        //Stop the collision timing statistic
+        if(CollisionTimeStatElem) { CollisionTimeStatElem->stop(); }
+
+
+        //*********** Simulation step *************
+
+        //Start the simulation timing statistic
+        if(DynamicsTimeStatElem) { DynamicsTimeStatElem->start(); }
+
+        //Step the dynamics simulation
         getWorld()->worldQuickStep(getStepSize());
-        getStatistics()->getElem(statPerStepSimulationTime)->stop();
-        (*getStatistics()->getElem(statSimulationTime)) += *(getStatistics()->getElem(statPerStepSimulationTime));
 
+        //Stop the simulation timing statistic
+        if(DynamicsTimeStatElem) { DynamicsTimeStatElem->stop(); }
+
+        //Decrease the time since last simulation step
         _TimeSinceLast -= getStepSize();
     }
+    StatRealElem *NCollisionTestsStatElem = StatCollector::getGlobalElem(statNCollisionTests);
+    if(NCollisionTestsStatElem) { NCollisionTestsStatElem->set(NCollisionTestsStatElem->get()/static_cast<Real32>(NPhysicsStepsStatElem->get())); }
+    StatRealElem *NCollisionsStatElem = StatCollector::getGlobalElem(statNCollisions);
+    if(NCollisionsStatElem) { NCollisionsStatElem->set(NCollisionsStatElem->get()/static_cast<Real32>(NPhysicsStepsStatElem->get())); }
 
+    
+    
+    StatTimeElem *TransformUpdateTimeStatElem = StatCollector::getGlobalElem(statTransformUpdateTime);
+    //Start the transform update timing statistic
+    if(TransformUpdateTimeStatElem) { TransformUpdateTimeStatElem->start(); }
     //update matrices
     updateWorld(getUpdateNode());
+    //Start the transform update timing statistic
+    if(TransformUpdateTimeStatElem) { TransformUpdateTimeStatElem->stop(); }
 
-    getStatistics()->getElem(statPhysicsTime)->stop();
+    //Stop the physics timing statistic
+    if(PhysicsTimeStatElem) { PhysicsTimeStatElem->stop(); }
 }
 
-void PhysicsHandler::updateWorld(NodeUnrecPtr node)
+void PhysicsHandler::updateWorld(Node* const node)
 {
     //update matrices
     traverse(node, 
@@ -242,8 +255,6 @@ void PhysicsHandler::onDestroy()
 
 PhysicsHandler::PhysicsHandler(void) :
     Inherited(),
-        _statistics(NULL),
-        _ownStat(false),
         _TimeSinceLast(0.0f)
 
 {
@@ -251,8 +262,6 @@ PhysicsHandler::PhysicsHandler(void) :
 
 PhysicsHandler::PhysicsHandler(const PhysicsHandler &source) :
     Inherited(source),
-        _statistics(NULL),
-        _ownStat(false),
         _TimeSinceLast(0.0f)
 
 {
@@ -269,18 +278,6 @@ void PhysicsHandler::changed(ConstFieldMaskArg whichField,
                             BitVector         details)
 {
     Inherited::changed(whichField, origin, details);
-
-    if(whichField & WorldFieldMask && getWorld() != NULL)
-    {
-        getWorld()->setInternalParentHandler(PhysicsHandlerUnrecPtr(this));
-    }
-    if(whichField & SpacesFieldMask)
-    {
-        for(UInt32 i(0) ; i<getMFSpaces()->size() ; ++i)
-        {
-            getSpaces(i)->setInternalParentHandler(PhysicsHandlerUnrecPtr(this));
-        }
-    }
 }
 
 void PhysicsHandler::dump(      UInt32    ,

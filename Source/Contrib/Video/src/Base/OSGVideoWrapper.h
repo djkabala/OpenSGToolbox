@@ -48,9 +48,8 @@
 #include "OSGTextureObjChunk.h"
 #include <set>
 
-#include "OSGVideoListener.h"
 #include "OSGVideoWrapperBase.h"
-#include <boost/filesystem/operations.hpp>
+#include "OSGVideoEventDetails.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -86,37 +85,44 @@ class OSG_CONTRIBVIDEO_DLLMAPPING VideoWrapper : public VideoWrapperBase
                       const BitVector  bvFlags  = 0) const;
 
     /*! \}                                                                 */
-    virtual bool open(const BoostPath& ThePath, WindowUnrecPtr TheWindow);
-    virtual bool open(const std::string& ThePath, WindowUnrecPtr TheWindow) = 0;
+    virtual bool open(const BoostPath& ThePath, Window* const TheWindow);
+    virtual bool open(const std::string& ThePath, Window* const TheWindow) = 0;
 
-    virtual bool seek(Int64 SeekPos) = 0;
-    virtual bool jump(Int64 Amount) = 0;
-    virtual bool setRate(Real32 Rate) = 0;
-    virtual Real32 getRate(void) const = 0;
+    virtual bool seek(Real64 SeekPos) = 0;
+    virtual bool jump(Real64 Amount) = 0;
+    virtual bool setRate(Real64 Rate) = 0;
+    virtual Real64 getRate(void) const = 0;
     virtual bool play(void) = 0;
     virtual bool pause(void) = 0;
     virtual bool unpause(void) = 0;
     virtual bool pauseToggle(void) = 0;
     virtual bool stop(void) = 0;
     virtual bool close(void) = 0;
-	
     virtual bool isPlaying(void) const = 0;
-    virtual bool isStopped(void) const = 0;
     virtual bool isPaused(void) const = 0;
     virtual bool isInitialized(void) const = 0;
+    virtual bool isStopped(void) const = 0;
+	
+    virtual bool canSeekForward(void) const = 0;
+    virtual bool canSeekBackward(void) const = 0;
+	virtual Real64 getPosition(void) const = 0;
+	virtual Real64 getDuration(void) const = 0;
+    virtual UInt32 getWidth(void) const = 0;
+    virtual UInt32 getHeight(void) const = 0;
 
-	virtual Int64 getPosition(void) const = 0;
-	virtual Int64 getDuration(void) const = 0;
+    virtual bool hasAudio(void) const = 0;
+    virtual void enableAudio(void) = 0;
+    virtual void disableAudio(void) = 0;
+    virtual bool isAudioEnabled(void) const = 0;
 
-    virtual ImageRefPtr getCurrentFrame(void) = 0;
+    virtual Real32 getAudioVolume(void) const = 0;
+    virtual void setAudioVolume(Real32 volume) = 0;
+
     virtual bool updateImage(void) = 0;
-    virtual bool updateTexture(TextureObjChunkRefPtr TheTexture);
 
-	ImageRefPtr getImage(void) const;
+    void attachUpdateProducer(ReflexiveContainer* const producer);
+    void detachUpdateProducer(void);
 
-	//Events
-    void addVideoListener(VideoListenerPtr Listener);
-    void removeVideoListener(VideoListenerPtr Listener);
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -146,14 +152,9 @@ class OSG_CONTRIBVIDEO_DLLMAPPING VideoWrapper : public VideoWrapperBase
 
     /*! \}                                                                 */
     
-	ImageRefPtr _VideoImage;
+    boost::signals2::scoped_connection _UpdateEventConnection;
+    void handleUpdate(EventDetails* const details);
 	
-	typedef std::set<VideoListenerPtr> VideoListenerSet;
-    typedef VideoListenerSet::iterator VideoListenerSetItor;
-    typedef VideoListenerSet::const_iterator VideoListenerSetConstItor;
-	
-    VideoListenerSet       _VideoListeners;
-
 	void producePaused(void);
 	void produceUnpaused(void);
 	void produceStarted(void);

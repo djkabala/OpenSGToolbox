@@ -32,7 +32,7 @@
 #include "OSGConfig.h"
 #include "OSGContribVideoDef.h"
 
-#ifdef _OSGTOOLBOX_VIDEO_USE_DIRECT_SHOW
+#ifdef OSG_WITH_DIRECT_SHOW
 
 #include "OSGVideoManager.h"
 #include <string>
@@ -43,12 +43,12 @@ OSG_BEGIN_NAMESPACE
 class OSG_CONTRIBVIDEO_DLLMAPPING DirectShowManager : public VideoManager
 {
 public:
-    static VideoManager *the(void);
+    static DirectShowManager *the(void);
 
-    virtual void init(int   argc, char *argv[]);
-    virtual void exit(void);
+    virtual bool init(int   argc, char *argv[]);
+    virtual bool exit(void);
 
-    virtual VideoWrapperRefPtr createVideoWrapper(void) const;
+    virtual VideoWrapperTransitPtr createVideoWrapper(void) const;
 
 private:
     DirectShowManager(void);
@@ -64,6 +64,6 @@ OSG_END_NAMESPACE
 
 
 #include "OSGDirectShowManager.inl"
-#endif
+#endif    //OSG_WITH_DIRECT_SHOW
 
 #endif

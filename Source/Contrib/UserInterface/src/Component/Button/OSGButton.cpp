@@ -94,25 +94,25 @@ void Button::setTextColors( const Color4f &value )
     setActiveTextColor(value);
 }
 
-void Button::setBorders(BorderRefPtr TheBorder)
+void Button::setBorders(Border* const TheBorder)
 {
     Inherited::setBorders(TheBorder);
     setActiveBorder(TheBorder);
 }
 
-void Button::setBackgrounds(LayerRefPtr TheBackground)
+void Button::setBackgrounds(Layer* const TheBackground)
 {
     Inherited::setBackgrounds(TheBackground);
     setActiveBackground(TheBackground);
 }
 
-void Button::setForegrounds(LayerRefPtr TheForeground)
+void Button::setForegrounds(Layer* const TheForeground)
 {
     Inherited::setForegrounds(TheForeground);
     setActiveForeground(TheForeground);
 }
 
-UIDrawObjectCanvasRefPtr Button::createTexturedDrawObjectCanvas(TextureObjChunkRefPtr TheTexture, Vec2f Size)
+UIDrawObjectCanvasTransitPtr Button::createTexturedDrawObjectCanvas(TextureObjChunk* const TheTexture, Vec2f Size)
 {
     UIDrawObjectCanvasRefPtr DrawObjectCanvas = UIDrawObjectCanvas::create();
     TexturedQuadUIDrawObjectRefPtr TextureDrawObject = TexturedQuadUIDrawObject::create();
@@ -145,28 +145,12 @@ UIDrawObjectCanvasRefPtr Button::createTexturedDrawObjectCanvas(TextureObjChunkR
 
     DrawObjectCanvas->pushToDrawObjects(TextureDrawObject);
 
-    return DrawObjectCanvas;
+    return UIDrawObjectCanvasTransitPtr(DrawObjectCanvas.get());
 }
 
-UIDrawObjectCanvasRefPtr Button::getBaseDrawObject(void) const
+UIDrawObjectCanvas* Button::getBaseDrawObject(void) const
 {
     return getDrawObject();
-}
-
-EventConnection Button::addActionListener(ActionListenerPtr Listener)
-{
-    _ActionListeners.insert(Listener);
-    return EventConnection(
-                           boost::bind(&Button::isActionListenerAttached, this, Listener),
-                           boost::bind(&Button::removeActionListener, this, Listener));
-}
-
-EventConnection Button::addMousePressedActionListener(ActionListenerPtr Listener)
-{
-    _MousePressedActionListeners.insert(Listener);
-    return EventConnection(
-                           boost::bind(&Button::isMousePressedActionListenerAttached, this, Listener),
-                           boost::bind(&Button::removeMousePressedActionListener, this, Listener));
 }
 
 Vec2f Button::getContentRequestedSize(void) const
@@ -226,7 +210,7 @@ Vec2f Button::getContentRequestedSize(void) const
 
     return Result + Vec2f(2.0,2.0);
 }
-BorderRefPtr Button::getDrawnBorder(void) const
+Border* Button::getDrawnBorder(void) const
 {
     if(getEnabled())
     {
@@ -253,7 +237,7 @@ BorderRefPtr Button::getDrawnBorder(void) const
     }
 }
 
-LayerRefPtr Button::getDrawnBackground(void) const
+Layer* Button::getDrawnBackground(void) const
 {
     if(getEnabled())
     {
@@ -279,7 +263,7 @@ LayerRefPtr Button::getDrawnBackground(void) const
         return getDisabledBackground();
     }
 }
-LayerRefPtr Button::getDrawnForeground(void) const
+Layer* Button::getDrawnForeground(void) const
 {
     if(getEnabled())
     {
@@ -333,7 +317,7 @@ Color4f Button::getDrawnTextColor(void) const
     }
 }
 
-UIDrawObjectCanvasRefPtr Button::getDrawnDrawObject(void) const
+UIDrawObjectCanvas* Button::getDrawnDrawObject(void) const
 {
     if(getEnabled())
     {
@@ -360,7 +344,7 @@ UIDrawObjectCanvasRefPtr Button::getDrawnDrawObject(void) const
     }
 }
 
-void Button::drawInternal(const GraphicsWeakPtr TheGraphics, Real32 Opacity) const
+void Button::drawInternal(Graphics* const TheGraphics, Real32 Opacity) const
 {
     Pnt2f TopLeft, BottomRight;
     getInsideBorderBounds(TopLeft, BottomRight);
@@ -473,7 +457,7 @@ void Button::drawInternal(const GraphicsWeakPtr TheGraphics, Real32 Opacity) con
     }
 }
 
-void Button::drawText(const GraphicsWeakPtr TheGraphics, const Pnt2f& TopLeft, Real32 Opacity) const
+void Button::drawText(Graphics* const TheGraphics, const Pnt2f& TopLeft, Real32 Opacity) const
 {
     //If I have Text Then Draw it
     if(getText() != "" && getFont() != NULL)
@@ -502,64 +486,67 @@ void Button::detachFromEventProducer(void)
 {
     Inherited::detachFromEventProducer();
     _ArmedUpdateEventConnection.disconnect();
-    _ArmedMouseEventConnection.disconnect();
+    _ArmedMouseReleasedConnection.disconnect();
 }
 
-void Button::actionPreformed(const ActionEventUnrecPtr e)
+void Button::actionPreformed(ActionEventDetails* const e)
 {
 }
 
-void Button::mousePressedActionPreformed(const ActionEventUnrecPtr e)
+void Button::mousePressedActionPreformed(ActionEventDetails* const e)
 {
 }
 
-void Button::mouseClicked(const MouseEventUnrecPtr e)
+void Button::mouseClicked(MouseEventDetails* const e)
 {
     Component::mouseClicked(e);
 }
 
-void Button::mouseEntered(const MouseEventUnrecPtr e)
+void Button::mouseEntered(MouseEventDetails* const e)
 {
     if(getEnabled())
     {
         if(_Armed)
         {
-            ButtonRefPtr(this)->setActive(true);
+            this->setActive(true);
         }
     }
 
     Component::mouseEntered(e);
 }
 
-void Button::mouseExited(const MouseEventUnrecPtr e)
+void Button::mouseExited(MouseEventDetails* const e)
 {
     if(getEnabled())
     {
         if(_Armed)
         {
-            ButtonRefPtr(this)->setActive(false);
+            this->setActive(false);
         }
     }
 
     Component::mouseExited(e);
 }
 
-void Button::mousePressed(const MouseEventUnrecPtr e)
+void Button::mousePressed(MouseEventDetails* const e)
 {
     if(getEnabled())
     {
-        if(e->getButton()==MouseEvent::BUTTON1){
-            ButtonRefPtr(this)->setActive(true);
+        if(e->getButton()==MouseEventDetails::BUTTON1){
+            this->setActive(true);
             _Armed = true;
 
-            if(getParentWindow() != NULL && getParentWindow()->getDrawingSurface()!=NULL&& getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
+            if(getParentWindow() != NULL && getParentWindow()->getParentDrawingSurface()!=NULL&& getParentWindow()->getParentDrawingSurface()->getEventProducer() != NULL)
             {
-                _ArmedMouseEventConnection = getParentWindow()->getDrawingSurface()->getEventProducer()->addMouseListener(&_ButtonArmedListener);
+                _ArmedMouseReleasedConnection.disconnect();
+                _ArmedMouseReleasedConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectMouseReleased(boost::bind(&Button::handleArmedMouseReleased, this, _1));
+
                 if(getEnableActionOnMouseDownTime())
                 {
-                    produceMousePressedActionPerformed(ActionEvent::create(ButtonRefPtr(this), e->getTimeStamp()));
-                    _ButtonArmedListener.reset();
-                    _ArmedUpdateEventConnection = getParentWindow()->getDrawingSurface()->getEventProducer()->addUpdateListener(&_ButtonArmedListener);
+                    produceMousePressedActionPerformed();
+                    resetArmed();
+                    _ArmedUpdateEventConnection.disconnect();
+                    _ArmedUpdateEventConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectUpdate(boost::bind(&Button::handleArmedUpdate, this, _1));
                 }
             }
         }
@@ -567,42 +554,44 @@ void Button::mousePressed(const MouseEventUnrecPtr e)
     Component::mousePressed(e);
 }
 
-void Button::mouseReleased(const MouseEventUnrecPtr e)
+void Button::mouseReleased(MouseEventDetails* const e)
 {	
     if(getEnabled())
     {
-        if(e->getButton() == MouseEvent::BUTTON1 && _Armed)
+        if(e->getButton() == MouseEventDetails::BUTTON1 && _Armed)
         {
-            ButtonRefPtr(this)->setActive(false);
-            produceActionPerformed(ActionEvent::create(ButtonRefPtr(this), e->getTimeStamp()));
+            this->setActive(false);
+
+            produceActionPerformed();
             _Armed = false;
+
+            //Consume the event
+            e->consume();
+            return;
         }
     }
     Component::mouseReleased(e);
 }
 
-void Button::produceActionPerformed(const ActionEventUnrecPtr e)
+void Button::produceActionPerformed(void)
 {
-    actionPreformed(e);
-    ActionListenerSet Listeners(_ActionListeners);
-    for(ActionListenerSetConstItor SetItor(Listeners.begin()) ; SetItor != Listeners.end() ; ++SetItor)
-    {
-        (*SetItor)->actionPerformed(e);
-    }
-    _Producer.produceEvent(ActionPerformedMethodId,e);
+    ActionEventDetailsUnrecPtr Details = ActionEventDetails::create(this, getTimeStamp());
+
+    actionPreformed(Details);
+
+    Inherited::produceActionPerformed(Details);
 }
 
-void Button::produceMousePressedActionPerformed(const ActionEventUnrecPtr e)
+void Button::produceMousePressedActionPerformed(void)
 {
-    mousePressedActionPreformed(e);
-    for(ActionListenerSetConstItor SetItor(_MousePressedActionListeners.begin()) ; SetItor != _MousePressedActionListeners.end() ; ++SetItor)
-    {
-        (*SetItor)->actionPerformed(e);
-    }
-    _Producer.produceEvent(MousePressedActionPerformedMethodId,e);
+    ActionEventDetailsUnrecPtr Details = ActionEventDetails::create(this, getTimeStamp());
+
+    mousePressedActionPreformed(Details);
+
+    Inherited::produceMousePressedActionPerformed(Details);
 }
 
-void Button::setTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
+void Button::setTexture(TextureObjChunk* const TheTexture, Vec2f Size)
 {
     UIDrawObjectCanvasRefPtr DrawObjectCanvas;
     if(TheTexture == NULL)
@@ -618,7 +607,7 @@ void Button::setTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
 
 }
 
-void Button::setActiveTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
+void Button::setActiveTexture(TextureObjChunk* const TheTexture, Vec2f Size)
 {
     UIDrawObjectCanvasRefPtr DrawObjectCanvas;
     if(TheTexture == NULL)
@@ -633,7 +622,7 @@ void Button::setActiveTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
     setActiveDrawObject(DrawObjectCanvas);
 }
 
-void Button::setFocusedTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
+void Button::setFocusedTexture(TextureObjChunk* const TheTexture, Vec2f Size)
 {
     UIDrawObjectCanvasRefPtr DrawObjectCanvas;
     if(TheTexture == NULL)
@@ -648,7 +637,7 @@ void Button::setFocusedTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
     setFocusedDrawObject(DrawObjectCanvas);
 }
 
-void Button::setRolloverTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
+void Button::setRolloverTexture(TextureObjChunk* const TheTexture, Vec2f Size)
 {
     UIDrawObjectCanvasRefPtr DrawObjectCanvas;
     if(TheTexture == NULL)
@@ -663,7 +652,7 @@ void Button::setRolloverTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
     setRolloverDrawObject(DrawObjectCanvas);
 }
 
-void Button::setDisabledTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
+void Button::setDisabledTexture(TextureObjChunk* const TheTexture, Vec2f Size)
 {
     UIDrawObjectCanvasRefPtr DrawObjectCanvas;
     if(TheTexture == NULL)
@@ -678,7 +667,7 @@ void Button::setDisabledTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size)
     setDisabledDrawObject(DrawObjectCanvas);
 }
 
-void Button::setImage(ImageRefPtr TheImage, Vec2f Size)
+void Button::setImage(Image* const TheImage, Vec2f Size)
 {
     TextureObjChunkRefPtr TextureObjChunk;
     if(TheImage == NULL)
@@ -699,7 +688,7 @@ void Button::setImage(ImageRefPtr TheImage, Vec2f Size)
     setTexture(TextureObjChunk, Size);
 }
 
-void Button::setActiveImage(ImageRefPtr TheImage, Vec2f Size)
+void Button::setActiveImage(Image* const TheImage, Vec2f Size)
 {
     TextureObjChunkRefPtr TextureObjChunk;
     if(TheImage == NULL)
@@ -720,7 +709,7 @@ void Button::setActiveImage(ImageRefPtr TheImage, Vec2f Size)
     setActiveTexture(TextureObjChunk, Size);
 }
 
-void Button::setFocusedImage(ImageRefPtr TheImage, Vec2f Size)
+void Button::setFocusedImage(Image* const TheImage, Vec2f Size)
 {
     TextureObjChunkRefPtr TextureObjChunk;
     if(TheImage == NULL)
@@ -741,7 +730,7 @@ void Button::setFocusedImage(ImageRefPtr TheImage, Vec2f Size)
     setFocusedTexture(TextureObjChunk, Size);
 }
 
-void Button::setRolloverImage(ImageRefPtr TheImage, Vec2f Size)
+void Button::setRolloverImage(Image* const TheImage, Vec2f Size)
 {
     TextureObjChunkRefPtr TextureObjChunk;
     if(TheImage == NULL)
@@ -762,7 +751,7 @@ void Button::setRolloverImage(ImageRefPtr TheImage, Vec2f Size)
     setRolloverTexture(TextureObjChunk, Size);
 }
 
-void Button::setDisabledImage(ImageRefPtr TheImage, Vec2f Size)
+void Button::setDisabledImage(Image* const TheImage, Vec2f Size)
 {
     TextureObjChunkRefPtr TextureObjChunk;
     if(TheImage == NULL)
@@ -819,24 +808,22 @@ void Button::getTextBounds(Pnt2f& TextTopLeft, Pnt2f& TextBottomRight) const
     getFont()->getBounds(this->getText(), TextTopLeft, TextBottomRight);
 }
 
-void Button::removeActionListener(ActionListenerPtr Listener)
-{
-    ActionListenerSetItor EraseIter(_ActionListeners.find(Listener));
-    if(EraseIter != _ActionListeners.end())
-    {
-        _ActionListeners.erase(EraseIter);
-    }
-}
-
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
 
+void Button::resolveLinks(void)
+{
+    Inherited::resolveLinks();
+
+    _ArmedUpdateEventConnection.disconnect();
+    _ArmedMouseReleasedConnection.disconnect();
+
+}
 /*----------------------- constructors & destructors ----------------------*/
 
 Button::Button(void) :
     Inherited(),
-		_ButtonArmedListener(this),
         _Armed(false),
         _Active(false)
 
@@ -845,7 +832,6 @@ Button::Button(void) :
 
 Button::Button(const Button &source) :
     Inherited(source),
-		_ButtonArmedListener(this),
         _Armed(false),
         _Active(false)
 
@@ -901,42 +887,38 @@ void Button::dump(      UInt32    ,
     SLOG << "Dump Button NI" << std::endl;
 }
 
-void Button::ButtonArmedListener::mouseReleased(const MouseEventUnrecPtr e)
+void Button::handleArmedMouseReleased(MouseEventDetails* const e)
 {
-	if(e->getButton() == MouseEvent::BUTTON1)
-	{
-		Pnt2f MousePos = ViewportToDrawingSurface(e->getLocation(), _Button->getParentWindow()->getDrawingSurface(), e->getViewport());
-        //If the Mouse is not within the button
-        if(!_Button->isContained(MousePos))
+	if(e->getButton() == MouseEventDetails::BUTTON1)
+    {
+        _ArmedMouseReleasedConnection.disconnect();
+        if(getEnableActionOnMouseDownTime())
         {
-            //Then Disarm the button
-            _Button->_Armed = false;
+            _ArmedUpdateEventConnection.disconnect();
         }
-
-		//Remove myself from the listener
-        if(_Button->getParentWindow() != NULL &&
-            _Button->getParentWindow()->getDrawingSurface() != NULL &&
-            _Button->getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
-        {
-            _Button->getParentWindow()->getDrawingSurface()->getEventProducer()->removeMouseListener(this);
-            if(_Button->getEnableActionOnMouseDownTime())
+        if(getParentWindow() &&
+           getParentWindow()->getParentDrawingSurface())
+	    {
+		    Pnt2f MousePos = ViewportToDrawingSurface(e->getLocation(), getParentWindow()->getParentDrawingSurface(), e->getViewport());
+            //If the Mouse is not within the button
+            if(!isContained(MousePos))
             {
-                _Button->getParentWindow()->getDrawingSurface()->getEventProducer()->removeUpdateListener(this);
+                _Armed = false;
             }
         }
 	}
 }
 
-void Button::ButtonArmedListener::update(const UpdateEventUnrecPtr e)
+void Button::handleArmedUpdate(UpdateEventDetails* const e)
 {
-    if(_Button->isContained(_Button->getParentWindow()->getDrawingSurface()->getMousePosition()))
+    if(isContained(getParentWindow()->getParentDrawingSurface()->getMousePosition()))
     {
         _ActionFireElps += e->getElapsedTime();
     }
-    if(_ActionFireElps >= _Button->getActionOnMouseDownRate())
+    if(_ActionFireElps >= getActionOnMouseDownRate())
     {
-        _Button->produceMousePressedActionPerformed(ActionEvent::create(_Button, e->getTimeStamp()));
-        _ActionFireElps -= static_cast<Int32>(_ActionFireElps/_Button->getActionOnMouseDownRate()) * _Button->getActionOnMouseDownRate();
+        produceMousePressedActionPerformed();
+        _ActionFireElps -= static_cast<Int32>(_ActionFireElps/getActionOnMouseDownRate()) * getActionOnMouseDownRate();
     }
 }
 OSG_END_NAMESPACE

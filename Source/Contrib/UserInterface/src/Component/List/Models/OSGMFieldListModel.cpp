@@ -50,7 +50,6 @@
 #include "OSGFieldContainerMFieldHandle.h"
 #include "OSGFieldContainerFactory.h"
 #include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
 
 OSG_BEGIN_NAMESPACE
 
@@ -114,7 +113,7 @@ boost::any MFieldListModel::getElementAt(UInt32 index) const
     if(getContainer() == NULL)
     {
         SWARNING << "FieldContainer is NULL." << std::endl;
-        return 0;
+        return boost::any();
     }
 
     //Check for valid Field
@@ -122,14 +121,14 @@ boost::any MFieldListModel::getElementAt(UInt32 index) const
     if(!TheFieldHandle->isValid())
     {
         SWARNING << "No Field with Id: " << getFieldId() << " in FieldContainers of type " << getContainer()->getType().getName() << std::endl;
-        return 0;
+        return boost::any();
     }
 
     //Check for valid Field cardinality
     if(TheFieldHandle->getCardinality() != FieldType::MultiField)
     {
         SWARNING << "Field: " << getContainer()->getType().getName() << " is not a MultiField" << std::endl;
-        return 0;
+        return boost::any();
     }
 
     //Check for valid indexing
@@ -138,25 +137,32 @@ boost::any MFieldListModel::getElementAt(UInt32 index) const
         SWARNING << "Cannot get value of from index " << index << ", on field " << TheFieldHandle->getDescription()->getName() 
                  << ", on FieldContianer of type " << getContainer()->getType().getName()
                  << " because that field has size " << TheFieldHandle->size() << std::endl;
-        return 0;
+        return boost::any();
     }
-    std::string Value("");
-    if(TheFieldHandle->isPointerField())
-    {
-        GetMFieldHandle<FieldContainerPtrMFieldBase>* TheHandle(dynamic_cast<GetMFieldHandle<FieldContainerPtrMFieldBase>*>(TheFieldHandle.get()));
-        Value = boost::lexical_cast<std::string>(TheHandle->get(index)->getId());
-    }
-    else
-    {
-        std::ostringstream StrStream;
-        OutStream TheOutStream(StrStream);
+    //std::string Value("");
+    //if(TheFieldHandle->isPointerField())
+    //{
+        //GetMFieldHandle<FieldContainerPtrMFieldBase>* TheHandle(dynamic_cast<GetMFieldHandle<FieldContainerPtrMFieldBase>*>(TheFieldHandle.get()));
+        //if(TheHandle->get(index))
+        //{
+            //Value = boost::lexical_cast<std::string>(TheHandle->get(index)->getId());
+        //}
+        //else
+        //{
+            //Value = "NULL";
+        //}
+    //}
+    //else
+    //{
+        //std::ostringstream StrStream;
+        //OutStream TheOutStream(StrStream);
 
-        //Get the from index value
-        TheFieldHandle->pushIndexedValueToStream(TheOutStream, index);
-        Value = StrStream.str();
-    }
+        ////Get the from index value
+        //TheFieldHandle->pushIndexedValueToStream(TheOutStream, index);
+        //Value = StrStream.str();
+    //}
 
-    return boost::any(Value);
+    return boost::any(MFieldIndexed(TheFieldHandle,index));
 }
 
 void MFieldListModel::containerChanged(FieldContainer * container, ConstFieldMaskArg whichField)
@@ -181,6 +187,16 @@ void MFieldListModel::containerChanged(FieldContainer * container, ConstFieldMas
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
+
+void MFieldListModel::resolveLinks(void)
+{
+    if(getContainer())
+    {
+        getContainer()->subChangedFunctor(boost::bind(&MFieldListModel::containerChanged, this, _1, _2));
+    }
+
+    Inherited::resolveLinks();
+}
 
 /*----------------------- constructors & destructors ----------------------*/
 

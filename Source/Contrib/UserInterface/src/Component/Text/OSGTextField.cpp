@@ -48,10 +48,6 @@
 #include "OSGTextField.h"
 #include "OSGUIDrawUtils.h"
 
-#include "OSGLineUIDrawObject.h"
-
-
-
 #include "OSGInternalWindow.h"
 #include "OSGUIDrawingSurface.h"
 #include "OSGWindowEventProducer.h"
@@ -90,14 +86,6 @@ void TextField::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-EventConnection TextField::addActionListener(ActionListenerPtr Listener)
-{
-   _ActionListeners.insert(Listener);
-   return EventConnection(
-       boost::bind(&TextField::isActionListenerAttached, this, Listener),
-       boost::bind(&TextField::removeActionListener, this, Listener));
-}
-
 Vec2f TextField::getContentRequestedSize(void) const
 {
     Pnt2f TextTopLeft, TextBottomRight;
@@ -111,7 +99,7 @@ std::string TextField::getDrawnText(void) const
 	return getText();
 }
 
-void TextField::drawInternal(const GraphicsWeakPtr TheGraphics, Real32 Opacity) const
+void TextField::drawInternal(Graphics* const TheGraphics, Real32 Opacity) const
 {
     Pnt2f Alignment;
     Pnt2f TopLeft, BottomRight;
@@ -175,25 +163,34 @@ void TextField::drawInternal(const GraphicsWeakPtr TheGraphics, Real32 Opacity) 
     }
 }
 
-void TextField::keyTyped(const KeyEventUnrecPtr e)
+void TextField::keyTyped(KeyEventDetails* const e)
 {
 	if(getEnabled())
 	{
-		if(e->getKey() == e->KEY_ENTER)
-		{
-			produceActionPerformed(ActionEvent::create(TextFieldRefPtr(this), getTimeStamp()));
-		}
+		switch(e->getKey())
+        {
+        case KeyEventDetails::KEY_ENTER:
+			produceActionPerformed();
+        case KeyEventDetails::KEY_TAB:
+	        Component::keyTyped(e); //Tab should not be inserted in a TextField
+            break;
+        default:
+	        Inherited::keyTyped(e);
+            break;
+        }
 	}
-
-	Inherited::keyTyped(e);
+    else
+    {
+	    Inherited::keyTyped(e);
+    }
 }
 
-void TextField::mouseClicked(const MouseEventUnrecPtr e)
+void TextField::mouseClicked(MouseEventDetails* const e)
 {	
 	Int32 Position(0);
 	Int32 BeginWord = 0;
 	Int32 EndWord = getDrawnText().size();
-	if(e->getButton() == e->BUTTON1)
+	if(e->getButton() == MouseEventDetails::BUTTON1)
 	{
 
 		if(e->getClickCount() == 2)
@@ -207,12 +204,12 @@ void TextField::mouseClicked(const MouseEventUnrecPtr e)
 
 			//set caret position to proper place
 			//if the mouse is to the left of the text, set it to the begining.
-			Pnt2f temp = DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this));
-			if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() <= TempPos.x())
+			Pnt2f temp = DrawingSurfaceToComponent(e->getLocation(), this);
+			if(DrawingSurfaceToComponent(e->getLocation(), this).x() <= TempPos.x())
 			{
 				Position = 0;
 			}//if the mouse is to the right of the text, set it to the end
-			else if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() >= TempPos.x()+BottomRightText.x())
+			else if(DrawingSurfaceToComponent(e->getLocation(), this).x() >= TempPos.x()+BottomRightText.x())
 			{
 				Position = getDrawnText().size();
 			}
@@ -222,8 +219,8 @@ void TextField::mouseClicked(const MouseEventUnrecPtr e)
 				{		
 					calculateTextBounds(0,i, TopLeftText, BottomRightText);
 					calculateTextBounds(0,i+1, TopLeftText1, BottomRightText1);
-					if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x()>BottomRightText.x()
-					   && DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() <= BottomRightText1.x())//check to see if it's in the right spot
+					if(DrawingSurfaceToComponent(e->getLocation(), this).x()>BottomRightText.x()
+					   && DrawingSurfaceToComponent(e->getLocation(), this).x() <= BottomRightText1.x())//check to see if it's in the right spot
 					{
 						Position = i;
 						break;
@@ -263,7 +260,7 @@ void TextField::mouseClicked(const MouseEventUnrecPtr e)
 }
 
 
-void TextField::mousePressed(const MouseEventUnrecPtr e)
+void TextField::mousePressed(MouseEventDetails* const e)
 {
 	Pnt2f TopLeftText, BottomRightText, TempPos;
 	Pnt2f TopLeftText1, BottomRightText1;
@@ -271,16 +268,16 @@ void TextField::mousePressed(const MouseEventUnrecPtr e)
 	getFont()->getBounds(getDrawnText(), TopLeftText, BottomRightText);
     getInsideBorderBounds(TopLeft, BottomRight);
     TempPos = calculateAlignment(TopLeft, BottomRight-TopLeft, BottomRightText-TopLeftText, getAlignment().y(), getAlignment().x());
-	if(e->getButton() == e->BUTTON1)
+	if(e->getButton() == MouseEventDetails::BUTTON1)
 	{
 		//set caret position to proper place
 		//if the mouse is to the left of the text, set it to the begining.
-		Pnt2f temp = DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this));
-		if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() <= TempPos.x())
+		Pnt2f temp = DrawingSurfaceToComponent(e->getLocation(), this);
+		if(DrawingSurfaceToComponent(e->getLocation(), this).x() <= TempPos.x())
 		{
 			setCaretPosition(0);
 		}		//if the mouse is to the right of the text, set it to the end
-		else if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() >= TempPos.x()+BottomRightText.x())
+		else if(DrawingSurfaceToComponent(e->getLocation(), this).x() >= TempPos.x()+BottomRightText.x())
 		{
 			setCaretPosition(getDrawnText().size());
 		}
@@ -290,10 +287,10 @@ void TextField::mousePressed(const MouseEventUnrecPtr e)
 			{		
 				calculateTextBounds(0,i, TopLeftText, BottomRightText);
 				calculateTextBounds(0,i+1, TopLeftText1, BottomRightText1);
-				if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x()>BottomRightText.x()
-				   && DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() <= BottomRightText1.x())//check to see if it's in the right spot
+				if(DrawingSurfaceToComponent(e->getLocation(), this).x()>BottomRightText.x()
+				   && DrawingSurfaceToComponent(e->getLocation(), this).x() <= BottomRightText1.x())//check to see if it's in the right spot
 				{
-					if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() <= (BottomRightText1.x()-BottomRightText.x())/2.0+0.5 + BottomRightText.x())
+					if(DrawingSurfaceToComponent(e->getLocation(), this).x() <= (BottomRightText1.x()-BottomRightText.x())/2.0+0.5 + BottomRightText.x())
 					{
 						setCaretPosition(i);
 						break;
@@ -310,11 +307,11 @@ void TextField::mousePressed(const MouseEventUnrecPtr e)
 		_TextSelectionEnd = getCaretPosition();
 		_TextSelectionStart = getCaretPosition();
 	}
-	if(getParentWindow() != NULL && getParentWindow()->getDrawingSurface()!=NULL&& getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
+	if(getParentWindow() != NULL && getParentWindow()->getParentDrawingSurface()!=NULL&& getParentWindow()->getParentDrawingSurface()->getEventProducer() != NULL)
 	{
-        getParentWindow()->getDrawingSurface()->getEventProducer()->addMouseListener(&_MouseDownListener);
-        getParentWindow()->getDrawingSurface()->getEventProducer()->addKeyListener(&_MouseDownListener);
-        getParentWindow()->getDrawingSurface()->getEventProducer()->addMouseMotionListener(&_MouseDownListener);
+        _MouseDownKeyTypedConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectKeyTyped(boost::bind(&TextField::handleMouseDownKeyTyped, this, _1));
+        _MouseDownMouseReleasedConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectMouseReleased(boost::bind(&TextField::handleMouseDownMouseReleased, this, _1));
+        _MouseDownMouseDraggedConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectMouseDragged(boost::bind(&TextField::handleMouseDownMouseDragged, this, _1));
     }
 	Inherited::mousePressed(e);
 }
@@ -332,39 +329,105 @@ void TextField::calculateTextBounds(const UInt32 StartIndex, const UInt32 EndInd
 }
 
 
-void TextField::produceActionPerformed(const ActionEventUnrecPtr e)
+void TextField::produceActionPerformed(void)
 {
-   ActionListenerSet ListenerSet(_ActionListeners);
-   for(ActionListenerSetConstItor SetItor(ListenerSet.begin()) ; SetItor != ListenerSet.end() ; ++SetItor)
-   {
-	   (*SetItor)->actionPerformed(e);
-   }
-   _Producer.produceEvent(ActionPerformedMethodId,e);
+    ActionEventDetailsUnrecPtr Details(ActionEventDetails::create(this, getTimeStamp()));
+
+    Inherited::produceActionPerformed(Details);
 }
 
-void TextField::focusGained(const FocusEventUnrecPtr e)
+void TextField::focusGained(FocusEventDetails* const e)
 {
 	if( getParentWindow() != NULL &&
-		getParentWindow()->getDrawingSurface() != NULL &&
-		getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
+		getParentWindow()->getParentDrawingSurface() != NULL &&
+		getParentWindow()->getParentDrawingSurface()->getEventProducer() != NULL)
     {
-		getParentWindow()->getDrawingSurface()->getEventProducer()->addUpdateListener(&_CaretUpdateListener);
+        _CaretUpdateConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectUpdate(boost::bind(&TextField::handleCaretUpdate, this, _1));
 	}
 	Inherited::focusGained(e);
 }
 
-void TextField::focusLost(const FocusEventUnrecPtr e)
+void TextField::focusLost(FocusEventDetails* const e)
 {
-	if( getParentWindow() != NULL &&
-		getParentWindow()->getDrawingSurface() != NULL &&
-		getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
-    {
-        _CaretUpdateListener.disconnect();
-	}
+    _CaretUpdateConnection.disconnect();
+
 	Inherited::focusLost(e);
 }
 
-void TextField::mouseDraggedAfterArming(const MouseEventUnrecPtr e)
+void TextField::detachFromEventProducer(void)
+{
+    Inherited::detachFromEventProducer();
+    _CaretUpdateConnection.disconnect();
+    _MouseDownKeyTypedConnection.disconnect();
+    _MouseDownMouseReleasedConnection.disconnect();
+    _MouseDownMouseDraggedConnection.disconnect();
+}
+
+/*-------------------------------------------------------------------------*\
+ -  private                                                                 -
+\*-------------------------------------------------------------------------*/
+
+/*----------------------- constructors & destructors ----------------------*/
+
+TextField::TextField(void) :
+    Inherited(),
+		_CurrentCaretBlinkElps(0.0)
+{
+}
+
+TextField::TextField(const TextField &source) :
+    Inherited(source),
+		_CurrentCaretBlinkElps(0.0)
+{
+}
+
+TextField::~TextField(void)
+{
+}
+
+/*----------------------------- class specific ----------------------------*/
+
+void TextField::changed(ConstFieldMaskArg whichField, 
+                            UInt32            origin,
+                            BitVector         details)
+{
+    Inherited::changed(whichField, origin, details);
+}
+
+void TextField::dump(      UInt32    ,
+                         const BitVector ) const
+{
+    SLOG << "Dump TextField NI" << std::endl;
+}
+
+void TextField::handleCaretUpdate(UpdateEventDetails* const e)
+{
+   _CurrentCaretBlinkElps += e->getElapsedTime();
+   if(_CurrentCaretBlinkElps > LookAndFeelManager::the()->getLookAndFeel()->getTextCaretRate())
+   {
+       Int32 Div = _CurrentCaretBlinkElps/LookAndFeelManager::the()->getLookAndFeel()->getTextCaretRate();
+	   _CurrentCaretBlinkElps -= static_cast<OSG::Time>(Div)*LookAndFeelManager::the()->getLookAndFeel()->getTextCaretRate();
+   }
+}
+
+void TextField::handleMouseDownKeyTyped(KeyEventDetails* const e)
+{
+    if(e->getKey() == KeyEventDetails::KEY_ESCAPE)
+    {
+        _MouseDownKeyTypedConnection.disconnect();
+        _MouseDownMouseReleasedConnection.disconnect();
+        _MouseDownMouseDraggedConnection.disconnect();
+    }
+}
+
+void TextField::handleMouseDownMouseReleased(MouseEventDetails* const e)
+{
+    _MouseDownKeyTypedConnection.disconnect();
+    _MouseDownMouseReleasedConnection.disconnect();
+    _MouseDownMouseDraggedConnection.disconnect();
+}
+
+void TextField::handleMouseDownMouseDragged(MouseEventDetails* const e)
 {
 	Pnt2f TopLeftText, BottomRightText, TempPos;
 	Pnt2f TopLeftText1, BottomRightText1;
@@ -373,16 +436,16 @@ void TextField::mouseDraggedAfterArming(const MouseEventUnrecPtr e)
 	getFont()->getBounds(getDrawnText(), TopLeftText, BottomRightText);
     getInsideBorderBounds(TopLeft, BottomRight);
     TempPos = calculateAlignment(TopLeft, BottomRight-TopLeft, BottomRightText-TopLeftText, getAlignment().y(), getAlignment().x());
-	if(e->getButton() == e->BUTTON1)
+    if(e->getButton() == MouseEventDetails::BUTTON1)
 	{
 		//set caret position to proper place
 		//if the mouse is to the left of the text, set it to the begining.
-		Pnt2f temp = DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this));
-		if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() <= TempPos.x())
+		Pnt2f temp = DrawingSurfaceToComponent(e->getLocation(), this);
+		if(DrawingSurfaceToComponent(e->getLocation(), this).x() <= TempPos.x())
 		{
 			setCaretPosition(0);
 		}		//if the mouse is to the right of the text, set it to the end
-		else if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() >= TempPos.x()+BottomRightText.x())
+		else if(DrawingSurfaceToComponent(e->getLocation(), this).x() >= TempPos.x()+BottomRightText.x())
 		{
 			setCaretPosition(getDrawnText().size());
 		}
@@ -393,10 +456,10 @@ void TextField::mouseDraggedAfterArming(const MouseEventUnrecPtr e)
 			{		
 				calculateTextBounds(0,i, TopLeftText, BottomRightText);
 				calculateTextBounds(0,i+1, TopLeftText1, BottomRightText1);
-				if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x()>BottomRightText.x()
-				   && DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() <= BottomRightText1.x())//check to see if it's in the right spot
+				if(DrawingSurfaceToComponent(e->getLocation(), this).x()>BottomRightText.x()
+				   && DrawingSurfaceToComponent(e->getLocation(), this).x() <= BottomRightText1.x())//check to see if it's in the right spot
 				{
-					if(DrawingSurfaceToComponent(e->getLocation(), TextFieldRefPtr(this)).x() < (BottomRightText1.x()-BottomRightText.x())/2.0 + BottomRightText.x())
+					if(DrawingSurfaceToComponent(e->getLocation(), this).x() < (BottomRightText1.x()-BottomRightText.x())/2.0 + BottomRightText.x())
 					{
 
 						setCaretPosition(i);
@@ -434,101 +497,6 @@ void TextField::mouseDraggedAfterArming(const MouseEventUnrecPtr e)
 			}
 		}
 	}
-}
-
-void TextField::detachFromEventProducer(void)
-{
-    Inherited::detachFromEventProducer();
-    _CaretUpdateListener.disconnect();
-    _MouseDownListener.disconnect();
-}
-
-/*-------------------------------------------------------------------------*\
- -  private                                                                 -
-\*-------------------------------------------------------------------------*/
-
-/*----------------------- constructors & destructors ----------------------*/
-
-TextField::TextField(void) :
-    Inherited(),
-		_CurrentCaretBlinkElps(0.0),
-	    _CaretUpdateListener(this),
-		_MouseDownListener(this)
-{
-}
-
-TextField::TextField(const TextField &source) :
-    Inherited(source),
-		_CurrentCaretBlinkElps(0.0),
-	    _CaretUpdateListener(this),
-		_MouseDownListener(this)
-{
-}
-
-TextField::~TextField(void)
-{
-}
-
-/*----------------------------- class specific ----------------------------*/
-
-void TextField::changed(ConstFieldMaskArg whichField, 
-                            UInt32            origin,
-                            BitVector         details)
-{
-    Inherited::changed(whichField, origin, details);
-}
-
-void TextField::dump(      UInt32    ,
-                         const BitVector ) const
-{
-    SLOG << "Dump TextField NI" << std::endl;
-}
-
-void TextField::CaretUpdateListener::update(const UpdateEventUnrecPtr e)
-{
-   _TextField->_CurrentCaretBlinkElps += e->getElapsedTime();
-   if(_TextField->_CurrentCaretBlinkElps > LookAndFeelManager::the()->getLookAndFeel()->getTextCaretRate())
-   {
-       Int32 Div = _TextField->_CurrentCaretBlinkElps/LookAndFeelManager::the()->getLookAndFeel()->getTextCaretRate();
-	   _TextField->_CurrentCaretBlinkElps -= static_cast<OSG::Time>(Div)*LookAndFeelManager::the()->getLookAndFeel()->getTextCaretRate();
-   }
-}
-
-void TextField::CaretUpdateListener::disconnect(void)
-{
-    _TextField->getParentWindow()->getDrawingSurface()->getEventProducer()->removeUpdateListener(this);
-}
-
-
-void TextField::MouseDownListener::keyTyped(const KeyEventUnrecPtr e)
-{
-    if(e->getKey() == KeyEvent::KEY_ESCAPE)
-    {
-	    if(_TextField->getParentWindow() != NULL && _TextField->getParentWindow()->getDrawingSurface()!=NULL&& _TextField->getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
-	    {
-            disconnect();
-        }
-    }
-}
-
-void TextField::MouseDownListener::mouseReleased(const MouseEventUnrecPtr e)
-{
-	if(_TextField->getParentWindow() != NULL && _TextField->getParentWindow()->getDrawingSurface()!=NULL&& _TextField->getParentWindow()->getDrawingSurface()->getEventProducer() != NULL)
-	{
-        disconnect();
-    }
-}
-
-void TextField::MouseDownListener::mouseDragged(const MouseEventUnrecPtr e)
-{
-    _TextField->mouseDraggedAfterArming(e);
-}
-
-void TextField::MouseDownListener::disconnect(void)
-{
-    _TextField->getParentWindow()->getDrawingSurface()->getEventProducer()->removeMouseListener(this);
-    _TextField->getParentWindow()->getDrawingSurface()->getEventProducer()->removeKeyListener(this);
-    _TextField->getParentWindow()->getDrawingSurface()->getEventProducer()->removeMouseMotionListener(this);
 }
 
 OSG_END_NAMESPACE

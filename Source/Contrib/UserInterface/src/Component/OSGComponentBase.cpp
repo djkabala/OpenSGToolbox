@@ -63,8 +63,7 @@
 #include "OSGBorder.h"                  // Border Class
 #include "OSGLayer.h"                   // Background Class
 #include "OSGTransferHandler.h"         // TransferHandler Class
-#include "OSGComponentContainer.h"      // ParentContainer Class
-#include "OSGInternalWindow.h"          // ParentWindow Class
+#include "OSGFieldContainer.h"          // ParentContainer Class
 #include "OSGPopupMenu.h"               // PopupMenu Class
 
 #include "OSGComponentBase.h"
@@ -72,7 +71,7 @@
 
 #include <boost/bind.hpp>
 
-#include "OSGEvent.h"
+#include "OSGEventDetails.h"
 
 #ifdef WIN32 // turn off 'this' : used in base member initializer list warning
 #pragma warning(disable:4355)
@@ -180,12 +179,8 @@ OSG_BEGIN_NAMESPACE
     
 */
 
-/*! \var ComponentContainer * ComponentBase::_sfParentContainer
-    
-*/
-
-/*! \var InternalWindow * ComponentBase::_sfParentWindow
-    
+/*! \var FieldContainer * ComponentBase::_sfParentContainer
+    The Component Container this Component is contained in.
 */
 
 /*! \var bool            ComponentBase::_sfClipping
@@ -234,6 +229,18 @@ OSG_EXPORT_PTR_SFIELD_FULL(PointerSField,
 OSG_EXPORT_PTR_MFIELD_FULL(PointerMField,
                            Component *,
                            0);
+
+DataType &FieldTraits< Component *, 1 >::getType(void)
+{
+    return FieldTraits<Component *, 0>::getType();
+}
+
+
+OSG_EXPORT_PTR_MFIELD(ChildPointerMField,
+                      Component *,
+                      UnrecordedRefCountPolicy,
+                      1);
+
 
 /***************************************************************************\
  *                         Field Description                               *
@@ -352,13 +359,13 @@ void ComponentBase::classDescInserter(TypeObject &oType)
 
     oType.addInitialDesc(pDesc);
 
-    pDesc = new SFUnrecLayoutConstraintsPtr::Description(
-        SFUnrecLayoutConstraintsPtr::getClassType(),
+    pDesc = new SFUnrecChildLayoutConstraintsPtr::Description(
+        SFUnrecChildLayoutConstraintsPtr::getClassType(),
         "Constraints",
         "",
         ConstraintsFieldId, ConstraintsFieldMask,
         false,
-        (Field::SFDefaultFlags | Field::FStdAccess),
+        (Field::SFDefaultFlags | Field::FNullCheckAccess),
         static_cast<FieldEditMethodSig>(&Component::editHandleConstraints),
         static_cast<FieldGetMethodSig >(&Component::getHandleConstraints));
 
@@ -508,27 +515,15 @@ void ComponentBase::classDescInserter(TypeObject &oType)
 
     oType.addInitialDesc(pDesc);
 
-    pDesc = new SFUnrecComponentContainerPtr::Description(
-        SFUnrecComponentContainerPtr::getClassType(),
+    pDesc = new SFParentFieldContainerPtr::Description(
+        SFParentFieldContainerPtr::getClassType(),
         "ParentContainer",
-        "",
+        "The Component Container this Component is contained in.\n",
         ParentContainerFieldId, ParentContainerFieldMask,
         false,
         (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&Component::editHandleParentContainer),
-        static_cast<FieldGetMethodSig >(&Component::getHandleParentContainer));
-
-    oType.addInitialDesc(pDesc);
-
-    pDesc = new SFUnrecInternalWindowPtr::Description(
-        SFUnrecInternalWindowPtr::getClassType(),
-        "ParentWindow",
-        "",
-        ParentWindowFieldId, ParentWindowFieldMask,
-        true,
-        (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&Component::editHandleParentWindow),
-        static_cast<FieldGetMethodSig >(&Component::getHandleParentWindow));
+        static_cast     <FieldEditMethodSig>(&Component::invalidEditField),
+        static_cast     <FieldGetMethodSig >(&Component::invalidGetField));
 
     oType.addInitialDesc(pDesc);
 
@@ -615,17 +610,6 @@ void ComponentBase::classDescInserter(TypeObject &oType)
         static_cast<FieldGetMethodSig >(&Component::getHandleCursor));
 
     oType.addInitialDesc(pDesc);
-    pDesc = new SFEventProducerPtr::Description(
-        SFEventProducerPtr::getClassType(),
-        "EventProducer",
-        "Event Producer",
-        EventProducerFieldId,EventProducerFieldMask,
-        true,
-        (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast     <FieldEditMethodSig>(&Component::editHandleEventProducer),
-        static_cast     <FieldGetMethodSig >(&Component::getHandleEventProducer));
-
-    oType.addInitialDesc(pDesc);
 }
 
 
@@ -639,7 +623,7 @@ ComponentBase::TypeObject ComponentBase::_type(
     Component::exitMethod,
     reinterpret_cast<InitalInsertDescFunc>(&Component::classDescInserter),
     false,
-    0,
+    EnabledFieldMask,
     "<?xml version=\"1.0\"?>\n"
     "\n"
     "<FieldContainer\n"
@@ -654,6 +638,7 @@ ComponentBase::TypeObject ComponentBase::_type(
     "    useLocalIncludes=\"false\"\n"
     "    isNodeCore=\"false\"\n"
     "    authors=\"David Kabala (djkabala@gmail.com)                             \"\n"
+    "    childFields=\"multi\"\n"
     ">\n"
     "A UI Component Interface.\n"
     "\t<Field\n"
@@ -748,11 +733,13 @@ ComponentBase::TypeObject ComponentBase::_type(
     "\t<Field\n"
     "\t\tname=\"Constraints\"\n"
     "\t\ttype=\"LayoutConstraints\"\n"
-    "\t\tcategory=\"pointer\"\n"
     "\t\tcardinality=\"single\"\n"
+    "        category=\"childpointer\"\n"
+    "        childParentType=\"FieldContainer\"\n"
     "\t\tvisibility=\"external\"\n"
     "\t\taccess=\"public\"\n"
-    "\t\tdefaultValue=\"NULL\"\n"
+    "        ptrFieldAccess = \"nullCheck\"\n"
+    "        linkParentField=\"ParentComponent\"\n"
     "\t>\n"
     "\t</Field>\n"
     "\t<Field\n"
@@ -875,24 +862,16 @@ ComponentBase::TypeObject ComponentBase::_type(
     "\t>\n"
     "\t</Field>\n"
     "\t<Field\n"
-    "\t\tname=\"ParentContainer\"\n"
-    "\t\ttype=\"ComponentContainer\"\n"
-    "\t\tcategory=\"pointer\"\n"
-    "\t\tcardinality=\"single\"\n"
-    "\t\tvisibility=\"external\"\n"
-    "\t\tdefaultValue=\"NULL\"\n"
-    "\t\taccess=\"public\"\n"
-    "\t>\n"
-    "\t</Field>\n"
-    "\t<Field\n"
-    "\t\tname=\"ParentWindow\"\n"
-    "\t\ttype=\"InternalWindow\"\n"
-    "\t\tcategory=\"pointer\"\n"
-    "\t\tcardinality=\"single\"\n"
-    "\t\tvisibility=\"external\"\n"
-    "\t\tdefaultValue=\"NULL\"\n"
-    "\t\taccess=\"public\"\n"
-    "\t>\n"
+    "\t   name=\"ParentContainer\"\n"
+    "\t   type=\"FieldContainer\"\n"
+    "\t   cardinality=\"single\"\n"
+    "\t   visibility=\"external\"\n"
+    "\t   access=\"none\"\n"
+    "       doRefCount=\"false\"\n"
+    "       passFieldMask=\"true\"\n"
+    "       category=\"parentpointer\"\n"
+    "\t   >\n"
+    "\t  The Component Container this Component is contained in.\n"
     "\t</Field>\n"
     "\t<Field\n"
     "\t\tname=\"Clipping\"\n"
@@ -965,204 +944,261 @@ ComponentBase::TypeObject ComponentBase::_type(
     "\t\taccess=\"public\"\n"
     "\t>\n"
     "\t</Field>\n"
-    "\t<ProducedMethod\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"MouseMoved\"\n"
-    "\t\ttype=\"MouseEventPtr\"\n"
+    "\t\tdetailsType=\"MouseEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"MouseDragged\"\n"
-    "\t\ttype=\"MouseEventPtr\"\n"
+    "\t\tdetailsType=\"MouseEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"MouseClicked\"\n"
-    "\t\ttype=\"MouseEventPtr\"\n"
+    "\t\tdetailsType=\"MouseEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"MouseEntered\"\n"
-    "\t\ttype=\"MouseEventPtr\"\n"
+    "\t\tdetailsType=\"MouseEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"MouseExited\"\n"
-    "\t\ttype=\"MouseEventPtr\"\n"
+    "\t\tdetailsType=\"MouseEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"MousePressed\"\n"
-    "\t\ttype=\"MouseEventPtr\"\n"
+    "\t\tdetailsType=\"MouseEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"MouseReleased\"\n"
-    "\t\ttype=\"MouseEventPtr\"\n"
+    "\t\tdetailsType=\"MouseEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"MouseWheelMoved\"\n"
-    "\t\ttype=\"MouseWheelEventPtr\"\n"
+    "\t\tdetailsType=\"MouseWheelEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"KeyPressed\"\n"
-    "\t\ttype=\"KeyEventPtr\"\n"
+    "\t\tdetailsType=\"KeyEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"KeyReleased\"\n"
-    "\t\ttype=\"KeyEventPtr\"\n"
+    "\t\tdetailsType=\"KeyEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"KeyTyped\"\n"
-    "\t\ttype=\"KeyEventPtr\"\n"
+    "\t\tdetailsType=\"KeyEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"FocusGained\"\n"
-    "\t\ttype=\"FocusEventPtr\"\n"
+    "\t\tdetailsType=\"FocusEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"FocusLost\"\n"
-    "\t\ttype=\"FocusEventPtr\"\n"
+    "\t\tdetailsType=\"FocusEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"ComponentHidden\"\n"
-    "\t\ttype=\"ComponentEventPtr\"\n"
+    "\t\tdetailsType=\"ComponentEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"ComponentVisible\"\n"
-    "\t\ttype=\"ComponentEventPtr\"\n"
+    "\t\tdetailsType=\"ComponentEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"ComponentMoved\"\n"
-    "\t\ttype=\"ComponentEventPtr\"\n"
+    "\t\tdetailsType=\"ComponentEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"ComponentResized\"\n"
-    "\t\ttype=\"ComponentEventPtr\"\n"
+    "\t\tdetailsType=\"ComponentEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"ComponentEnabled\"\n"
-    "\t\ttype=\"ComponentEventPtr\"\n"
+    "\t\tdetailsType=\"ComponentEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
+    "\t</ProducedEvent>\n"
+    "\t<ProducedEvent\n"
     "\t\tname=\"ComponentDisabled\"\n"
-    "\t\ttype=\"ComponentEventPtr\"\n"
+    "\t\tdetailsType=\"ComponentEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
     "\t>\n"
-    "\t</ProducedMethod>\n"
+    "\t</ProducedEvent>\n"
     "</FieldContainer>\n",
     "A UI Component Interface.\n"
     );
 
-//! Component Produced Methods
+//! Component Produced Events
 
-MethodDescription *ComponentBase::_methodDesc[] =
+EventDescription *ComponentBase::_eventDesc[] =
 {
-    new MethodDescription("MouseMoved", 
-                    "",
-                     MouseMovedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("MouseDragged", 
-                    "",
-                     MouseDraggedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("MouseClicked", 
-                    "",
-                     MouseClickedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("MouseEntered", 
-                    "",
-                     MouseEnteredMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("MouseExited", 
-                    "",
-                     MouseExitedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("MousePressed", 
-                    "",
-                     MousePressedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("MouseReleased", 
-                    "",
-                     MouseReleasedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("MouseWheelMoved", 
-                    "",
-                     MouseWheelMovedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("KeyPressed", 
-                    "",
-                     KeyPressedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("KeyReleased", 
-                    "",
-                     KeyReleasedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("KeyTyped", 
-                    "",
-                     KeyTypedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("FocusGained", 
-                    "",
-                     FocusGainedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("FocusLost", 
-                    "",
-                     FocusLostMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("ComponentHidden", 
-                    "",
-                     ComponentHiddenMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("ComponentVisible", 
-                    "",
-                     ComponentVisibleMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("ComponentMoved", 
-                    "",
-                     ComponentMovedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("ComponentResized", 
-                    "",
-                     ComponentResizedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("ComponentEnabled", 
-                    "",
-                     ComponentEnabledMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("ComponentDisabled", 
-                    "",
-                     ComponentDisabledMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod())
+    new EventDescription("MouseMoved", 
+                          "",
+                          MouseMovedEventId, 
+                          FieldTraits<MouseEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleMouseMovedSignal)),
+
+    new EventDescription("MouseDragged", 
+                          "",
+                          MouseDraggedEventId, 
+                          FieldTraits<MouseEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleMouseDraggedSignal)),
+
+    new EventDescription("MouseClicked", 
+                          "",
+                          MouseClickedEventId, 
+                          FieldTraits<MouseEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleMouseClickedSignal)),
+
+    new EventDescription("MouseEntered", 
+                          "",
+                          MouseEnteredEventId, 
+                          FieldTraits<MouseEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleMouseEnteredSignal)),
+
+    new EventDescription("MouseExited", 
+                          "",
+                          MouseExitedEventId, 
+                          FieldTraits<MouseEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleMouseExitedSignal)),
+
+    new EventDescription("MousePressed", 
+                          "",
+                          MousePressedEventId, 
+                          FieldTraits<MouseEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleMousePressedSignal)),
+
+    new EventDescription("MouseReleased", 
+                          "",
+                          MouseReleasedEventId, 
+                          FieldTraits<MouseEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleMouseReleasedSignal)),
+
+    new EventDescription("MouseWheelMoved", 
+                          "",
+                          MouseWheelMovedEventId, 
+                          FieldTraits<MouseWheelEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleMouseWheelMovedSignal)),
+
+    new EventDescription("KeyPressed", 
+                          "",
+                          KeyPressedEventId, 
+                          FieldTraits<KeyEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleKeyPressedSignal)),
+
+    new EventDescription("KeyReleased", 
+                          "",
+                          KeyReleasedEventId, 
+                          FieldTraits<KeyEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleKeyReleasedSignal)),
+
+    new EventDescription("KeyTyped", 
+                          "",
+                          KeyTypedEventId, 
+                          FieldTraits<KeyEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleKeyTypedSignal)),
+
+    new EventDescription("FocusGained", 
+                          "",
+                          FocusGainedEventId, 
+                          FieldTraits<FocusEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleFocusGainedSignal)),
+
+    new EventDescription("FocusLost", 
+                          "",
+                          FocusLostEventId, 
+                          FieldTraits<FocusEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleFocusLostSignal)),
+
+    new EventDescription("ComponentHidden", 
+                          "",
+                          ComponentHiddenEventId, 
+                          FieldTraits<ComponentEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleComponentHiddenSignal)),
+
+    new EventDescription("ComponentVisible", 
+                          "",
+                          ComponentVisibleEventId, 
+                          FieldTraits<ComponentEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleComponentVisibleSignal)),
+
+    new EventDescription("ComponentMoved", 
+                          "",
+                          ComponentMovedEventId, 
+                          FieldTraits<ComponentEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleComponentMovedSignal)),
+
+    new EventDescription("ComponentResized", 
+                          "",
+                          ComponentResizedEventId, 
+                          FieldTraits<ComponentEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleComponentResizedSignal)),
+
+    new EventDescription("ComponentEnabled", 
+                          "",
+                          ComponentEnabledEventId, 
+                          FieldTraits<ComponentEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleComponentEnabledSignal)),
+
+    new EventDescription("ComponentDisabled", 
+                          "",
+                          ComponentDisabledEventId, 
+                          FieldTraits<ComponentEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComponentBase::getHandleComponentDisabledSignal))
+
 };
 
 EventProducerType ComponentBase::_producerType(
@@ -1170,8 +1206,8 @@ EventProducerType ComponentBase::_producerType(
     "EventProducerType",
     "",
     InitEventProducerFunctor(),
-    _methodDesc,
-    sizeof(_methodDesc));
+    _eventDesc,
+    sizeof(_eventDesc));
 
 /*------------------------------ get -----------------------------------*/
 
@@ -1316,12 +1352,12 @@ const SFBool *ComponentBase::getSFFocused(void) const
 
 
 //! Get the Component::_sfConstraints field.
-const SFUnrecLayoutConstraintsPtr *ComponentBase::getSFConstraints(void) const
+const SFUnrecChildLayoutConstraintsPtr *ComponentBase::getSFConstraints(void) const
 {
     return &_sfConstraints;
 }
 
-SFUnrecLayoutConstraintsPtr *ComponentBase::editSFConstraints    (void)
+SFUnrecChildLayoutConstraintsPtr *ComponentBase::editSFConstraints    (void)
 {
     editSField(ConstraintsFieldMask);
 
@@ -1484,31 +1520,6 @@ const SFReal32 *ComponentBase::getSFOpacity(void) const
 }
 
 
-//! Get the Component::_sfParentContainer field.
-const SFUnrecComponentContainerPtr *ComponentBase::getSFParentContainer(void) const
-{
-    return &_sfParentContainer;
-}
-
-SFUnrecComponentContainerPtr *ComponentBase::editSFParentContainer(void)
-{
-    editSField(ParentContainerFieldMask);
-
-    return &_sfParentContainer;
-}
-
-//! Get the Component::_sfParentWindow field.
-const SFUnrecInternalWindowPtr *ComponentBase::getSFParentWindow(void) const
-{
-    return &_sfParentWindow;
-}
-
-SFUnrecInternalWindowPtr *ComponentBase::editSFParentWindow   (void)
-{
-    editSField(ParentWindowFieldMask);
-
-    return &_sfParentWindow;
-}
 
 SFBool *ComponentBase::editSFClipping(void)
 {
@@ -1703,10 +1714,6 @@ UInt32 ComponentBase::getBinSize(ConstFieldMaskArg whichField)
     {
         returnValue += _sfParentContainer.getBinSize();
     }
-    if(FieldBits::NoField != (ParentWindowFieldMask & whichField))
-    {
-        returnValue += _sfParentWindow.getBinSize();
-    }
     if(FieldBits::NoField != (ClippingFieldMask & whichField))
     {
         returnValue += _sfClipping.getBinSize();
@@ -1734,10 +1741,6 @@ UInt32 ComponentBase::getBinSize(ConstFieldMaskArg whichField)
     if(FieldBits::NoField != (CursorFieldMask & whichField))
     {
         returnValue += _sfCursor.getBinSize();
-    }
-    if(FieldBits::NoField != (EventProducerFieldMask & whichField))
-    {
-        returnValue += _sfEventProducer.getBinSize();
     }
 
     return returnValue;
@@ -1840,10 +1843,6 @@ void ComponentBase::copyToBin(BinaryDataHandler &pMem,
     {
         _sfParentContainer.copyToBin(pMem);
     }
-    if(FieldBits::NoField != (ParentWindowFieldMask & whichField))
-    {
-        _sfParentWindow.copyToBin(pMem);
-    }
     if(FieldBits::NoField != (ClippingFieldMask & whichField))
     {
         _sfClipping.copyToBin(pMem);
@@ -1871,10 +1870,6 @@ void ComponentBase::copyToBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (CursorFieldMask & whichField))
     {
         _sfCursor.copyToBin(pMem);
-    }
-    if(FieldBits::NoField != (EventProducerFieldMask & whichField))
-    {
-        _sfEventProducer.copyToBin(pMem);
     }
 }
 
@@ -1975,10 +1970,6 @@ void ComponentBase::copyFromBin(BinaryDataHandler &pMem,
     {
         _sfParentContainer.copyFromBin(pMem);
     }
-    if(FieldBits::NoField != (ParentWindowFieldMask & whichField))
-    {
-        _sfParentWindow.copyFromBin(pMem);
-    }
     if(FieldBits::NoField != (ClippingFieldMask & whichField))
     {
         _sfClipping.copyFromBin(pMem);
@@ -2007,19 +1998,554 @@ void ComponentBase::copyFromBin(BinaryDataHandler &pMem,
     {
         _sfCursor.copyFromBin(pMem);
     }
-    if(FieldBits::NoField != (EventProducerFieldMask & whichField))
-    {
-        _sfEventProducer.copyFromBin(pMem);
-    }
 }
 
 
+
+/*------------------------- event producers ----------------------------------*/
+void ComponentBase::produceEvent(UInt32 eventId, EventDetails* const e)
+{
+    switch(eventId)
+    {
+    case MouseMovedEventId:
+        OSG_ASSERT(dynamic_cast<MouseMovedEventDetailsType* const>(e));
+
+        _MouseMovedEvent.set_combiner(ConsumableEventCombiner(e));
+        _MouseMovedEvent(dynamic_cast<MouseMovedEventDetailsType* const>(e), MouseMovedEventId);
+        break;
+    case MouseDraggedEventId:
+        OSG_ASSERT(dynamic_cast<MouseDraggedEventDetailsType* const>(e));
+
+        _MouseDraggedEvent.set_combiner(ConsumableEventCombiner(e));
+        _MouseDraggedEvent(dynamic_cast<MouseDraggedEventDetailsType* const>(e), MouseDraggedEventId);
+        break;
+    case MouseClickedEventId:
+        OSG_ASSERT(dynamic_cast<MouseClickedEventDetailsType* const>(e));
+
+        _MouseClickedEvent.set_combiner(ConsumableEventCombiner(e));
+        _MouseClickedEvent(dynamic_cast<MouseClickedEventDetailsType* const>(e), MouseClickedEventId);
+        break;
+    case MouseEnteredEventId:
+        OSG_ASSERT(dynamic_cast<MouseEnteredEventDetailsType* const>(e));
+
+        _MouseEnteredEvent.set_combiner(ConsumableEventCombiner(e));
+        _MouseEnteredEvent(dynamic_cast<MouseEnteredEventDetailsType* const>(e), MouseEnteredEventId);
+        break;
+    case MouseExitedEventId:
+        OSG_ASSERT(dynamic_cast<MouseExitedEventDetailsType* const>(e));
+
+        _MouseExitedEvent.set_combiner(ConsumableEventCombiner(e));
+        _MouseExitedEvent(dynamic_cast<MouseExitedEventDetailsType* const>(e), MouseExitedEventId);
+        break;
+    case MousePressedEventId:
+        OSG_ASSERT(dynamic_cast<MousePressedEventDetailsType* const>(e));
+
+        _MousePressedEvent.set_combiner(ConsumableEventCombiner(e));
+        _MousePressedEvent(dynamic_cast<MousePressedEventDetailsType* const>(e), MousePressedEventId);
+        break;
+    case MouseReleasedEventId:
+        OSG_ASSERT(dynamic_cast<MouseReleasedEventDetailsType* const>(e));
+
+        _MouseReleasedEvent.set_combiner(ConsumableEventCombiner(e));
+        _MouseReleasedEvent(dynamic_cast<MouseReleasedEventDetailsType* const>(e), MouseReleasedEventId);
+        break;
+    case MouseWheelMovedEventId:
+        OSG_ASSERT(dynamic_cast<MouseWheelMovedEventDetailsType* const>(e));
+
+        _MouseWheelMovedEvent.set_combiner(ConsumableEventCombiner(e));
+        _MouseWheelMovedEvent(dynamic_cast<MouseWheelMovedEventDetailsType* const>(e), MouseWheelMovedEventId);
+        break;
+    case KeyPressedEventId:
+        OSG_ASSERT(dynamic_cast<KeyPressedEventDetailsType* const>(e));
+
+        _KeyPressedEvent.set_combiner(ConsumableEventCombiner(e));
+        _KeyPressedEvent(dynamic_cast<KeyPressedEventDetailsType* const>(e), KeyPressedEventId);
+        break;
+    case KeyReleasedEventId:
+        OSG_ASSERT(dynamic_cast<KeyReleasedEventDetailsType* const>(e));
+
+        _KeyReleasedEvent.set_combiner(ConsumableEventCombiner(e));
+        _KeyReleasedEvent(dynamic_cast<KeyReleasedEventDetailsType* const>(e), KeyReleasedEventId);
+        break;
+    case KeyTypedEventId:
+        OSG_ASSERT(dynamic_cast<KeyTypedEventDetailsType* const>(e));
+
+        _KeyTypedEvent.set_combiner(ConsumableEventCombiner(e));
+        _KeyTypedEvent(dynamic_cast<KeyTypedEventDetailsType* const>(e), KeyTypedEventId);
+        break;
+    case FocusGainedEventId:
+        OSG_ASSERT(dynamic_cast<FocusGainedEventDetailsType* const>(e));
+
+        _FocusGainedEvent.set_combiner(ConsumableEventCombiner(e));
+        _FocusGainedEvent(dynamic_cast<FocusGainedEventDetailsType* const>(e), FocusGainedEventId);
+        break;
+    case FocusLostEventId:
+        OSG_ASSERT(dynamic_cast<FocusLostEventDetailsType* const>(e));
+
+        _FocusLostEvent.set_combiner(ConsumableEventCombiner(e));
+        _FocusLostEvent(dynamic_cast<FocusLostEventDetailsType* const>(e), FocusLostEventId);
+        break;
+    case ComponentHiddenEventId:
+        OSG_ASSERT(dynamic_cast<ComponentHiddenEventDetailsType* const>(e));
+
+        _ComponentHiddenEvent.set_combiner(ConsumableEventCombiner(e));
+        _ComponentHiddenEvent(dynamic_cast<ComponentHiddenEventDetailsType* const>(e), ComponentHiddenEventId);
+        break;
+    case ComponentVisibleEventId:
+        OSG_ASSERT(dynamic_cast<ComponentVisibleEventDetailsType* const>(e));
+
+        _ComponentVisibleEvent.set_combiner(ConsumableEventCombiner(e));
+        _ComponentVisibleEvent(dynamic_cast<ComponentVisibleEventDetailsType* const>(e), ComponentVisibleEventId);
+        break;
+    case ComponentMovedEventId:
+        OSG_ASSERT(dynamic_cast<ComponentMovedEventDetailsType* const>(e));
+
+        _ComponentMovedEvent.set_combiner(ConsumableEventCombiner(e));
+        _ComponentMovedEvent(dynamic_cast<ComponentMovedEventDetailsType* const>(e), ComponentMovedEventId);
+        break;
+    case ComponentResizedEventId:
+        OSG_ASSERT(dynamic_cast<ComponentResizedEventDetailsType* const>(e));
+
+        _ComponentResizedEvent.set_combiner(ConsumableEventCombiner(e));
+        _ComponentResizedEvent(dynamic_cast<ComponentResizedEventDetailsType* const>(e), ComponentResizedEventId);
+        break;
+    case ComponentEnabledEventId:
+        OSG_ASSERT(dynamic_cast<ComponentEnabledEventDetailsType* const>(e));
+
+        _ComponentEnabledEvent.set_combiner(ConsumableEventCombiner(e));
+        _ComponentEnabledEvent(dynamic_cast<ComponentEnabledEventDetailsType* const>(e), ComponentEnabledEventId);
+        break;
+    case ComponentDisabledEventId:
+        OSG_ASSERT(dynamic_cast<ComponentDisabledEventDetailsType* const>(e));
+
+        _ComponentDisabledEvent.set_combiner(ConsumableEventCombiner(e));
+        _ComponentDisabledEvent(dynamic_cast<ComponentDisabledEventDetailsType* const>(e), ComponentDisabledEventId);
+        break;
+    default:
+        SWARNING << "No event defined with that ID";
+        break;
+    }
+}
+
+boost::signals2::connection ComponentBase::connectEvent(UInt32 eventId, 
+                                                             const BaseEventType::slot_type &listener, 
+                                                             boost::signals2::connect_position at)
+{
+    switch(eventId)
+    {
+    case MouseMovedEventId:
+        return _MouseMovedEvent.connect(listener, at);
+        break;
+    case MouseDraggedEventId:
+        return _MouseDraggedEvent.connect(listener, at);
+        break;
+    case MouseClickedEventId:
+        return _MouseClickedEvent.connect(listener, at);
+        break;
+    case MouseEnteredEventId:
+        return _MouseEnteredEvent.connect(listener, at);
+        break;
+    case MouseExitedEventId:
+        return _MouseExitedEvent.connect(listener, at);
+        break;
+    case MousePressedEventId:
+        return _MousePressedEvent.connect(listener, at);
+        break;
+    case MouseReleasedEventId:
+        return _MouseReleasedEvent.connect(listener, at);
+        break;
+    case MouseWheelMovedEventId:
+        return _MouseWheelMovedEvent.connect(listener, at);
+        break;
+    case KeyPressedEventId:
+        return _KeyPressedEvent.connect(listener, at);
+        break;
+    case KeyReleasedEventId:
+        return _KeyReleasedEvent.connect(listener, at);
+        break;
+    case KeyTypedEventId:
+        return _KeyTypedEvent.connect(listener, at);
+        break;
+    case FocusGainedEventId:
+        return _FocusGainedEvent.connect(listener, at);
+        break;
+    case FocusLostEventId:
+        return _FocusLostEvent.connect(listener, at);
+        break;
+    case ComponentHiddenEventId:
+        return _ComponentHiddenEvent.connect(listener, at);
+        break;
+    case ComponentVisibleEventId:
+        return _ComponentVisibleEvent.connect(listener, at);
+        break;
+    case ComponentMovedEventId:
+        return _ComponentMovedEvent.connect(listener, at);
+        break;
+    case ComponentResizedEventId:
+        return _ComponentResizedEvent.connect(listener, at);
+        break;
+    case ComponentEnabledEventId:
+        return _ComponentEnabledEvent.connect(listener, at);
+        break;
+    case ComponentDisabledEventId:
+        return _ComponentDisabledEvent.connect(listener, at);
+        break;
+    default:
+        SWARNING << "No event defined with that ID";
+        return boost::signals2::connection();
+        break;
+    }
+
+    return boost::signals2::connection();
+}
+
+boost::signals2::connection  ComponentBase::connectEvent(UInt32 eventId, 
+                                                              const BaseEventType::group_type &group,
+                                                              const BaseEventType::slot_type &listener,
+                                                              boost::signals2::connect_position at)
+{
+    switch(eventId)
+    {
+    case MouseMovedEventId:
+        return _MouseMovedEvent.connect(group, listener, at);
+        break;
+    case MouseDraggedEventId:
+        return _MouseDraggedEvent.connect(group, listener, at);
+        break;
+    case MouseClickedEventId:
+        return _MouseClickedEvent.connect(group, listener, at);
+        break;
+    case MouseEnteredEventId:
+        return _MouseEnteredEvent.connect(group, listener, at);
+        break;
+    case MouseExitedEventId:
+        return _MouseExitedEvent.connect(group, listener, at);
+        break;
+    case MousePressedEventId:
+        return _MousePressedEvent.connect(group, listener, at);
+        break;
+    case MouseReleasedEventId:
+        return _MouseReleasedEvent.connect(group, listener, at);
+        break;
+    case MouseWheelMovedEventId:
+        return _MouseWheelMovedEvent.connect(group, listener, at);
+        break;
+    case KeyPressedEventId:
+        return _KeyPressedEvent.connect(group, listener, at);
+        break;
+    case KeyReleasedEventId:
+        return _KeyReleasedEvent.connect(group, listener, at);
+        break;
+    case KeyTypedEventId:
+        return _KeyTypedEvent.connect(group, listener, at);
+        break;
+    case FocusGainedEventId:
+        return _FocusGainedEvent.connect(group, listener, at);
+        break;
+    case FocusLostEventId:
+        return _FocusLostEvent.connect(group, listener, at);
+        break;
+    case ComponentHiddenEventId:
+        return _ComponentHiddenEvent.connect(group, listener, at);
+        break;
+    case ComponentVisibleEventId:
+        return _ComponentVisibleEvent.connect(group, listener, at);
+        break;
+    case ComponentMovedEventId:
+        return _ComponentMovedEvent.connect(group, listener, at);
+        break;
+    case ComponentResizedEventId:
+        return _ComponentResizedEvent.connect(group, listener, at);
+        break;
+    case ComponentEnabledEventId:
+        return _ComponentEnabledEvent.connect(group, listener, at);
+        break;
+    case ComponentDisabledEventId:
+        return _ComponentDisabledEvent.connect(group, listener, at);
+        break;
+    default:
+        SWARNING << "No event defined with that ID";
+        return boost::signals2::connection();
+        break;
+    }
+
+    return boost::signals2::connection();
+}
+    
+void  ComponentBase::disconnectEvent(UInt32 eventId, const BaseEventType::group_type &group)
+{
+    switch(eventId)
+    {
+    case MouseMovedEventId:
+        _MouseMovedEvent.disconnect(group);
+        break;
+    case MouseDraggedEventId:
+        _MouseDraggedEvent.disconnect(group);
+        break;
+    case MouseClickedEventId:
+        _MouseClickedEvent.disconnect(group);
+        break;
+    case MouseEnteredEventId:
+        _MouseEnteredEvent.disconnect(group);
+        break;
+    case MouseExitedEventId:
+        _MouseExitedEvent.disconnect(group);
+        break;
+    case MousePressedEventId:
+        _MousePressedEvent.disconnect(group);
+        break;
+    case MouseReleasedEventId:
+        _MouseReleasedEvent.disconnect(group);
+        break;
+    case MouseWheelMovedEventId:
+        _MouseWheelMovedEvent.disconnect(group);
+        break;
+    case KeyPressedEventId:
+        _KeyPressedEvent.disconnect(group);
+        break;
+    case KeyReleasedEventId:
+        _KeyReleasedEvent.disconnect(group);
+        break;
+    case KeyTypedEventId:
+        _KeyTypedEvent.disconnect(group);
+        break;
+    case FocusGainedEventId:
+        _FocusGainedEvent.disconnect(group);
+        break;
+    case FocusLostEventId:
+        _FocusLostEvent.disconnect(group);
+        break;
+    case ComponentHiddenEventId:
+        _ComponentHiddenEvent.disconnect(group);
+        break;
+    case ComponentVisibleEventId:
+        _ComponentVisibleEvent.disconnect(group);
+        break;
+    case ComponentMovedEventId:
+        _ComponentMovedEvent.disconnect(group);
+        break;
+    case ComponentResizedEventId:
+        _ComponentResizedEvent.disconnect(group);
+        break;
+    case ComponentEnabledEventId:
+        _ComponentEnabledEvent.disconnect(group);
+        break;
+    case ComponentDisabledEventId:
+        _ComponentDisabledEvent.disconnect(group);
+        break;
+    default:
+        SWARNING << "No event defined with that ID";
+        break;
+    }
+}
+
+void  ComponentBase::disconnectAllSlotsEvent(UInt32 eventId)
+{
+    switch(eventId)
+    {
+    case MouseMovedEventId:
+        _MouseMovedEvent.disconnect_all_slots();
+        break;
+    case MouseDraggedEventId:
+        _MouseDraggedEvent.disconnect_all_slots();
+        break;
+    case MouseClickedEventId:
+        _MouseClickedEvent.disconnect_all_slots();
+        break;
+    case MouseEnteredEventId:
+        _MouseEnteredEvent.disconnect_all_slots();
+        break;
+    case MouseExitedEventId:
+        _MouseExitedEvent.disconnect_all_slots();
+        break;
+    case MousePressedEventId:
+        _MousePressedEvent.disconnect_all_slots();
+        break;
+    case MouseReleasedEventId:
+        _MouseReleasedEvent.disconnect_all_slots();
+        break;
+    case MouseWheelMovedEventId:
+        _MouseWheelMovedEvent.disconnect_all_slots();
+        break;
+    case KeyPressedEventId:
+        _KeyPressedEvent.disconnect_all_slots();
+        break;
+    case KeyReleasedEventId:
+        _KeyReleasedEvent.disconnect_all_slots();
+        break;
+    case KeyTypedEventId:
+        _KeyTypedEvent.disconnect_all_slots();
+        break;
+    case FocusGainedEventId:
+        _FocusGainedEvent.disconnect_all_slots();
+        break;
+    case FocusLostEventId:
+        _FocusLostEvent.disconnect_all_slots();
+        break;
+    case ComponentHiddenEventId:
+        _ComponentHiddenEvent.disconnect_all_slots();
+        break;
+    case ComponentVisibleEventId:
+        _ComponentVisibleEvent.disconnect_all_slots();
+        break;
+    case ComponentMovedEventId:
+        _ComponentMovedEvent.disconnect_all_slots();
+        break;
+    case ComponentResizedEventId:
+        _ComponentResizedEvent.disconnect_all_slots();
+        break;
+    case ComponentEnabledEventId:
+        _ComponentEnabledEvent.disconnect_all_slots();
+        break;
+    case ComponentDisabledEventId:
+        _ComponentDisabledEvent.disconnect_all_slots();
+        break;
+    default:
+        SWARNING << "No event defined with that ID";
+        break;
+    }
+}
+
+bool  ComponentBase::isEmptyEvent(UInt32 eventId) const
+{
+    switch(eventId)
+    {
+    case MouseMovedEventId:
+        return _MouseMovedEvent.empty();
+        break;
+    case MouseDraggedEventId:
+        return _MouseDraggedEvent.empty();
+        break;
+    case MouseClickedEventId:
+        return _MouseClickedEvent.empty();
+        break;
+    case MouseEnteredEventId:
+        return _MouseEnteredEvent.empty();
+        break;
+    case MouseExitedEventId:
+        return _MouseExitedEvent.empty();
+        break;
+    case MousePressedEventId:
+        return _MousePressedEvent.empty();
+        break;
+    case MouseReleasedEventId:
+        return _MouseReleasedEvent.empty();
+        break;
+    case MouseWheelMovedEventId:
+        return _MouseWheelMovedEvent.empty();
+        break;
+    case KeyPressedEventId:
+        return _KeyPressedEvent.empty();
+        break;
+    case KeyReleasedEventId:
+        return _KeyReleasedEvent.empty();
+        break;
+    case KeyTypedEventId:
+        return _KeyTypedEvent.empty();
+        break;
+    case FocusGainedEventId:
+        return _FocusGainedEvent.empty();
+        break;
+    case FocusLostEventId:
+        return _FocusLostEvent.empty();
+        break;
+    case ComponentHiddenEventId:
+        return _ComponentHiddenEvent.empty();
+        break;
+    case ComponentVisibleEventId:
+        return _ComponentVisibleEvent.empty();
+        break;
+    case ComponentMovedEventId:
+        return _ComponentMovedEvent.empty();
+        break;
+    case ComponentResizedEventId:
+        return _ComponentResizedEvent.empty();
+        break;
+    case ComponentEnabledEventId:
+        return _ComponentEnabledEvent.empty();
+        break;
+    case ComponentDisabledEventId:
+        return _ComponentDisabledEvent.empty();
+        break;
+    default:
+        SWARNING << "No event defined with that ID";
+        return true;
+        break;
+    }
+}
+
+UInt32  ComponentBase::numSlotsEvent(UInt32 eventId) const
+{
+    switch(eventId)
+    {
+    case MouseMovedEventId:
+        return _MouseMovedEvent.num_slots();
+        break;
+    case MouseDraggedEventId:
+        return _MouseDraggedEvent.num_slots();
+        break;
+    case MouseClickedEventId:
+        return _MouseClickedEvent.num_slots();
+        break;
+    case MouseEnteredEventId:
+        return _MouseEnteredEvent.num_slots();
+        break;
+    case MouseExitedEventId:
+        return _MouseExitedEvent.num_slots();
+        break;
+    case MousePressedEventId:
+        return _MousePressedEvent.num_slots();
+        break;
+    case MouseReleasedEventId:
+        return _MouseReleasedEvent.num_slots();
+        break;
+    case MouseWheelMovedEventId:
+        return _MouseWheelMovedEvent.num_slots();
+        break;
+    case KeyPressedEventId:
+        return _KeyPressedEvent.num_slots();
+        break;
+    case KeyReleasedEventId:
+        return _KeyReleasedEvent.num_slots();
+        break;
+    case KeyTypedEventId:
+        return _KeyTypedEvent.num_slots();
+        break;
+    case FocusGainedEventId:
+        return _FocusGainedEvent.num_slots();
+        break;
+    case FocusLostEventId:
+        return _FocusLostEvent.num_slots();
+        break;
+    case ComponentHiddenEventId:
+        return _ComponentHiddenEvent.num_slots();
+        break;
+    case ComponentVisibleEventId:
+        return _ComponentVisibleEvent.num_slots();
+        break;
+    case ComponentMovedEventId:
+        return _ComponentMovedEvent.num_slots();
+        break;
+    case ComponentResizedEventId:
+        return _ComponentResizedEvent.num_slots();
+        break;
+    case ComponentEnabledEventId:
+        return _ComponentEnabledEvent.num_slots();
+        break;
+    case ComponentDisabledEventId:
+        return _ComponentDisabledEvent.num_slots();
+        break;
+    default:
+        SWARNING << "No event defined with that ID";
+        return 0;
+        break;
+    }
+}
 
 
 /*------------------------- constructors ----------------------------------*/
 
 ComponentBase::ComponentBase(void) :
-    _Producer(&getProducerType()),
     Inherited(),
     _sfPosition               (Pnt2f(0,0)),
     _sfClipBounds             (Pnt4f(0.0f,0.0f,0.0f,0.0f)),
@@ -2030,7 +2556,9 @@ ComponentBase::ComponentBase(void) :
     _sfVisible                (bool(true)),
     _sfEnabled                (bool(true)),
     _sfFocused                (bool(false)),
-    _sfConstraints            (NULL),
+    _sfConstraints            (this,
+                          ConstraintsFieldId,
+                          LayoutConstraints::ParentComponentFieldId),
     _sfBorder                 (NULL),
     _sfBackground             (NULL),
     _sfDisabledBorder         (NULL),
@@ -2044,7 +2572,6 @@ ComponentBase::ComponentBase(void) :
     _sfToolTipText            (),
     _sfOpacity                (Real32(1.0)),
     _sfParentContainer        (NULL),
-    _sfParentWindow           (NULL),
     _sfClipping               (bool(true)),
     _sfPopupMenu              (NULL),
     _sfFocusedForeground      (NULL),
@@ -2052,12 +2579,10 @@ ComponentBase::ComponentBase(void) :
     _sfDisabledForeground     (NULL),
     _sfForeground             (NULL),
     _sfCursor                 (UInt32(WindowEventProducer::CURSOR_POINTER))
-    ,_sfEventProducer(&_Producer)
 {
 }
 
 ComponentBase::ComponentBase(const ComponentBase &source) :
-    _Producer(&source.getProducerType()),
     Inherited(source),
     _sfPosition               (source._sfPosition               ),
     _sfClipBounds             (source._sfClipBounds             ),
@@ -2068,7 +2593,9 @@ ComponentBase::ComponentBase(const ComponentBase &source) :
     _sfVisible                (source._sfVisible                ),
     _sfEnabled                (source._sfEnabled                ),
     _sfFocused                (source._sfFocused                ),
-    _sfConstraints            (NULL),
+    _sfConstraints            (this,
+                          ConstraintsFieldId,
+                          LayoutConstraints::ParentComponentFieldId),
     _sfBorder                 (NULL),
     _sfBackground             (NULL),
     _sfDisabledBorder         (NULL),
@@ -2082,7 +2609,6 @@ ComponentBase::ComponentBase(const ComponentBase &source) :
     _sfToolTipText            (source._sfToolTipText            ),
     _sfOpacity                (source._sfOpacity                ),
     _sfParentContainer        (NULL),
-    _sfParentWindow           (NULL),
     _sfClipping               (source._sfClipping               ),
     _sfPopupMenu              (NULL),
     _sfFocusedForeground      (NULL),
@@ -2090,7 +2616,6 @@ ComponentBase::ComponentBase(const ComponentBase &source) :
     _sfDisabledForeground     (NULL),
     _sfForeground             (NULL),
     _sfCursor                 (source._sfCursor                 )
-    ,_sfEventProducer(&_Producer)
 {
 }
 
@@ -2099,6 +2624,113 @@ ComponentBase::ComponentBase(const ComponentBase &source) :
 
 ComponentBase::~ComponentBase(void)
 {
+}
+/*-------------------------------------------------------------------------*/
+/* Parent linking                                                          */
+
+bool ComponentBase::linkParent(
+    FieldContainer * const pParent,
+    UInt16           const childFieldId,
+    UInt16           const parentFieldId )
+{
+    if(parentFieldId == ParentContainerFieldId)
+    {
+        FieldContainer * pTypedParent =
+            dynamic_cast< FieldContainer * >(pParent);
+
+        if(pTypedParent != NULL)
+        {
+            FieldContainer *pOldParent =
+                _sfParentContainer.getValue         ();
+
+            UInt16 oldChildFieldId =
+                _sfParentContainer.getParentFieldPos();
+
+            if(pOldParent != NULL)
+            {
+                pOldParent->unlinkChild(this, oldChildFieldId);
+            }
+
+            editSField(ParentContainerFieldMask);
+
+            _sfParentContainer.setValue(static_cast<FieldContainer *>(pParent), childFieldId);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    return Inherited::linkParent(pParent, childFieldId, parentFieldId);
+}
+
+bool ComponentBase::unlinkParent(
+    FieldContainer * const pParent,
+    UInt16           const parentFieldId)
+{
+    if(parentFieldId == ParentContainerFieldId)
+    {
+        FieldContainer * pTypedParent =
+            dynamic_cast< FieldContainer * >(pParent);
+
+        if(pTypedParent != NULL)
+        {
+            if(_sfParentContainer.getValue() == pParent)
+            {
+                editSField(ParentContainerFieldMask);
+
+                _sfParentContainer.setValue(NULL, 0xFFFF);
+
+                return true;
+            }
+
+            FWARNING(("ComponentBase::unlinkParent: "
+                      "Child <-> Parent link inconsistent.\n"));
+
+            return false;
+        }
+
+        return false;
+    }
+
+    return Inherited::unlinkParent(pParent, parentFieldId);
+}
+
+
+/*-------------------------------------------------------------------------*/
+/* Child linking                                                           */
+
+bool ComponentBase::unlinkChild(
+    FieldContainer * const pChild,
+    UInt16           const childFieldId)
+{
+    if(childFieldId == ConstraintsFieldId)
+    {
+        LayoutConstraints * pTypedChild =
+            dynamic_cast<LayoutConstraints *>(pChild);
+
+        if(pTypedChild != NULL)
+        {
+            if(pTypedChild == _sfConstraints.getValue())
+            {
+                editSField(ConstraintsFieldMask);
+
+                _sfConstraints.setValue(NULL);
+
+                return true;
+            }
+
+            FWARNING(("ComponentBase::unlinkParent: Child <-> "
+                      "Parent link inconsistent.\n"));
+
+            return false;
+        }
+
+        return false;
+    }
+
+
+    return Inherited::unlinkChild(pChild, childFieldId);
 }
 
 void ComponentBase::onCreate(const Component *source)
@@ -2128,10 +2760,6 @@ void ComponentBase::onCreate(const Component *source)
         pThis->setRolloverBorder(source->getRolloverBorder());
 
         pThis->setRolloverBackground(source->getRolloverBackground());
-
-        pThis->setParentContainer(source->getParentContainer());
-
-        pThis->setParentWindow(source->getParentWindow());
 
         pThis->setPopupMenu(source->getPopupMenu());
 
@@ -2372,8 +3000,8 @@ EditFieldHandlePtr ComponentBase::editHandleFocused        (void)
 
 GetFieldHandlePtr ComponentBase::getHandleConstraints     (void) const
 {
-    SFUnrecLayoutConstraintsPtr::GetHandlePtr returnValue(
-        new  SFUnrecLayoutConstraintsPtr::GetHandle(
+    SFUnrecChildLayoutConstraintsPtr::GetHandlePtr returnValue(
+        new  SFUnrecChildLayoutConstraintsPtr::GetHandle(
              &_sfConstraints,
              this->getType().getFieldDesc(ConstraintsFieldId),
              const_cast<ComponentBase *>(this)));
@@ -2383,8 +3011,8 @@ GetFieldHandlePtr ComponentBase::getHandleConstraints     (void) const
 
 EditFieldHandlePtr ComponentBase::editHandleConstraints    (void)
 {
-    SFUnrecLayoutConstraintsPtr::EditHandlePtr returnValue(
-        new  SFUnrecLayoutConstraintsPtr::EditHandle(
+    SFUnrecChildLayoutConstraintsPtr::EditHandlePtr returnValue(
+        new  SFUnrecChildLayoutConstraintsPtr::EditHandle(
              &_sfConstraints,
              this->getType().getFieldDesc(ConstraintsFieldId),
              this));
@@ -2727,56 +3355,14 @@ EditFieldHandlePtr ComponentBase::editHandleOpacity        (void)
 
 GetFieldHandlePtr ComponentBase::getHandleParentContainer (void) const
 {
-    SFUnrecComponentContainerPtr::GetHandlePtr returnValue(
-        new  SFUnrecComponentContainerPtr::GetHandle(
-             &_sfParentContainer,
-             this->getType().getFieldDesc(ParentContainerFieldId),
-             const_cast<ComponentBase *>(this)));
+    SFParentFieldContainerPtr::GetHandlePtr returnValue;
 
     return returnValue;
 }
 
 EditFieldHandlePtr ComponentBase::editHandleParentContainer(void)
 {
-    SFUnrecComponentContainerPtr::EditHandlePtr returnValue(
-        new  SFUnrecComponentContainerPtr::EditHandle(
-             &_sfParentContainer,
-             this->getType().getFieldDesc(ParentContainerFieldId),
-             this));
-
-    returnValue->setSetMethod(
-        boost::bind(&Component::setParentContainer,
-                    static_cast<Component *>(this), _1));
-
-    editSField(ParentContainerFieldMask);
-
-    return returnValue;
-}
-
-GetFieldHandlePtr ComponentBase::getHandleParentWindow    (void) const
-{
-    SFUnrecInternalWindowPtr::GetHandlePtr returnValue(
-        new  SFUnrecInternalWindowPtr::GetHandle(
-             &_sfParentWindow,
-             this->getType().getFieldDesc(ParentWindowFieldId),
-             const_cast<ComponentBase *>(this)));
-
-    return returnValue;
-}
-
-EditFieldHandlePtr ComponentBase::editHandleParentWindow   (void)
-{
-    SFUnrecInternalWindowPtr::EditHandlePtr returnValue(
-        new  SFUnrecInternalWindowPtr::EditHandle(
-             &_sfParentWindow,
-             this->getType().getFieldDesc(ParentWindowFieldId),
-             this));
-
-    returnValue->setSetMethod(
-        boost::bind(&Component::setParentWindow,
-                    static_cast<Component *>(this), _1));
-
-    editSField(ParentWindowFieldMask);
+    EditFieldHandlePtr returnValue;
 
     return returnValue;
 }
@@ -2972,27 +3558,211 @@ EditFieldHandlePtr ComponentBase::editHandleCursor         (void)
 }
 
 
-GetFieldHandlePtr ComponentBase::getHandleEventProducer        (void) const
+GetEventHandlePtr ComponentBase::getHandleMouseMovedSignal(void) const
 {
-    SFEventProducerPtr::GetHandlePtr returnValue(
-        new  SFEventProducerPtr::GetHandle(
-             &_sfEventProducer,
-             this->getType().getFieldDesc(EventProducerFieldId),
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<MouseMovedEventType>(
+             const_cast<MouseMovedEventType *>(&_MouseMovedEvent),
+             _producerType.getEventDescription(MouseMovedEventId),
              const_cast<ComponentBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr ComponentBase::editHandleEventProducer       (void)
+GetEventHandlePtr ComponentBase::getHandleMouseDraggedSignal(void) const
 {
-    SFEventProducerPtr::EditHandlePtr returnValue(
-        new  SFEventProducerPtr::EditHandle(
-             &_sfEventProducer,
-             this->getType().getFieldDesc(EventProducerFieldId),
-             this));
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<MouseDraggedEventType>(
+             const_cast<MouseDraggedEventType *>(&_MouseDraggedEvent),
+             _producerType.getEventDescription(MouseDraggedEventId),
+             const_cast<ComponentBase *>(this)));
 
+    return returnValue;
+}
 
-    editSField(EventProducerFieldMask);
+GetEventHandlePtr ComponentBase::getHandleMouseClickedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<MouseClickedEventType>(
+             const_cast<MouseClickedEventType *>(&_MouseClickedEvent),
+             _producerType.getEventDescription(MouseClickedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleMouseEnteredSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<MouseEnteredEventType>(
+             const_cast<MouseEnteredEventType *>(&_MouseEnteredEvent),
+             _producerType.getEventDescription(MouseEnteredEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleMouseExitedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<MouseExitedEventType>(
+             const_cast<MouseExitedEventType *>(&_MouseExitedEvent),
+             _producerType.getEventDescription(MouseExitedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleMousePressedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<MousePressedEventType>(
+             const_cast<MousePressedEventType *>(&_MousePressedEvent),
+             _producerType.getEventDescription(MousePressedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleMouseReleasedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<MouseReleasedEventType>(
+             const_cast<MouseReleasedEventType *>(&_MouseReleasedEvent),
+             _producerType.getEventDescription(MouseReleasedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleMouseWheelMovedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<MouseWheelMovedEventType>(
+             const_cast<MouseWheelMovedEventType *>(&_MouseWheelMovedEvent),
+             _producerType.getEventDescription(MouseWheelMovedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleKeyPressedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<KeyPressedEventType>(
+             const_cast<KeyPressedEventType *>(&_KeyPressedEvent),
+             _producerType.getEventDescription(KeyPressedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleKeyReleasedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<KeyReleasedEventType>(
+             const_cast<KeyReleasedEventType *>(&_KeyReleasedEvent),
+             _producerType.getEventDescription(KeyReleasedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleKeyTypedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<KeyTypedEventType>(
+             const_cast<KeyTypedEventType *>(&_KeyTypedEvent),
+             _producerType.getEventDescription(KeyTypedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleFocusGainedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<FocusGainedEventType>(
+             const_cast<FocusGainedEventType *>(&_FocusGainedEvent),
+             _producerType.getEventDescription(FocusGainedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleFocusLostSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<FocusLostEventType>(
+             const_cast<FocusLostEventType *>(&_FocusLostEvent),
+             _producerType.getEventDescription(FocusLostEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleComponentHiddenSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<ComponentHiddenEventType>(
+             const_cast<ComponentHiddenEventType *>(&_ComponentHiddenEvent),
+             _producerType.getEventDescription(ComponentHiddenEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleComponentVisibleSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<ComponentVisibleEventType>(
+             const_cast<ComponentVisibleEventType *>(&_ComponentVisibleEvent),
+             _producerType.getEventDescription(ComponentVisibleEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleComponentMovedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<ComponentMovedEventType>(
+             const_cast<ComponentMovedEventType *>(&_ComponentMovedEvent),
+             _producerType.getEventDescription(ComponentMovedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleComponentResizedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<ComponentResizedEventType>(
+             const_cast<ComponentResizedEventType *>(&_ComponentResizedEvent),
+             _producerType.getEventDescription(ComponentResizedEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleComponentEnabledSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<ComponentEnabledEventType>(
+             const_cast<ComponentEnabledEventType *>(&_ComponentEnabledEvent),
+             _producerType.getEventDescription(ComponentEnabledEventId),
+             const_cast<ComponentBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComponentBase::getHandleComponentDisabledSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<ComponentDisabledEventType>(
+             const_cast<ComponentDisabledEventType *>(&_ComponentDisabledEvent),
+             _producerType.getEventDescription(ComponentDisabledEventId),
+             const_cast<ComponentBase *>(this)));
 
     return returnValue;
 }
@@ -3040,10 +3810,6 @@ void ComponentBase::resolveLinks(void)
     static_cast<Component *>(this)->setRolloverBorder(NULL);
 
     static_cast<Component *>(this)->setRolloverBackground(NULL);
-
-    static_cast<Component *>(this)->setParentContainer(NULL);
-
-    static_cast<Component *>(this)->setParentWindow(NULL);
 
     static_cast<Component *>(this)->setPopupMenu(NULL);
 
@@ -3475,34 +4241,6 @@ void ComponentBase::setOpacity(const Real32 value)
     editSField(OpacityFieldMask);
 
     _sfOpacity.setValue(value);
-}
-
-//! Get the value of the Component::_sfParentContainer field.
-ComponentContainer * ComponentBase::getParentContainer(void) const
-{
-    return _sfParentContainer.getValue();
-}
-
-//! Set the value of the Component::_sfParentContainer field.
-void ComponentBase::setParentContainer(ComponentContainer * const value)
-{
-    editSField(ParentContainerFieldMask);
-
-    _sfParentContainer.setValue(value);
-}
-
-//! Get the value of the Component::_sfParentWindow field.
-InternalWindow * ComponentBase::getParentWindow(void) const
-{
-    return _sfParentWindow.getValue();
-}
-
-//! Set the value of the Component::_sfParentWindow field.
-void ComponentBase::setParentWindow(InternalWindow * const value)
-{
-    editSField(ParentWindowFieldMask);
-
-    _sfParentWindow.setValue(value);
 }
 //! Get the value of the Component::_sfClipping field.
 

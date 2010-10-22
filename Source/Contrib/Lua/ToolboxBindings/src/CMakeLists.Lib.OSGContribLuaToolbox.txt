@@ -12,7 +12,8 @@ SET(${PROJECT_NAME}_DEP_OSG_LIB OSGGroup OSGTBFileIO OSGFileIO OSGDrawable
                                 OSGUtil OSGWindow OSGImageFileIO OSGContribPhysics
                                 OSGTBAnimation OSGContribVideo
                                 OSGContribUserInterface
-                                OSGContribParticleSystem OSGContribSound OSGContribLua OSGContribCgFX)
+                                OSGContribParticleSystem OSGContribSound OSGContribLua
+                                OSGContribFieldContainerEditor)
 SET(${PROJECT_NAME}_DEP_TEST_OSG_LIB)
 
 # dependencies - External
@@ -51,6 +52,7 @@ OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}")
 
 IF(OSG_WITH_LUA)
     OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bindings")
+    OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/LuaIntrospection")
 ENDIF(OSG_WITH_LUA)
 
 ##############################################################################

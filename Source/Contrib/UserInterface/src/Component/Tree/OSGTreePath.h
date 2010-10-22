@@ -149,14 +149,13 @@ private:
 protected:
 
 	PathVectorType _Path;
-    TreeModelRefPtr _Model;
+    TreeModel* _Model;
 };
 
 typedef TreePath* TreePathPtr;
 
 OSG_END_NAMESPACE
 
-#include "OSGTreeModel.h"
 #include "OSGTreePath.inl"
 
 #endif /* _OSG_UI_TREE_PATH_H_ */

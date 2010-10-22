@@ -79,12 +79,12 @@ void DefaultTreeCellEditor::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-ComponentRefPtr DefaultTreeCellEditor::getTreeCellEditorComponent(TreeRefPtr TheTree, const boost::any& Value, bool IsSelected, bool IsExpanded, UInt32 row)
+ComponentTransitPtr DefaultTreeCellEditor::getTreeCellEditorComponent(Tree* const TheTree, const boost::any& Value, bool IsSelected, bool IsExpanded, UInt32 row)
 {
     _EditingValue = Value;
 
     if(_EditingValue.empty()){
-        return NULL;
+        return ComponentTransitPtr(NULL);
     }
 
     if(_EditingValue.type() == typeid(std::string))
@@ -103,11 +103,11 @@ ComponentRefPtr DefaultTreeCellEditor::getTreeCellEditorComponent(TreeRefPtr The
         getDefaultStringEditor()->selectAll();
         getDefaultStringEditor()->setCaretPosition(getDefaultStringEditor()->getText().size());
 
-        getDefaultStringEditor()->addActionListener(&_DefaultTextFieldEditorListener);
-        getDefaultStringEditor()->addFocusListener(&_DefaultTextFieldEditorListener);
-        getDefaultStringEditor()->addKeyListener(&_DefaultTextFieldEditorListener);
+        _EditorActionConnection = getDefaultStringEditor()->connectActionPerformed(boost::bind(&DefaultTreeCellEditor::handleEditorAction, this, _1));
+        _EditorFocusLostConnection = getDefaultStringEditor()->connectFocusLost(boost::bind(&DefaultTreeCellEditor::handleEditorFocusLost, this, _1));
+        _EditorKeyPressedConnection = getDefaultStringEditor()->connectKeyPressed(boost::bind(&DefaultTreeCellEditor::handleEditorKeyPressed, this, _1));
 
-        return getDefaultStringEditor();
+        return ComponentTransitPtr(getDefaultStringEditor());
     }
     else
     {
@@ -117,33 +117,24 @@ ComponentRefPtr DefaultTreeCellEditor::getTreeCellEditorComponent(TreeRefPtr The
         getDefaultEditor()->selectAll();
         getDefaultEditor()->setCaretPosition(getDefaultEditor()->getText().size());
 
-        getDefaultEditor()->addActionListener(&_DefaultTextFieldEditorListener);
-        getDefaultEditor()->addFocusListener(&_DefaultTextFieldEditorListener);
-        getDefaultEditor()->addKeyListener(&_DefaultTextFieldEditorListener);
+        _EditorActionConnection = getDefaultEditor()->connectActionPerformed(boost::bind(&DefaultTreeCellEditor::handleEditorAction, this, _1));
+        _EditorFocusLostConnection = getDefaultEditor()->connectFocusLost(boost::bind(&DefaultTreeCellEditor::handleEditorFocusLost, this, _1));
+        _EditorKeyPressedConnection = getDefaultEditor()->connectKeyPressed(boost::bind(&DefaultTreeCellEditor::handleEditorKeyPressed, this, _1));
 
-        return getDefaultEditor();
+        return ComponentTransitPtr(getDefaultEditor());
     }
 }
 
-ComponentRefPtr DefaultTreeCellEditor::getCellEditor(const boost::any& Value, bool IsSelected)
+ComponentTransitPtr DefaultTreeCellEditor::getCellEditor(const boost::any& Value, bool IsSelected)
 {
     return getTreeCellEditorComponent(NULL, Value, IsSelected, false, 0);
 }
 
 void DefaultTreeCellEditor::cancelCellEditing(void)
 {
-    if(_EditingValue.type() == typeid(std::string))
-    {
-        getDefaultStringEditor()->removeActionListener(&_DefaultTextFieldEditorListener);
-        getDefaultStringEditor()->removeFocusListener(&_DefaultTextFieldEditorListener);
-        getDefaultStringEditor()->removeKeyListener(&_DefaultTextFieldEditorListener);
-    }
-    else
-    {
-        getDefaultEditor()->removeActionListener(&_DefaultTextFieldEditorListener);
-        getDefaultEditor()->removeFocusListener(&_DefaultTextFieldEditorListener);
-        getDefaultEditor()->removeKeyListener(&_DefaultTextFieldEditorListener);
-    }
+    _EditorActionConnection.disconnect();
+    _EditorFocusLostConnection.disconnect();
+    _EditorKeyPressedConnection.disconnect();
 
     Inherited::cancelCellEditing();
 }
@@ -161,11 +152,11 @@ boost::any DefaultTreeCellEditor::getCellEditorValue(void) const
     return _EditingValue;
 }
 
-bool DefaultTreeCellEditor::isCellEditable(const EventUnrecPtr anEvent) const
+bool DefaultTreeCellEditor::isCellEditable(EventDetails* const anEvent) const
 {
-    if(/*anEvent.getType() != MouseEvent::getClassType() ||*/
-       (anEvent->getType().isDerivedFrom(MouseEvent::getClassType()) &&
-        dynamic_pointer_cast<MouseEvent>(anEvent)->getClickCount() >= getClickCountToStart()))
+    if(/*anEvent.getType() != MouseEventDetails::getClassType() ||*/
+       (anEvent->getType().isDerivedFrom(MouseEventDetails::getClassType()) &&
+        dynamic_cast<MouseEventDetails* const>(anEvent)->getClickCount() >= getClickCountToStart()))
     {
         return Inherited::isCellEditable(anEvent);
     }
@@ -175,38 +166,29 @@ bool DefaultTreeCellEditor::isCellEditable(const EventUnrecPtr anEvent) const
     }
 }
 
-bool DefaultTreeCellEditor::shouldSelectCell(const EventUnrecPtr anEvent) const
+bool DefaultTreeCellEditor::shouldSelectCell(EventDetails* const anEvent) const
 {
     return Inherited::shouldSelectCell(anEvent);
 }
 
 bool DefaultTreeCellEditor::stopCellEditing(void)
 {
-    if(_EditingValue.type() == typeid(std::string))
-    {
-        getDefaultStringEditor()->removeActionListener(&_DefaultTextFieldEditorListener);
-        getDefaultStringEditor()->removeFocusListener(&_DefaultTextFieldEditorListener);
-        getDefaultStringEditor()->removeKeyListener(&_DefaultTextFieldEditorListener);
-    }
-    else
-    {
-        getDefaultEditor()->removeActionListener(&_DefaultTextFieldEditorListener);
-        getDefaultEditor()->removeFocusListener(&_DefaultTextFieldEditorListener);
-        getDefaultEditor()->removeKeyListener(&_DefaultTextFieldEditorListener);
-    }
+    _EditorActionConnection.disconnect();
+    _EditorFocusLostConnection.disconnect();
+    _EditorKeyPressedConnection.disconnect();
 
     return Inherited::stopCellEditing();
 }
 
-ComponentRefPtr DefaultTreeCellEditor::getComponent(void) const
+ComponentTransitPtr DefaultTreeCellEditor::getComponent(void) const
 {
     if(_EditingValue.type() == typeid(std::string))
     {
-        return getDefaultStringEditor();
+        return ComponentTransitPtr(getDefaultStringEditor());
     }
     else
     {
-        return getDefaultEditor();
+        return ComponentTransitPtr(getDefaultEditor());
     }
 }
 
@@ -218,14 +200,12 @@ ComponentRefPtr DefaultTreeCellEditor::getComponent(void) const
 
 DefaultTreeCellEditor::DefaultTreeCellEditor(void) :
     Inherited(),
-        _DefaultTextFieldEditorListener(this),
         _EditingValue(new SFString())
 {
 }
 
 DefaultTreeCellEditor::DefaultTreeCellEditor(const DefaultTreeCellEditor &source) :
     Inherited(source),
-        _DefaultTextFieldEditorListener(this),
         _EditingValue(new SFString())
 
 {
@@ -250,27 +230,22 @@ void DefaultTreeCellEditor::dump(      UInt32    ,
     SLOG << "Dump DefaultTreeCellEditor NI" << std::endl;
 }
 
-void DefaultTreeCellEditor::DefaultTextFieldEditorListener::actionPerformed(const ActionEventUnrecPtr e)
+void DefaultTreeCellEditor::handleEditorAction(ActionEventDetails* const e)
 {
-    _DefaultTreeCellEditor->stopCellEditing();
+    stopCellEditing();
 }
 
-void DefaultTreeCellEditor::DefaultTextFieldEditorListener::focusGained(const FocusEventUnrecPtr e)
+void DefaultTreeCellEditor::handleEditorFocusLost(FocusEventDetails* const e)
 {
-	//Do nothing
+    stopCellEditing();
 }
 
-void DefaultTreeCellEditor::DefaultTextFieldEditorListener::focusLost(const FocusEventUnrecPtr e)
+void DefaultTreeCellEditor::handleEditorKeyPressed(KeyEventDetails* const e)
 {
-    _DefaultTreeCellEditor->stopCellEditing();
-}
-
-void DefaultTreeCellEditor::DefaultTextFieldEditorListener::keyPressed(const KeyEventUnrecPtr e)
-{
-	if(e->getKey() == KeyEvent::KEY_ESCAPE ||
-		e->getKey() == KeyEvent::KEY_CANCEL)
+	if(e->getKey() == KeyEventDetails::KEY_ESCAPE ||
+		e->getKey() == KeyEventDetails::KEY_CANCEL)
 	{
-		_DefaultTreeCellEditor->cancelCellEditing();
+		cancelCellEditing();
 	}
 }
 

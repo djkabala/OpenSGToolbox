@@ -43,17 +43,15 @@
 #endif
 
 #include "OSGTreeBase.h"
-#include "OSGTreeModelListener.h"
-#include "OSGTreeSelectionModel.h"
-#include "OSGTreeSelectionListener.h"
-#include "OSGTreeModelLayoutListener.h"
 #include "OSGUIViewportFields.h"
 #include "OSGComponentGenerator.h"
+#include "OSGTreeModelLayoutEventDetailsFields.h"
+#include "OSGTreeModelEventDetailsFields.h"
+#include "OSGTreeSelectionEventDetailsFields.h"
+#include "OSGTreePath.h"
 
-#include <set>
 #include <deque>
-
-#include "OSGEventConnection.h"
+#include <set>
 
 OSG_BEGIN_NAMESPACE
 
@@ -90,14 +88,11 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
 
     /*! \}                                                                 */
     
-    virtual void mousePressed(const MouseEventUnrecPtr e);
-	virtual void keyTyped(const KeyEventUnrecPtr e);
-	virtual void focusLost(const FocusEventUnrecPtr e);
+    virtual void mousePressed(MouseEventDetails* const e);
+	virtual void keyTyped(KeyEventDetails* const e);
+	virtual void focusLost(FocusEventDetails* const e);
 
-    EventConnection addTreeModelLayoutListener(TreeModelLayoutListenerPtr Listener);
-	bool isTreeModelLayoutListenerAttached(TreeModelLayoutListenerPtr Listener) const;
-
-    void removeTreeModelLayoutListener(TreeModelLayoutListenerPtr Listener);
+	virtual Vec2f getContentRequestedSize(void) const;
 
     //Adds the paths between index0 and index1, inclusive, to the selection.
     void addSelectionInterval(const UInt32& index0, const UInt32& index1);
@@ -113,18 +108,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
 
     //Adds the paths at each of the specified rows to the current selection.
     void addSelectionRows(const std::vector<UInt32>& rows);
-
-    //Adds a listener for TreeExpansion events.
-    //EventConnection addTreeExpansionListener(TreeExpansionListener tel);
-	//bool isTreeExpansionListenerAttached(TreeExpansionListener tel) const;
-
-    //Adds a listener for TreeSelection events.
-    //EventConnection addTreeSelectionListener(TreeSelectionListener tsl);
-	//bool isTreeSelectionListenerAttached(TreeSelectionListener tsl) const;
-
-    //Adds a listener for TreeWillExpand events.
-    //EventConnection addTreeWillExpandListener(TreeWillExpandListener tel);
-	//bool isTreeWillExpandListenerAttached(TreeWillExpandListener tel) const;
 
     //Cancels the current editing session.
     void cancelEditing(void);
@@ -204,9 +187,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
     //Returns the number of nodes selected.
     UInt32 getSelectionCount(void) const;
 
-    //Returns the model for selections.
-    TreeSelectionModelPtr getSelectionModel(void) const;
-
     //Returns the path to the first selected node.
     TreePath getSelectionPath(void) const;
 
@@ -275,15 +255,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
     //Removes the rows that are selected at each of the specified rows.
     void removeSelectionRows(const std::vector<UInt32>& rows);
 
-    //Removes a listener for TreeExpansion events.
-    //void removeTreeExpansionListener(TreeExpansionListener tel);
-
-    //Removes a TreeSelection listener.
-    //void removeTreeSelectionListener(TreeSelectionListener tsl);
-
-    //Removes a listener for TreeWillExpand events.
-    //void removeTreeWillExpandListener(TreeWillExpandListener tel);
-
     //Makes sure all the path components in path are expanded (except for the last path component) and scrolls so that the node identified by the path is displayed.
     void scrollPathToVisible(const TreePath& path);
 
@@ -301,9 +272,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
 
     //Selects the nodes between index0 and index1, inclusive.
     void setSelectionInterval(const Int32& index0, const Int32& index1);
-
-    //Sets the tree's selection model.
-    void setSelectionModel(TreeSelectionModelPtr selectionModel);
 
     //Selects the node identified by the specified path.
     void setSelectionPath(const TreePath& path);
@@ -330,8 +298,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
 
     //Sent when the tree has changed enough that we need to resize the bounds, but not enough that we need to remove the expanded node set (e->g nodes were expanded or collapsed, or nodes were inserted into the tree).
     void treeDidChange(void);
-
-	virtual Vec2f getContentRequestedSize(void) const;
 
     //Scrollable Interface
     //Returns the preferred size of the viewport for a view component.
@@ -395,88 +361,50 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
 	void onDestroy();
 	
 	/*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                       Sync                                   */
+    /*! \{                                                                 */
 
-    TreeSelectionModelPtr _SelectionModel;
+    virtual void resolveLinks(void);
 
-    class ModelListener : public TreeModelListener
-    {
-      public :
-        ModelListener(TreeRefPtr TheTree);
+    /*! \}                                                                 */
+    virtual bool useBoundsForClipping(void) const;
 
-        virtual void treeNodesChanged(const TreeModelEventUnrecPtr e);
+    void handleModelTreeNodesChanged(TreeModelEventDetails* const e);
+    void handleModelTreeNodesInserted(TreeModelEventDetails* const e);
+    void handleModelTreeNodesWillBeRemoved(TreeModelEventDetails* const e);
+    void handleModelTreeNodesRemoved(TreeModelEventDetails* const e);
+    void handleModelTreeStructureChanged(TreeModelEventDetails* const e);
 
-        virtual void treeNodesInserted(const TreeModelEventUnrecPtr e);
+    boost::signals2::connection _ModelTreeNodesChangedConnection,
+                                _ModelTreeNodesInsertedConnection,
+                                _ModelTreeNodesWillBeRemovedConnection,
+                                _ModelTreeNodesRemovedConnection,
+                                _ModelTreeStructureChangedConnection;
+    std::set<Int32> _RomovedNodeRows;
 
-        virtual void treeNodesWillBeRemoved(const TreeModelEventUnrecPtr e);
+    //Called whenever elements are added to the selection
+    void handleSelectionAdded(TreeSelectionEventDetails* const e);
+    //Called whenever elements are removed to the selection
+    void handleSelectionRemoved(TreeSelectionEventDetails* const e);
+    boost::signals2::connection _SelectionAddedConnection,
+                                _SelectionRemovedConnection;
 
-        virtual void treeNodesRemoved(const TreeModelEventUnrecPtr e);
-
-        virtual void treeStructureChanged(const TreeModelEventUnrecPtr e);
-      protected :
-        TreeRefPtr _Tree;
-        std::set<Int32> _RomovedNodeRows;
-    };
-
-    friend class ModelListener;
-
-    ModelListener _ModelListener;
-
-    class SelectionListener : public TreeSelectionListener
-    {
-      public :
-        SelectionListener(TreeRefPtr TheTree);
-
-        //Called whenever elements are added to the selection
-        virtual void selectionAdded(const TreeSelectionEventUnrecPtr e);
-        //Called whenever elements are removed to the selection
-        virtual void selectionRemoved(const TreeSelectionEventUnrecPtr e);
-      protected :
-        TreeRefPtr _Tree;
-    };
-
-    friend class SelectionListener;
-
-    SelectionListener _SelectionListener;
-
-    class ModelLayoutListener : public TreeModelLayoutListener
-    {
-      public :
-        ModelLayoutListener(TreeRefPtr TheTree);
-
-        //Called whenever an item in the tree has been collapsed.
-        virtual void treeCollapsed(const TreeModelLayoutEventUnrecPtr e);
-
-        //Called whenever an item in the tree has been expanded.
-        virtual void treeExpanded(const TreeModelLayoutEventUnrecPtr e);
-
-        //Invoked whenever a node in the tree is about to be collapsed.
-        virtual void treeWillCollapse(const TreeModelLayoutEventUnrecPtr e);
-
-        //Invoked whenever a node in the tree is about to be expanded.
-        virtual void treeWillExpand(const TreeModelLayoutEventUnrecPtr e);
-
-      protected :
-        TreeRefPtr _Tree;
-    };
-
-    friend class ModelLayoutListener;
-
-    ModelLayoutListener _ModelLayoutListener;
+    //Called whenever an item in the tree has been collapsed.
+    void handleModelLayoutTreeCollapsed(TreeModelLayoutEventDetails* const e);
+    //Called whenever an item in the tree has been expanded.
+    void handleModelLayoutTreeExpanded(TreeModelLayoutEventDetails* const e);
+    boost::signals2::connection _ModelLayoutTreeCollapsedConnection,
+                                _ModelLayoutTreeExpandedConnection;
 
     //Clears the cache of toggled tree paths.
     void clearToggledPaths(void);
 
     //Returns a TreeModel wrapping the specified object.
-    //static TreeModelRefPtr createTreeModel(Object value);
-
-    //Creates and returns an instance of TreeModelHandler.
-    //TreeModelListenerPtr createTreeModelListener(void);
-
-    //Notifies all listeners that have registered interest for notification on this event type.
-    //void fireValueChanged(TreeSelectionEvent e);
+    //static TreeModel* createTreeModel(Object value);
 
     //Creates and returns a sample TreeModel.
-    static TreeModelRefPtr getDefaultTreeModel(void);
+    static TreeModel* getDefaultTreeModel(void);
 
     //Returns an Enumeration of TreePaths that have been expanded that are descendants of parent.
     std::vector<TreePath> getDescendantToggledPaths(const TreePath& parent);
@@ -495,7 +423,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
 
     bool isParentAViewport(void) const;
 
-    UIViewportRefPtr getParentViewport(void) const;
+    UIViewport* getParentViewport(void) const;
 
     //Some non-structural properties of a path has changed.  So update
     //how the row for this path is drawn
@@ -517,27 +445,27 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING Tree : public TreeBase
 
     void updateRows(const UInt32& Begining, const UInt32& NumRows);
 
-    void updateExpandedPath(const TreePath& Path);
+
+    void updateExpandedPath (const TreePath& Path);
     void updateCollapsedPath(const TreePath& Path);
-    void updateChildren(void);
+    void updateChangedNode  (const TreePath& Path);
+    
+    void updateChildren (void);
+    void clearRowsDrawn (void);
 
     void updateRowsDrawn(void);
 
     struct TreeRowComponents
     {
         TreeRowComponents(void);
-        TreeRowComponents(ComponentRefPtr ExpandedComponent, ComponentRefPtr ValueComponent, Int32 Row);
-        ComponentRefPtr _ExpandedComponent, _ValueComponent;
+        TreeRowComponents(Component* const ExpandedComponent, Component* const ValueComponent, Int32 Row);
+        ComponentUnrecPtr _ExpandedComponent, _ValueComponent;
         Int32 _Row;
     };
 
     TreeRowComponents createRowComponent(const UInt32& Row);
     void updateDrawnRow(const UInt32& Row);
     void updatePreferredSize(void);
-
-	//newly added coz it produced errors while compiling.....
-	void updateChangedNode(const TreePath& Path);
-	void clearRowsDrawn(void);
 
     void getDrawnRows(Int32& Beginning, Int32& End) const;
 

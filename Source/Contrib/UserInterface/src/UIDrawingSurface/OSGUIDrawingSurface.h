@@ -47,23 +47,13 @@
 #include "OSGGraphics.h"
 #include "OSGUIDrawingSurfaceMouseTransformFunctor.h"
 
-#include "OSGKeyListener.h"
-#include "OSGMouseListener.h"
-#include "OSGMouseWheelListener.h"
-#include "OSGMouseMotionListener.h"
-#include "OSGEventConnection.h"
-
 OSG_BEGIN_NAMESPACE
 
 /*! \brief UIDrawingSurface class. See \ref
            PageContribUserInterfaceUIDrawingSurface for a description.
 */
 
-class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurface : public UIDrawingSurfaceBase,
-	public MouseListener,
-	public KeyListener,
-	public MouseWheelListener,
-	public MouseMotionListener
+class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurface : public UIDrawingSurfaceBase
 
 {
   protected:
@@ -96,37 +86,54 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurface : public UIDrawingSur
     void detachFromEventProducer(void);
 
 	//Mouse Events
-    virtual void mouseClicked(const MouseEventUnrecPtr e);
-    virtual void mouseEntered(const MouseEventUnrecPtr e);
-    virtual void mouseExited(const MouseEventUnrecPtr e);
-    virtual void mousePressed(const MouseEventUnrecPtr e);
-    virtual void mouseReleased(const MouseEventUnrecPtr e);
+    void handleMouseClicked(MouseEventDetails* const e);
+    void handleMouseEntered(MouseEventDetails* const e);
+    void handleMouseExited(MouseEventDetails* const e);
+    void handleMousePressed(MouseEventDetails* const e);
+    void handleMouseReleased(MouseEventDetails* const e);
+
+    boost::signals2::connection _MouseClickedConnection,
+                                _MouseEnteredConnection,
+                                _MouseExitedConnection,
+                                _MousePressedConnection,
+                                _MouseReleasedConnection;
 
 	//Mouse Motion Events
-    virtual void mouseMoved(const MouseEventUnrecPtr e);
-    virtual void mouseDragged(const MouseEventUnrecPtr e);
+    void handleMouseMoved(MouseEventDetails* const e);
+    void handleMouseDragged(MouseEventDetails* const e);
+
+    boost::signals2::connection _MouseMovedConnection,
+                                _MouseDraggedConnection;
 
 	//Mouse Wheel Events
-    virtual void mouseWheelMoved(const MouseWheelEventUnrecPtr e);
+    void handleMouseWheelMoved(MouseWheelEventDetails* const e);
+    boost::signals2::connection _MouseWheelMovedConnection;
 
 	//Key Events
-	virtual void keyPressed(const KeyEventUnrecPtr e);
-	virtual void keyReleased(const KeyEventUnrecPtr e);
-	virtual void keyTyped(const KeyEventUnrecPtr e);
+	void handleKeyPressed(KeyEventDetails* const e);
+	void handleKeyReleased(KeyEventDetails* const e);
+	void handleKeyTyped(KeyEventDetails* const e);
+
+    boost::signals2::connection _KeyPressedConnection,
+                                _KeyReleasedConnection,
+                                _KeyTypedConnection;
 
     virtual Pnt2f getMousePosition(void) const;
 
 	virtual UInt32 getNumWindowLayers(void) const;
-	virtual Int32 getWindowLayer(InternalWindowRefPtr TheWindow) const;
-	virtual InternalWindowRefPtr getWindowAtLayer(const UInt32& Layer) const;
-	virtual void setWindowToLayer(InternalWindowRefPtr TheWindow, const UInt32& Layer);
-	virtual void moveWindowUp(InternalWindowRefPtr TheWindow);
-	virtual void moveWindowDown(InternalWindowRefPtr TheWindow);
-	virtual void moveWindowToTop(InternalWindowRefPtr TheWindow);
-	virtual void moveWindowToBottom(InternalWindowRefPtr TheWindow);
+	virtual Int32 getWindowLayer(InternalWindow* const TheWindow) const;
+	virtual InternalWindow* getWindowAtLayer(const UInt32& Layer) const;
+	virtual void setWindowToLayer(InternalWindow* const TheWindow, const UInt32& Layer);
+	virtual void moveWindowUp(InternalWindow* const TheWindow);
+	virtual void moveWindowDown(InternalWindow* const TheWindow);
+	virtual void moveWindowToTop(InternalWindow* const TheWindow);
+	virtual void moveWindowToBottom(InternalWindow* const TheWindow);
 
-	virtual void openWindow(InternalWindowRefPtr TheWindow, const Int32 Layer = -1);
-	virtual void closeWindow(InternalWindowRefPtr TheWindow);
+	virtual void openWindow(InternalWindow* const TheWindow, const Int32 Layer = -1);
+	virtual void closeWindow(InternalWindow* const TheWindow);
+
+    void updateWindowLayouts(void);
+    void updateWindowLayout(InternalWindow* const TheWindow);
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -156,12 +163,11 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurface : public UIDrawingSur
 
     /*! \}                                                                 */
 
-    EventConnection   _MouseEventConnection,
-                      _MouseMotionEventConnection,
-                      _MouseWheelEventConnection,
-                      _KeyEventConnection;
+	void checkMouseEnterExit(InputEventDetails* const e, const Pnt2f& MouseLocation, Viewport* const TheViewport);
 
-	void checkMouseEnterExit(const InputEventUnrecPtr e, const Pnt2f& MouseLocation, ViewportRefPtr TheViewport);
+    std::set<InternalWindow*> _WindowsToClose;
+    bool _IsProcessingEvents;
+    void closeWindows(void);
 
     /*==========================  PRIVATE  ================================*/
 
@@ -178,7 +184,7 @@ typedef UIDrawingSurface *UIDrawingSurfaceP;
 
 OSG_END_NAMESPACE
 
-//#include "OSGInternalWindow.h"
+#include "OSGInternalWindow.h"
 
 #include "OSGUIDrawingSurfaceBase.inl"
 #include "OSGUIDrawingSurface.inl"

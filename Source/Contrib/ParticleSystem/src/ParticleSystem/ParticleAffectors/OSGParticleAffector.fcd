@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+	name="ParticleAffector"
+	parent="AttachmentContainer"
+    library="ContribParticleSystem"
+    pointerfieldtypes="both"
+	structure="abstract"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com), Daniel Guilliams           "
+>
+	<Field
+		name="Active"
+		type="bool"
+        category="data"
+		cardinality="single"
+		visibility="external"
+		access="public"
+        defaultValue="true"
+	>
+	If true then this Affector will be applied.
+	</Field>
+</FieldContainer>

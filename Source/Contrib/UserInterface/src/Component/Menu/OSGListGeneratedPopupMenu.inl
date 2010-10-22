@@ -40,10 +40,4 @@
 
 OSG_BEGIN_NAMESPACE
 
-inline
-ListGeneratedPopupMenu::ModelListener::ModelListener(ListGeneratedPopupMenuRefPtr TheListGeneratedPopupMenu) : 
-_ListGeneratedPopupMenu(TheListGeneratedPopupMenu)
-{
-}
-
 OSG_END_NAMESPACE

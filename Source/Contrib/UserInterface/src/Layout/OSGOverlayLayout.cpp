@@ -77,7 +77,7 @@ void OverlayLayout::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void OverlayLayout::updateLayout(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+void OverlayLayout::updateLayout(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
 	Pnt2f borderTopLeft, borderBottomRight;
 	dynamic_cast<const ComponentContainer*>(ParentComponent)->getInsideInsetsBounds(borderTopLeft, borderBottomRight);
@@ -85,23 +85,36 @@ void OverlayLayout::updateLayout(const MFUnrecComponentPtr* Components, const Co
 
 	int maxX = 0;
 	int maxY = 0;
-	for(UInt32 i = 0; i < Components->size(); i++){
-		   (*Components)[i]->setSize((*Components)[i]->getPreferredSize());
+	for(UInt32 i = 0; i < Components->size(); i++)
+    {
+        if((*Components)[i]->getSize() != (*Components)[i]->getPreferredSize())
+        {
+            (*Components)[i]->setSize((*Components)[i]->getPreferredSize());
+        }
 		if((*Components)[i]->getSize().x()>maxX)
+        {
 			maxX = (*Components)[i]->getSize().x();
+        }
 		if((*Components)[i]->getSize().y()>maxY)
+        {
 			maxY = (*Components)[i]->getSize().y();
+        }
 	}
+    Pnt2f Pos;
 	//overlay layout simply draws all the components on top of each other, with the reference point for all the components being the same
-	for(UInt32 i = 0; i <Components->size(); i++){
-		//(*Components)[i]->setSize((*Components)[i]->getPreferredSize());
-		(*Components)[i]->setPosition(borderTopLeft + 
+	for(UInt32 i = 0; i <Components->size(); i++)
+    {
+        Pos = borderTopLeft + 
             Vec2f((maxX-(*Components)[i]->getSize().x())/2.0,
-			(maxY-(*Components)[i]->getSize().y())/2.0));
+			(maxY-(*Components)[i]->getSize().y())/2.0);
+        if((*Components)[i]->getPosition() != Pos)
+        {
+		    (*Components)[i]->setPosition(Pos);
+        }
 	}
 }
 
-Vec2f OverlayLayout::layoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
+Vec2f OverlayLayout::layoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent, SizeType TheSizeType) const
 {
     Vec2f Result(0.0,0.0);
 
@@ -122,22 +135,22 @@ Vec2f OverlayLayout::layoutSize(const MFUnrecComponentPtr* Components, const Com
     return Result;
 }
 
-Vec2f OverlayLayout::minimumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f OverlayLayout::minimumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MIN_SIZE);
 }
 
-Vec2f OverlayLayout::requestedContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f OverlayLayout::requestedContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, REQUESTED_SIZE);
 }
 
-Vec2f OverlayLayout::preferredContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f OverlayLayout::preferredContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, PREFERRED_SIZE);
 }
 
-Vec2f OverlayLayout::maximumContentsLayoutSize(const MFUnrecComponentPtr* Components, const Component* ParentComponent) const
+Vec2f OverlayLayout::maximumContentsLayoutSize(const MFUnrecChildComponentPtr* Components, const Component* ParentComponent) const
 {
     return layoutSize(Components, ParentComponent, MAX_SIZE);
 }

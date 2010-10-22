@@ -40,9 +40,4 @@
 
 OSG_BEGIN_NAMESPACE
 
-inline
-VectorSpinnerFieldEditor::SpinnerListener::SpinnerListener(VectorSpinnerFieldEditor * ptr) : _VectorSpinnerFieldEditor(ptr)
-{
-}
-
 OSG_END_NAMESPACE

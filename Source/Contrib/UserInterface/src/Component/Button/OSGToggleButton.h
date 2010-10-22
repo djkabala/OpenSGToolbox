@@ -43,9 +43,6 @@
 #endif
 
 #include "OSGToggleButtonBase.h"
-#include "OSGButtonSelectedListener.h"
-
-#include "OSGEventConnection.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -95,16 +92,12 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ToggleButton : public ToggleButtonBase
 
     /*! \}                                                                 */
 
-    EventConnection addButtonSelectedListener(ButtonSelectedListenerPtr Listener);
-	bool isButtonSelectedListenerAttached(ButtonSelectedListenerPtr Listener) const;
-    void removeButtonSelectedListener(ButtonSelectedListenerPtr Listener);
-
-    void setSelectedBorder   ( const BorderRefPtr &value );
-    void setSelectedBackground( const LayerRefPtr &value );
+    void setSelectedBorder   ( Border* const value );
+    void setSelectedBackground( Layer* const value );
     void setSelectedTextColor( const Color4f &value );
-    void setSelectedDrawObject( const UIDrawObjectCanvasRefPtr &value );
-    void setSelectedImage(ImageRefPtr TheImage, Vec2f Size = Vec2f(-1.0f,-1.0f));
-    void setSelectedTexture(TextureObjChunkRefPtr TheTexture, Vec2f Size = Vec2f(-1.0f,-1.0f));
+    void setSelectedDrawObject( UIDrawObjectCanvas* const value );
+    void setSelectedImage(Image* const TheImage, Vec2f Size = Vec2f(-1.0f,-1.0f));
+    void setSelectedTexture(TextureObjChunk* const TheTexture, Vec2f Size = Vec2f(-1.0f,-1.0f));
     void setSelectedImage(const std::string& Path, Vec2f Size = Vec2f(-1.0f,-1.0f));
 
     Border * getSelectedBorder   (void) const;
@@ -146,19 +139,14 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ToggleButton : public ToggleButtonBase
 
     /*! \}                                                                 */
     
-    virtual void actionPreformed(const ActionEventUnrecPtr e);
+    virtual void actionPreformed(ActionEventDetails* const e);
 
-	typedef std::set<ButtonSelectedListenerPtr> ButtonSelectedListenerSet;
-    typedef ButtonSelectedListenerSet::iterator ButtonSelectedListenerSetItor;
-    typedef ButtonSelectedListenerSet::const_iterator ButtonSelectedListenerSetConstItor;
-	
-    ButtonSelectedListenerSet       _ButtonSelectedListeners;
-    void produceButtonSelected(const ButtonSelectedEventUnrecPtr e);
-    void produceButtonDeselected(const ButtonSelectedEventUnrecPtr e);
+    void produceButtonSelected(ButtonSelectedEventDetails* const e);
+    void produceButtonDeselected(ButtonSelectedEventDetails* const e);
     
-    virtual BorderRefPtr getDrawnBorder(void) const;
-    virtual LayerRefPtr getDrawnBackground(void) const;
-    virtual LayerRefPtr getDrawnForeground(void) const;
+    virtual Border* getDrawnBorder(void) const;
+    virtual Layer* getDrawnBackground(void) const;
+    virtual Layer* getDrawnForeground(void) const;
     virtual Color4f getDrawnTextColor(void) const;
     virtual Vec2f getDrawnOffset(void) const;
     /*==========================  PRIVATE  ================================*/

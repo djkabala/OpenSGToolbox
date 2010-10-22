@@ -118,7 +118,7 @@ Vec2f UIDrawObjectCanvas::getContentRequestedSize(void) const
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
 
-void UIDrawObjectCanvas::drawInternal(const GraphicsWeakPtr Graphics, Real32 Opacity) const
+void UIDrawObjectCanvas::drawInternal(Graphics* const Graphics, Real32 Opacity) const
 {
 	for(UInt32 i(0) ; i<getMFDrawObjects()->size(); ++i)
 	{
@@ -131,13 +131,13 @@ void UIDrawObjectCanvas::drawInternal(const GraphicsWeakPtr Graphics, Real32 Opa
 UIDrawObjectCanvas::UIDrawObjectCanvas(void) :
     Inherited()
 {
-	setClipping(false);
+	//setClipping(false);
 }
 
 UIDrawObjectCanvas::UIDrawObjectCanvas(const UIDrawObjectCanvas &source) :
     Inherited(source)
 {
-	setClipping(false);
+	//setClipping(false);
 }
 
 UIDrawObjectCanvas::~UIDrawObjectCanvas(void)

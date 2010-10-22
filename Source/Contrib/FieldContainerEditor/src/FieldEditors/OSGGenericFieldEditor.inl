@@ -40,9 +40,4 @@
 
 OSG_BEGIN_NAMESPACE
 
-inline
-GenericFieldEditor::TextFieldListener::TextFieldListener(GenericFieldEditor * ptr) : _GenericFieldEditor(ptr)
-{
-}
-
 OSG_END_NAMESPACE

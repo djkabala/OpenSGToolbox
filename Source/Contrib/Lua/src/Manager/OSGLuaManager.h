@@ -46,15 +46,15 @@
 #include "OSGContribLuaDef.h"
 
 #include "lua.hpp"
-#include <set>
 #include <list>
-#include "OSGLuaListener.h"
 
-#include "OSGEventConnection.h"
-#include "OSGEventProducer.h"
 #include "OSGEventProducerType.h"
-#include "OSGMethodDescription.h"
+#include "OSGLuaErrorEventDetails.h"
+#include "OSGConsumableEventCombiner.h"
+#include "OSGEventDescription.h"
+#include "OSGActivity.h"
 #include "OSGPathType.h"
+#include "OSGStatElemTypes.h"
 
 #include <boost/function.hpp>
 
@@ -86,22 +86,24 @@ class OSG_CONTRIBLUA_DLLMAPPING LuaManager
     friend class LuaActivity;
 
   private:
-    typedef EventProducer ProducerInherited;
 
     /*==========================  PUBLIC  =================================*/
   public:
+    typedef LuaErrorEventDetails LuaErrorEventDetailsType;
+    typedef boost::signals2::signal<void (LuaErrorEventDetails* const, UInt32), ConsumableEventCombiner> LuaErrorEventType;
     typedef boost::function<int ( lua_State* )> OpenBoundLuaLibFunctor;
 
     enum
     {
-        LuaErrorMethodId = 1,
-        NextMethodId     = LuaErrorMethodId            + 1
+        LuaErrorEventId = 1,
+        NextEventId     = LuaErrorEventId            + 1
     };
 
     static LuaManager* the(void);
 
-    void runScript(const std::string& Script);
-    void runScript(const BoostPath& ScriptPath);
+    int runScript(const std::string& Script);
+    int runScript(const BoostPath& ScriptPath);
+    int runPushedFunction(UInt32 NumArgs, UInt32 NumReturns);
 
     static void report_errors(lua_State *L, int status);
 
@@ -116,10 +118,6 @@ class OSG_CONTRIBLUA_DLLMAPPING LuaManager
     void setPackageCPath(const std::string& Pattern);
     std::string getPackageCPath(void) const;
 
-    EventConnection addLuaListener(LuaListenerRefPtr Listener);
-    bool isLuaListenerAttached(LuaListenerRefPtr Listener) const;
-    void removeLuaListener(LuaListenerRefPtr Listener);
-
     static void FunctionHook(lua_State *l, lua_Debug *ar);
 
     void setEnableStackTrace(bool Enable);
@@ -130,18 +128,27 @@ class OSG_CONTRIBLUA_DLLMAPPING LuaManager
     static        UInt32              getProducerClassTypeId(void); 
     virtual const EventProducerType &getProducerType(void) const; 
 
-    EventConnection          attachActivity(ActivityRefPtr       TheActivity, UInt32 ProducedEventId);
-    bool                     isActivityAttached(ActivityRefPtr   TheActivity, UInt32 ProducedEventId) const;
-    UInt32                   getNumActivitiesAttached(UInt32     ProducedEventId) const;
-    ActivityRefPtr           getAttachedActivity(UInt32          ProducedEventId, UInt32 ActivityIndex) const;
-    void                     detachActivity(ActivityRefPtr       TheActivity, UInt32 ProducedEventId);
+    boost::signals2::connection          attachActivity(UInt32 eventId,
+                                                       Activity* TheActivity);
     UInt32                   getNumProducedEvents(void)          const;
-    const MethodDescription *getProducedEventDescription(const   Char8 *ProducedEventName) const;
-    const MethodDescription *getProducedEventDescription(UInt32  ProducedEventId) const;
+    const EventDescription *getProducedEventDescription(const   Char8 *ProducedEventName) const;
+    const EventDescription *getProducedEventDescription(UInt32  ProducedEventId) const;
     UInt32                   getProducedEventId(const            Char8 *ProducedEventName) const;
+
+    boost::signals2::connection connectLuaError(const LuaErrorEventType::slot_type &listener,
+                                                       boost::signals2::connect_position at= boost::signals2::at_back);
+    boost::signals2::connection connectLuaError(const LuaErrorEventType::group_type &group,
+                                                       const LuaErrorEventType::slot_type &listener,
+                                                       boost::signals2::connect_position at= boost::signals2::at_back);
+    void   disconnectLuaError       (const LuaErrorEventType::group_type &group);
+    void   disconnectAllSlotsLuaError(void);
+    bool   isEmptyLuaError          (void) const;
+    UInt32 numSlotsLuaError         (void) const;
 
     lua_State *getLuaState(void);
     void checkError(int Status);
+
+    static StatElemDesc<StatTimeElem   > statScriptsRunTime;
 
 #ifdef OSG_WITH_LUA_DEBUGGER
 
@@ -202,12 +209,12 @@ class OSG_CONTRIBLUA_DLLMAPPING LuaManager
 #endif
     /*==========================  PRIVATE  ================================*/
   private:
-    EventProducer _Producer;
 
     static LuaManager* _the;
 
-    static MethodDescription   *_methodDesc[];
+    static EventDescription   *_eventDesc[];
     static EventProducerType _producerType;
+    LuaErrorEventType _LuaErrorEvent;
 
     // Variables should all be in StubSoundManagerBase.
 
@@ -232,15 +239,12 @@ class OSG_CONTRIBLUA_DLLMAPPING LuaManager
 
 
     static lua_State *_State;
-
-    typedef std::set<LuaListenerRefPtr> LuaListenerSet;
-    typedef LuaListenerSet::iterator LuaListenerSetItor;
-    typedef LuaListenerSet::const_iterator LuaListenerSetConstItor;
-    LuaListenerSet       _LuaListeners;
     std::list<std::string> _LuaStack;
     bool _EnableStackTrace;
 
-    void produceError(int Status);
+    void produceLuaError(int Status);
+    
+    void produceLuaError(LuaErrorEventDetailsType* const e);
 
 #ifdef OSG_WITH_LUA_DEBUGGER
 

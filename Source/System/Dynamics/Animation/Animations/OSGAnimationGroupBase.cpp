@@ -65,8 +65,6 @@
 
 #include <boost/bind.hpp>
 
-#include "OSGEvent.h"
-
 #ifdef WIN32 // turn off 'this' : used in base member initializer list warning
 #pragma warning(disable:4355)
 #endif
@@ -89,25 +87,13 @@ OSG_BEGIN_NAMESPACE
     
 */
 
-/*! \var Real32          AnimationGroupBase::_sfScale
-    
-*/
-
-/*! \var Real32          AnimationGroupBase::_sfOffset
-    
-*/
-
-/*! \var Real32          AnimationGroupBase::_sfSpan
-    
-*/
-
 
 /***************************************************************************\
  *                      FieldType/FieldTrait Instantiation                 *
 \***************************************************************************/
 
 #if !defined(OSG_DO_DOC) || defined(OSG_DOC_DEV)
-DataType FieldTraits<AnimationGroup *>::_type("AnimationGroupPtr", "AttachmentContainerPtr");
+DataType FieldTraits<AnimationGroup *>::_type("AnimationGroupPtr", "AnimationPtr");
 #endif
 
 OSG_FIELDTRAITS_GETTYPE(AnimationGroup *)
@@ -140,53 +126,6 @@ void AnimationGroupBase::classDescInserter(TypeObject &oType)
         static_cast<FieldGetMethodSig >(&AnimationGroup::getHandleAnimations));
 
     oType.addInitialDesc(pDesc);
-
-    pDesc = new SFReal32::Description(
-        SFReal32::getClassType(),
-        "Scale",
-        "",
-        ScaleFieldId, ScaleFieldMask,
-        false,
-        (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&AnimationGroup::editHandleScale),
-        static_cast<FieldGetMethodSig >(&AnimationGroup::getHandleScale));
-
-    oType.addInitialDesc(pDesc);
-
-    pDesc = new SFReal32::Description(
-        SFReal32::getClassType(),
-        "Offset",
-        "",
-        OffsetFieldId, OffsetFieldMask,
-        false,
-        (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&AnimationGroup::editHandleOffset),
-        static_cast<FieldGetMethodSig >(&AnimationGroup::getHandleOffset));
-
-    oType.addInitialDesc(pDesc);
-
-    pDesc = new SFReal32::Description(
-        SFReal32::getClassType(),
-        "Span",
-        "",
-        SpanFieldId, SpanFieldMask,
-        false,
-        (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&AnimationGroup::editHandleSpan),
-        static_cast<FieldGetMethodSig >(&AnimationGroup::getHandleSpan));
-
-    oType.addInitialDesc(pDesc);
-    pDesc = new SFEventProducerPtr::Description(
-        SFEventProducerPtr::getClassType(),
-        "EventProducer",
-        "Event Producer",
-        EventProducerFieldId,EventProducerFieldMask,
-        true,
-        (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast     <FieldEditMethodSig>(&AnimationGroup::editHandleEventProducer),
-        static_cast     <FieldGetMethodSig >(&AnimationGroup::getHandleEventProducer));
-
-    oType.addInitialDesc(pDesc);
 }
 
 
@@ -205,7 +144,7 @@ AnimationGroupBase::TypeObject AnimationGroupBase::_type(
     "\n"
     "<FieldContainer\n"
     "\tname=\"AnimationGroup\"\n"
-    "\tparent=\"AttachmentContainer\"\n"
+    "\tparent=\"Animation\"\n"
     "    library=\"TBAnimation\"\n"
     "\tpointerfieldtypes=\"both\"\n"
     "\tstructure=\"concrete\"\n"
@@ -224,113 +163,9 @@ AnimationGroupBase::TypeObject AnimationGroupBase::_type(
     "\t\taccess=\"public\"\n"
     "\t>\n"
     "\t</Field>\n"
-    "\t<Field\n"
-    "\t\tname=\"Scale\"\n"
-    "\t\ttype=\"Real32\"\n"
-    "        category=\"data\"\n"
-    "\t\tcardinality=\"single\"\n"
-    "\t\tvisibility=\"external\"\n"
-    "\t\taccess=\"public\"\n"
-    "        defaultValue=\"1.0\"\n"
-    "\t>\n"
-    "\t</Field>\n"
-    "\t<Field\n"
-    "\t\tname=\"Offset\"\n"
-    "\t\ttype=\"Real32\"\n"
-    "        category=\"data\"\n"
-    "\t\tcardinality=\"single\"\n"
-    "\t\tvisibility=\"external\"\n"
-    "\t\taccess=\"public\"\n"
-    "        defaultValue=\"0.0\"\n"
-    "\t>\n"
-    "\t</Field>\n"
-    "\t<Field\n"
-    "\t\tname=\"Span\"\n"
-    "\t\ttype=\"Real32\"\n"
-    "        category=\"data\"\n"
-    "\t\tcardinality=\"single\"\n"
-    "\t\tvisibility=\"external\"\n"
-    "\t\taccess=\"public\"\n"
-    "        defaultValue=\"-1.0\"\n"
-    "\t>\n"
-    "\t</Field>\n"
-    "\t<ProducedMethod\n"
-    "\t\tname=\"AnimationsStarted\"\n"
-    "\t\ttype=\"AnimationEvent\"\n"
-    "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
-    "\t\tname=\"AnimationsStopped\"\n"
-    "\t\ttype=\"AnimationEvent\"\n"
-    "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
-    "\t\tname=\"AnimationsPaused\"\n"
-    "\t\ttype=\"AnimationEvent\"\n"
-    "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
-    "\t\tname=\"AnimationsUnpaused\"\n"
-    "\t\ttype=\"AnimationEvent\"\n"
-    "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
-    "\t\tname=\"AnimationsEnded\"\n"
-    "\t\ttype=\"AnimationEvent\"\n"
-    "\t>\n"
-    "\t</ProducedMethod>\n"
-    "\t<ProducedMethod\n"
-    "\t\tname=\"AnimationsCycled\"\n"
-    "\t\ttype=\"AnimationEvent\"\n"
-    "\t>\n"
-    "\t</ProducedMethod>\n"
     "</FieldContainer>\n",
     ""
     );
-
-//! AnimationGroup Produced Methods
-
-MethodDescription *AnimationGroupBase::_methodDesc[] =
-{
-    new MethodDescription("AnimationsStarted", 
-                    "",
-                     AnimationsStartedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("AnimationsStopped", 
-                    "",
-                     AnimationsStoppedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("AnimationsPaused", 
-                    "",
-                     AnimationsPausedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("AnimationsUnpaused", 
-                    "",
-                     AnimationsUnpausedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("AnimationsEnded", 
-                    "",
-                     AnimationsEndedMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod()),
-    new MethodDescription("AnimationsCycled", 
-                    "",
-                     AnimationsCycledMethodId, 
-                     SFUnrecEventPtr::getClassType(),
-                     FunctorAccessMethod())
-};
-
-EventProducerType AnimationGroupBase::_producerType(
-    "AnimationGroupProducerType",
-    "EventProducerType",
-    "",
-    InitEventProducerFunctor(),
-    _methodDesc,
-    sizeof(_methodDesc));
 
 /*------------------------------ get -----------------------------------*/
 
@@ -342,11 +177,6 @@ FieldContainerType &AnimationGroupBase::getType(void)
 const FieldContainerType &AnimationGroupBase::getType(void) const
 {
     return _type;
-}
-
-const EventProducerType &AnimationGroupBase::getProducerType(void) const
-{
-    return _producerType;
 }
 
 UInt32 AnimationGroupBase::getContainerSize(void) const
@@ -369,45 +199,6 @@ MFUnrecAnimationPtr *AnimationGroupBase::editMFAnimations     (void)
 
     return &_mfAnimations;
 }
-
-SFReal32 *AnimationGroupBase::editSFScale(void)
-{
-    editSField(ScaleFieldMask);
-
-    return &_sfScale;
-}
-
-const SFReal32 *AnimationGroupBase::getSFScale(void) const
-{
-    return &_sfScale;
-}
-
-
-SFReal32 *AnimationGroupBase::editSFOffset(void)
-{
-    editSField(OffsetFieldMask);
-
-    return &_sfOffset;
-}
-
-const SFReal32 *AnimationGroupBase::getSFOffset(void) const
-{
-    return &_sfOffset;
-}
-
-
-SFReal32 *AnimationGroupBase::editSFSpan(void)
-{
-    editSField(SpanFieldMask);
-
-    return &_sfSpan;
-}
-
-const SFReal32 *AnimationGroupBase::getSFSpan(void) const
-{
-    return &_sfSpan;
-}
-
 
 
 
@@ -476,22 +267,6 @@ UInt32 AnimationGroupBase::getBinSize(ConstFieldMaskArg whichField)
     {
         returnValue += _mfAnimations.getBinSize();
     }
-    if(FieldBits::NoField != (ScaleFieldMask & whichField))
-    {
-        returnValue += _sfScale.getBinSize();
-    }
-    if(FieldBits::NoField != (OffsetFieldMask & whichField))
-    {
-        returnValue += _sfOffset.getBinSize();
-    }
-    if(FieldBits::NoField != (SpanFieldMask & whichField))
-    {
-        returnValue += _sfSpan.getBinSize();
-    }
-    if(FieldBits::NoField != (EventProducerFieldMask & whichField))
-    {
-        returnValue += _sfEventProducer.getBinSize();
-    }
 
     return returnValue;
 }
@@ -505,22 +280,6 @@ void AnimationGroupBase::copyToBin(BinaryDataHandler &pMem,
     {
         _mfAnimations.copyToBin(pMem);
     }
-    if(FieldBits::NoField != (ScaleFieldMask & whichField))
-    {
-        _sfScale.copyToBin(pMem);
-    }
-    if(FieldBits::NoField != (OffsetFieldMask & whichField))
-    {
-        _sfOffset.copyToBin(pMem);
-    }
-    if(FieldBits::NoField != (SpanFieldMask & whichField))
-    {
-        _sfSpan.copyToBin(pMem);
-    }
-    if(FieldBits::NoField != (EventProducerFieldMask & whichField))
-    {
-        _sfEventProducer.copyToBin(pMem);
-    }
 }
 
 void AnimationGroupBase::copyFromBin(BinaryDataHandler &pMem,
@@ -531,22 +290,6 @@ void AnimationGroupBase::copyFromBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (AnimationsFieldMask & whichField))
     {
         _mfAnimations.copyFromBin(pMem);
-    }
-    if(FieldBits::NoField != (ScaleFieldMask & whichField))
-    {
-        _sfScale.copyFromBin(pMem);
-    }
-    if(FieldBits::NoField != (OffsetFieldMask & whichField))
-    {
-        _sfOffset.copyFromBin(pMem);
-    }
-    if(FieldBits::NoField != (SpanFieldMask & whichField))
-    {
-        _sfSpan.copyFromBin(pMem);
-    }
-    if(FieldBits::NoField != (EventProducerFieldMask & whichField))
-    {
-        _sfEventProducer.copyFromBin(pMem);
     }
 }
 
@@ -622,7 +365,6 @@ AnimationGroup *AnimationGroupBase::createEmpty(void)
     return returnValue;
 }
 
-
 FieldContainerTransitPtr AnimationGroupBase::shallowCopyLocal(
     BitVector bFlags) const
 {
@@ -668,28 +410,17 @@ FieldContainerTransitPtr AnimationGroupBase::shallowCopy(void) const
 
 
 
-
 /*------------------------- constructors ----------------------------------*/
 
 AnimationGroupBase::AnimationGroupBase(void) :
-    _Producer(&getProducerType()),
     Inherited(),
-    _mfAnimations             (),
-    _sfScale                  (Real32(1.0)),
-    _sfOffset                 (Real32(0.0)),
-    _sfSpan                   (Real32(-1.0))
-    ,_sfEventProducer(&_Producer)
+    _mfAnimations             ()
 {
 }
 
 AnimationGroupBase::AnimationGroupBase(const AnimationGroupBase &source) :
-    _Producer(&source.getProducerType()),
     Inherited(source),
-    _mfAnimations             (),
-    _sfScale                  (source._sfScale                  ),
-    _sfOffset                 (source._sfOffset                 ),
-    _sfSpan                   (source._sfSpan                   )
-    ,_sfEventProducer(&_Producer)
+    _mfAnimations             ()
 {
 }
 
@@ -759,106 +490,6 @@ EditFieldHandlePtr AnimationGroupBase::editHandleAnimations     (void)
     return returnValue;
 }
 
-GetFieldHandlePtr AnimationGroupBase::getHandleScale           (void) const
-{
-    SFReal32::GetHandlePtr returnValue(
-        new  SFReal32::GetHandle(
-             &_sfScale,
-             this->getType().getFieldDesc(ScaleFieldId),
-             const_cast<AnimationGroupBase *>(this)));
-
-    return returnValue;
-}
-
-EditFieldHandlePtr AnimationGroupBase::editHandleScale          (void)
-{
-    SFReal32::EditHandlePtr returnValue(
-        new  SFReal32::EditHandle(
-             &_sfScale,
-             this->getType().getFieldDesc(ScaleFieldId),
-             this));
-
-
-    editSField(ScaleFieldMask);
-
-    return returnValue;
-}
-
-GetFieldHandlePtr AnimationGroupBase::getHandleOffset          (void) const
-{
-    SFReal32::GetHandlePtr returnValue(
-        new  SFReal32::GetHandle(
-             &_sfOffset,
-             this->getType().getFieldDesc(OffsetFieldId),
-             const_cast<AnimationGroupBase *>(this)));
-
-    return returnValue;
-}
-
-EditFieldHandlePtr AnimationGroupBase::editHandleOffset         (void)
-{
-    SFReal32::EditHandlePtr returnValue(
-        new  SFReal32::EditHandle(
-             &_sfOffset,
-             this->getType().getFieldDesc(OffsetFieldId),
-             this));
-
-
-    editSField(OffsetFieldMask);
-
-    return returnValue;
-}
-
-GetFieldHandlePtr AnimationGroupBase::getHandleSpan            (void) const
-{
-    SFReal32::GetHandlePtr returnValue(
-        new  SFReal32::GetHandle(
-             &_sfSpan,
-             this->getType().getFieldDesc(SpanFieldId),
-             const_cast<AnimationGroupBase *>(this)));
-
-    return returnValue;
-}
-
-EditFieldHandlePtr AnimationGroupBase::editHandleSpan           (void)
-{
-    SFReal32::EditHandlePtr returnValue(
-        new  SFReal32::EditHandle(
-             &_sfSpan,
-             this->getType().getFieldDesc(SpanFieldId),
-             this));
-
-
-    editSField(SpanFieldMask);
-
-    return returnValue;
-}
-
-
-GetFieldHandlePtr AnimationGroupBase::getHandleEventProducer        (void) const
-{
-    SFEventProducerPtr::GetHandlePtr returnValue(
-        new  SFEventProducerPtr::GetHandle(
-             &_sfEventProducer,
-             this->getType().getFieldDesc(EventProducerFieldId),
-             const_cast<AnimationGroupBase *>(this)));
-
-    return returnValue;
-}
-
-EditFieldHandlePtr AnimationGroupBase::editHandleEventProducer       (void)
-{
-    SFEventProducerPtr::EditHandlePtr returnValue(
-        new  SFEventProducerPtr::EditHandle(
-             &_sfEventProducer,
-             this->getType().getFieldDesc(EventProducerFieldId),
-             this));
-
-
-    editSField(EventProducerFieldMask);
-
-    return returnValue;
-}
 
 
 #ifdef OSG_MT_CPTR_ASPECT

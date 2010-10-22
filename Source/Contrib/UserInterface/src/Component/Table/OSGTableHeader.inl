@@ -47,7 +47,7 @@ TableCellRendererPtr TableHeader::getDefaultRenderer(void) const
 }
 
 inline
-TableColumnRefPtr TableHeader::getDraggedColumn(void) const
+TableColumn* TableHeader::getDraggedColumn(void) const
 {
     return _DraggedColumn;
 }
@@ -77,7 +77,7 @@ void TableHeader::setDefaultRenderer(TableCellRendererPtr defaultRenderer)
 }
 
 inline
-void TableHeader::setDraggedColumn(TableColumnRefPtr aColumn)
+void TableHeader::setDraggedColumn(TableColumn* const aColumn)
 {
     _DraggedColumn = aColumn;
 }
@@ -92,18 +92,6 @@ inline
 void TableHeader::setResizingColumn(Int32 aColumn)
 {
     _ResizingColumn = aColumn;
-}
-
-inline
-TableHeader::ColumnModelListener::ColumnModelListener(TableHeader* TheTableHeader) :
-    _TableHeader(TheTableHeader)
-{
-}
-
-inline
-TableHeader::MarginDraggedListener::MarginDraggedListener(TableHeader* TheTableHeader) :
-    _TableHeader(TheTableHeader)
-{
 }
 
 OSG_END_NAMESPACE

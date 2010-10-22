@@ -81,29 +81,34 @@ void ListGeneratedPopupMenu::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void ListGeneratedPopupMenu::addItem(MenuItemRefPtr Item)
+void ListGeneratedPopupMenu::addItem(MenuItem* const Item)
 {
 	//Do Nothing
+    SWARNING << "Cannot add item to ListGeneratedPopupMenu" << std::endl;
 }
 
-void ListGeneratedPopupMenu::addItem(MenuItemRefPtr Item, const UInt32& Index)
+void ListGeneratedPopupMenu::addItem(MenuItem* const Item, const UInt32& Index)
 {
 	//Do Nothing
+    SWARNING << "Cannot add item to ListGeneratedPopupMenu" << std::endl;
 }
 
-void ListGeneratedPopupMenu::removeItem(MenuItemRefPtr Item)
+void ListGeneratedPopupMenu::removeItem(MenuItem* const Item)
 {
 	//Do Nothing
+    SWARNING << "Cannot remove Item from ListGeneratedPopupMenu" << std::endl;
 }
 
 void ListGeneratedPopupMenu::removeItem(const UInt32& Index)
 {
 	//Do Nothing
+    SWARNING << "Cannot remove Item from ListGeneratedPopupMenu" << std::endl;
 }
 
 void ListGeneratedPopupMenu::removeAllItems(void)
 {
 	//Do Nothing
+    SWARNING << "Cannot remove All Items from ListGeneratedPopupMenu" << std::endl;
 }
 
 MenuItem* ListGeneratedPopupMenu::getItem(const UInt32& Index)
@@ -132,17 +137,24 @@ UInt32 ListGeneratedPopupMenu::getNumItems(void) const
 
 void ListGeneratedPopupMenu::updateMenuItems(void)
 {
-    clearChildren();
+    bool changed(false);
 
-    if(getModel() != NULL)// && )
+    if(getMFChildren()->size() > 0)
     {
+        changed = true;
+        clearChildren();
+    }
+
+    if(getModel() != NULL)
+    {
+        changed = true;
         MenuItemRefPtr Item;
         for(Int32 i(0) ; i<getModel()->getSize() ; ++i)
         {
             if(getCellGenerator() != NULL)
             {
                 Item = ComponentMenuItem::create();
-                ComponentRefPtr TheComponent = getCellGenerator()->getComponent(ListGeneratedPopupMenuRefPtr(this), getModel()->getElementAt(i), i, 0, false, false);
+                ComponentRefPtr TheComponent = getCellGenerator()->getComponent(this, getModel()->getElementAt(i), i, 0, false, false);
 
                 TheComponent->setBackgrounds(NULL);
 
@@ -167,7 +179,11 @@ void ListGeneratedPopupMenu::updateMenuItems(void)
             pushToChildren(Item);
         }
     }
-    producePopupMenuContentsChanged(PopupMenuEvent::create(PopupMenuRefPtr(this), getSystemTime()));
+
+    if(changed)
+    {
+        producePopupMenuContentsChanged();
+    }
 }
 
 /*-------------------------------------------------------------------------*\
@@ -177,14 +193,12 @@ void ListGeneratedPopupMenu::updateMenuItems(void)
 /*----------------------- constructors & destructors ----------------------*/
 
 ListGeneratedPopupMenu::ListGeneratedPopupMenu(void) :
-    Inherited(),
-		_ModelListener(this)
+    Inherited()
 {
 }
 
 ListGeneratedPopupMenu::ListGeneratedPopupMenu(const ListGeneratedPopupMenu &source) :
-    Inherited(source),
-		_ModelListener(this)
+    Inherited(source)
 {
 }
 
@@ -202,9 +216,14 @@ void ListGeneratedPopupMenu::changed(ConstFieldMaskArg whichField,
 	
 	if(whichField & ModelFieldMask)
 	{
+        _ListContentsChangedConnection.disconnect();
+        _ListIntervalAddedConnection.disconnect();
+        _ListIntervalRemovedConnection.disconnect();
 		if(getModel() != NULL)
 		{
-			getModel()->addListDataListener(&_ModelListener);
+            _ListContentsChangedConnection = getModel()->connectListDataContentsChanged(boost::bind(&ListGeneratedPopupMenu::handleListContentsChanged, this, _1));
+            _ListIntervalAddedConnection = getModel()->connectListDataIntervalAdded(boost::bind(&ListGeneratedPopupMenu::handleListIntervalAdded, this, _1));
+            _ListIntervalRemovedConnection = getModel()->connectListDataIntervalRemoved(boost::bind(&ListGeneratedPopupMenu::handleListIntervalRemoved, this, _1));
 		}
 	}
 
@@ -221,19 +240,19 @@ void ListGeneratedPopupMenu::dump(      UInt32    ,
     SLOG << "Dump ListGeneratedPopupMenu NI" << std::endl;
 }
 
-void ListGeneratedPopupMenu::ModelListener::contentsChanged(const ListDataEventUnrecPtr e)
+void ListGeneratedPopupMenu::handleListContentsChanged(ListDataEventDetails* const e)
 {
-	_ListGeneratedPopupMenu->updateMenuItems();
+	updateMenuItems();
 }
 
-void ListGeneratedPopupMenu::ModelListener::intervalAdded(const ListDataEventUnrecPtr e)
+void ListGeneratedPopupMenu::handleListIntervalAdded(ListDataEventDetails* const e)
 {
-	_ListGeneratedPopupMenu->updateMenuItems();
+	updateMenuItems();
 }
 
-void ListGeneratedPopupMenu::ModelListener::intervalRemoved(const ListDataEventUnrecPtr e)
+void ListGeneratedPopupMenu::handleListIntervalRemoved(ListDataEventDetails* const e)
 {
-	_ListGeneratedPopupMenu->updateMenuItems();
+	updateMenuItems();
 }
 
 OSG_END_NAMESPACE

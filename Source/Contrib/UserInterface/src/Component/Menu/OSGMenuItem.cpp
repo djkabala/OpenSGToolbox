@@ -50,6 +50,7 @@
 #include "OSGInternalWindow.h"
 #include "OSGLookAndFeelManager.h"
 #include "OSGMenu.h"
+#include "OSGUIDrawingSurface.h"
 
 #include <boost/bind.hpp>
 
@@ -82,15 +83,7 @@ void MenuItem::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-EventConnection MenuItem::addActionListener(ActionListenerPtr Listener)
-{
-   _ActionListeners.insert(Listener);
-   return EventConnection(
-       boost::bind(&MenuItem::isActionListenerAttached, this, Listener),
-       boost::bind(&MenuItem::removeActionListener, this, Listener));
-}
-
-void MenuItem::drawText(const GraphicsWeakPtr TheGraphics, const Pnt2f& TopLeft, Real32 Opacity) const
+void MenuItem::drawText(Graphics* const TheGraphics, const Pnt2f& TopLeft, Real32 Opacity) const
 {
    //If I have Text Then Draw it
    if(getText() != "" && getFont() != NULL)
@@ -126,27 +119,32 @@ void MenuItem::drawText(const GraphicsWeakPtr TheGraphics, const Pnt2f& TopLeft,
    }
 }
 
-void MenuItem::mouseReleased(const MouseEventUnrecPtr e)
+void MenuItem::mouseReleased(MouseEventDetails* const e)
 {
     if(getSelected() && getEnabled())
     {
-	   produceActionPerformed(ActionEvent::create(MenuItemRefPtr(this), e->getTimeStamp()));
+	   produceActionPerformed();
        getParentWindow()->destroyPopupMenu();
           setSelected(false);
     }
     
 	if(getEnabled())
 	{
-		if(e->getButton() == MouseEvent::BUTTON1 && _Armed)
+		if(e->getButton() == MouseEventDetails::BUTTON1 && _Armed)
 		{
-			ButtonRefPtr(this)->setActive(false);
+			this->setActive(false);
 			_Armed = false;
 		}
 	}
 	Component::mouseReleased(e);
 }
+    
+Menu* MenuItem::getParentMenu(void) const
+{
+    return dynamic_cast<Menu*>(_sfParentMenu.getValue());
+}
 
-MenuRefPtr MenuItem::getTopLevelMenu(void) const
+Menu* MenuItem::getTopLevelMenu(void) const
 {
     MenuRefPtr c(getParentMenu());
     while(c != NULL)
@@ -162,7 +160,7 @@ MenuRefPtr MenuItem::getTopLevelMenu(void) const
 
 void MenuItem::activate(void)
 {
-    produceActionPerformed(ActionEvent::create(MenuItemRefPtr(this), getSystemTime()));
+    produceActionPerformed();
 }
 
 Vec2f MenuItem::getContentRequestedSize(void) const
@@ -186,56 +184,58 @@ Vec2f MenuItem::getContentRequestedSize(void) const
 	return RequestedSize;
 }
 
-void MenuItem::actionPreformed(const ActionEventUnrecPtr e)
+void MenuItem::actionPreformed(ActionEventDetails* const e)
 {
-}
-
-void MenuItem::produceActionPerformed(const ActionEventUnrecPtr e)
-{
-    actionPreformed(e);
-    for(ActionListenerSetConstItor SetItor(_ActionListeners.begin()) ; SetItor != _ActionListeners.end() ; ++SetItor)
-    {
-	    (*SetItor)->actionPerformed(e);
-    }
-   _Producer.produceEvent(ActionPerformedMethodId,e);
-}
-
-void MenuItem::removeActionListener(ActionListenerPtr Listener)
-{
-   ActionListenerSetItor EraseIter(_ActionListeners.find(Listener));
-   if(EraseIter != _ActionListeners.end())
-   {
-      _ActionListeners.erase(EraseIter);
-   }
 }
 
 void MenuItem::detachFromEventProducer(void)
 {
     Inherited::detachFromEventProducer();
-    _KeyAcceleratorMenuFlashUpdateListener.disconnect();
+    _AcceleratorTypedConnection.disconnect();
+    _FlashUpdateConnection.disconnect();
 }
 
 void MenuItem::updateAcceleratorText(void)
 {
     _AcceleratorText.clear();
-    if(getAcceleratorModifiers() & KeyEvent::KEY_MODIFIER_CONTROL)
+    if(getAcceleratorModifiers() & KeyEventDetails::KEY_MODIFIER_CONTROL)
     {
-        _AcceleratorText += KeyEvent::getKeynameStringFromKey(KeyEvent::KEY_CONTROL, 0) + "+";
+        _AcceleratorText += KeyEventDetails::getKeynameStringFromKey(KeyEventDetails::KEY_CONTROL, 0) + "+";
     }
     
-    if(getAcceleratorModifiers() & KeyEvent::KEY_MODIFIER_META)
+    if(getAcceleratorModifiers() & KeyEventDetails::KEY_MODIFIER_META)
     {
-        _AcceleratorText += KeyEvent::getKeynameStringFromKey(KeyEvent::KEY_META, 0) + "+";
+        _AcceleratorText += KeyEventDetails::getKeynameStringFromKey(KeyEventDetails::KEY_META, 0) + "+";
     }
-    if(getAcceleratorModifiers() & KeyEvent::KEY_MODIFIER_ALT)
+    if(getAcceleratorModifiers() & KeyEventDetails::KEY_MODIFIER_ALT)
     {
-        _AcceleratorText += KeyEvent::getKeynameStringFromKey(KeyEvent::KEY_ALT, 0) + "+";
+        _AcceleratorText += KeyEventDetails::getKeynameStringFromKey(KeyEventDetails::KEY_ALT, 0) + "+";
     }
-    if(getAcceleratorModifiers() & KeyEvent::KEY_MODIFIER_SHIFT)
+    if(getAcceleratorModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT)
     {
-        _AcceleratorText += KeyEvent::getKeynameStringFromKey(KeyEvent::KEY_SHIFT, 0) + "+";
+        _AcceleratorText += KeyEventDetails::getKeynameStringFromKey(KeyEventDetails::KEY_SHIFT, 0) + "+";
     }
-    _AcceleratorText += KeyEvent::getKeynameStringFromKey(static_cast<KeyEvent::Key>(getAcceleratorKey()), KeyEvent::KEY_MODIFIER_CAPS_LOCK);
+    _AcceleratorText += KeyEventDetails::getKeynameStringFromKey(static_cast<KeyEventDetails::Key>(getAcceleratorKey()), KeyEventDetails::KEY_MODIFIER_CAPS_LOCK);
+}
+
+void MenuItem::setParentWindow(InternalWindow* const parent)
+{
+    if(getParentWindow() != NULL &&
+        getEnabled() && 
+        getAcceleratorKey() != KeyEventDetails::KEY_NONE)
+    {
+        _AcceleratorTypedConnection.disconnect();
+    }
+    Inherited::setParentWindow(parent);
+    if(getParentWindow() != NULL &&
+        getEnabled() && 
+        getAcceleratorKey() != KeyEventDetails::KEY_NONE)
+    {
+        _AcceleratorTypedConnection = 
+            getParentWindow()->connectKeyAccelerator(static_cast<KeyEventDetails::Key>(getAcceleratorKey()),
+                                                     getAcceleratorModifiers(), 
+                                                     boost::bind(&MenuItem::handleAcceleratorTyped, this, _1));
+    }
 }
 
 /*-------------------------------------------------------------------------*\
@@ -246,8 +246,6 @@ void MenuItem::updateAcceleratorText(void)
 
 MenuItem::MenuItem(void) :
     Inherited(),
-    _MenuItemKeyAcceleratorListener(this),
-    _KeyAcceleratorMenuFlashUpdateListener(this),
     _DrawAsThoughSelected(false),
     _AcceleratorText(""),
     _MnemonicTextPosition(-1)
@@ -256,8 +254,6 @@ MenuItem::MenuItem(void) :
 
 MenuItem::MenuItem(const MenuItem &source) :
     Inherited(source),
-    _MenuItemKeyAcceleratorListener(this),
-    _KeyAcceleratorMenuFlashUpdateListener(this),
     _DrawAsThoughSelected(false),
     _AcceleratorText(source._AcceleratorText),
     _MnemonicTextPosition(source._MnemonicTextPosition)
@@ -276,20 +272,12 @@ void MenuItem::changed(ConstFieldMaskArg whichField,
 {
     Inherited::changed(whichField, origin, details);
 
-    if((whichField & ParentWindowFieldMask) &&
-        getParentWindow() != NULL &&
-        getEnabled() && 
-        getAcceleratorKey() != KeyEvent::KEY_NONE
-        )
-    {
-        getParentWindow()->addKeyAccelerator(static_cast<KeyEvent::Key>(getAcceleratorKey()), getAcceleratorModifiers(), &_MenuItemKeyAcceleratorListener);
-    }
     if((whichField & EnabledFieldMask) &&
         getParentWindow() != NULL &&
         !getEnabled() && 
-        getAcceleratorKey() != KeyEvent::KEY_NONE)
+        getAcceleratorKey() != KeyEventDetails::KEY_NONE)
     {
-        getParentWindow()->removeKeyAccelerator(static_cast<KeyEvent::Key>(getAcceleratorKey()), getAcceleratorModifiers());
+        _AcceleratorTypedConnection.disconnect();
     }
 
     if(whichField & TextFieldMask ||
@@ -302,12 +290,12 @@ void MenuItem::changed(ConstFieldMaskArg whichField,
        whichField & MnemonicKeyFieldMask)
     {
         Int32 Pos(-1);
-        if(getMnemonicKey() != KeyEvent::KEY_NONE &&
+        if(getMnemonicKey() != KeyEventDetails::KEY_NONE &&
            getText() != "")
         {
             //Get the Character representation of the key
-            UChar8 MnemonicCharLower(KeyEvent::getCharFromKey(static_cast<KeyEvent::Key>(getMnemonicKey()),0));
-            UChar8 MnemonicCharUpper(KeyEvent::getCharFromKey(static_cast<KeyEvent::Key>(getMnemonicKey()),KeyEvent::KEY_MODIFIER_CAPS_LOCK));
+            UChar8 MnemonicCharLower(KeyEventDetails::getCharFromKey(static_cast<KeyEventDetails::Key>(getMnemonicKey()),0));
+            UChar8 MnemonicCharUpper(KeyEventDetails::getCharFromKey(static_cast<KeyEventDetails::Key>(getMnemonicKey()),KeyEventDetails::KEY_MODIFIER_CAPS_LOCK));
             
             //Find the first occurance of this character in the text case-insensitive
             std::string::size_type MnemonicCharLowerPos;
@@ -355,36 +343,31 @@ void MenuItem::dump(      UInt32    ,
     SLOG << "Dump MenuItem NI" << std::endl;
 }
 
-void MenuItem::MenuItemKeyAcceleratorListener::acceleratorTyped(const KeyAcceleratorEventUnrecPtr e)
+void MenuItem::handleAcceleratorTyped(KeyEventDetails* const e)
 {
     //Set TopLevelMenu
-    MenuRefPtr TopMenu(_MenuItem->getTopLevelMenu());
+    MenuRefPtr TopMenu(getTopLevelMenu());
     if(TopMenu != NULL)
     {
         TopMenu->setDrawAsThoughSelected(true);
 
-        _MenuItem->_KeyAcceleratorMenuFlashUpdateListener.reset();
-        _MenuItem->getParentWindow()->getDrawingSurface()->getEventProducer()->addUpdateListener(&(_MenuItem->_KeyAcceleratorMenuFlashUpdateListener));
+        _FlashElps = 0.0;
+        _FlashUpdateConnection = getParentWindow()->getParentDrawingSurface()->getEventProducer()->connectUpdate(boost::bind(&MenuItem::handleFlashUpdate, this, _1));
     }
-    _MenuItem->produceActionPerformed(ActionEvent::create(_MenuItem, e->getTimeStamp()));
+    produceActionPerformed();
 }
 
-void MenuItem::KeyAcceleratorMenuFlashUpdateListener::disconnect(void)
-{
-    _MenuItem->getParentWindow()->getDrawingSurface()->getEventProducer()->removeUpdateListener(this);
-}
-
-void MenuItem::KeyAcceleratorMenuFlashUpdateListener::update(const UpdateEventUnrecPtr e)
+void MenuItem::handleFlashUpdate(UpdateEventDetails* const e)
 {
     _FlashElps += e->getElapsedTime();
     if(_FlashElps > LookAndFeelManager::the()->getLookAndFeel()->getKeyAcceleratorMenuFlashTime())
     {
-        MenuRefPtr TopMenu(_MenuItem->getTopLevelMenu());
+        MenuRefPtr TopMenu(getTopLevelMenu());
         if(TopMenu != NULL)
         {
             TopMenu->setDrawAsThoughSelected(false);
         }
-        disconnect();
+        _FlashUpdateConnection.disconnect();
     }
 }
 

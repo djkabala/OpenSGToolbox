@@ -46,14 +46,9 @@
 
 #include "OSGParticleSystemBase.h"
 #include "OSGStatElemTypes.h"
-#include "OSGUpdateListener.h"
-#include "OSGWindowEventProducerFields.h"
-
-#include <set>
-#include "OSGParticleSystemListener.h"
-#include "OSGEventConnection.h"
 
 #include "OSGLine.h"
+#include <set>
 
 OSG_BEGIN_NAMESPACE
 
@@ -61,7 +56,7 @@ OSG_BEGIN_NAMESPACE
   PageContribParticleSystemParticleSystem for a description.
   */
 
-class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSystemBase, public EventListener
+class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSystemBase
 {
   protected:
 	friend class CollisionParticleSystemAffector;
@@ -99,7 +94,7 @@ class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSyste
     UInt32 getNumParticles(void) const;
     const Pnt3f& getPosition(const UInt32& Index) const;
     const Pnt3f& getSecPosition(const UInt32& Index) const;
-    const Vec3f getPositionChange(const UInt32& Index) const;
+    Vec3f getPositionChange(const UInt32& Index) const;
     const Vec3f& getNormal(const UInt32& Index) const;
     const Color4f& getColor(const UInt32& Index) const;
     const Vec3f& getSize(const UInt32& Index) const;
@@ -107,12 +102,21 @@ class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSyste
     Real32 getAge(const UInt32& Index) const;
     const Vec3f& getVelocity(const UInt32& Index) const;
     const Vec3f& getSecVelocity(const UInt32& Index) const;
-    const Vec3f getVelocityChange(const UInt32& Index) const;
+    Vec3f getVelocityChange(const UInt32& Index) const;
     const Vec3f& getAcceleration(const UInt32& Index) const;
     UInt32 getAttribute(const UInt32& Index, const std::string& AttributeKey) const;
-	const UInt32 getID(const UInt32& Index) const;
+	UInt32 getID(const UInt32& Index) const;
     const StringToUInt32Map& getAttributes(const UInt32& Index) const;
+	Int64 getIndex(UInt32 ParticleID) const;
 
+	Pnt3f getWorldSpacePosition(const UInt32& Index) const;
+	Pnt3f getWorldSpaceSecPosition(const UInt32& Index) const;
+	Vec3f getWorldSpacePositionChange(const UInt32& Index) const;
+	Vec3f getWorldSpaceNormal(const UInt32& Index) const;
+	Vec3f getWorldSpaceVelocity(const UInt32& Index) const;
+	Vec3f getWorldSpaceSecVelocity(const UInt32& Index) const;
+	Vec3f getWorldSpaceVelocityChange(const UInt32& Index) const;
+	Vec3f getWorldSpaceAcceleration(const UInt32& Index) const;
 
     void setPosition(const Pnt3f& Pos, const UInt32& Index);
     void setSecPosition(const Pnt3f& SecPosition, const UInt32& Index);
@@ -126,6 +130,7 @@ class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSyste
     void setAcceleration(const Vec3f& Acceleration, const UInt32& Index);
     void setAttribute(const std::string& AttributeKey, UInt32 AttributeValue, const UInt32& Index);
     void setAttributes(const StringToUInt32Map& Attributes, const UInt32& Index);
+	bool removeAttribute(const UInt32& Index, const std::string& AttributeKey);
 
 
     UInt32 getNumSecPositions(void) const;
@@ -138,10 +143,6 @@ class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSyste
     UInt32 getNumSecVelocities(void) const;
     UInt32 getNumAccelerations(void) const;
     UInt32 getNumAttributes(void) const;
-
-    EventConnection addParticleSystemListener(ParticleSystemListenerPtr Listener);
-    bool isParticleSystemListenerAttached(ParticleSystemListenerPtr Listener) const;
-    void removeParticleSystemListener(ParticleSystemListenerPtr Listener);
 
     bool addParticle(const Pnt3f& Position,
                      const Pnt3f& SecPosition,
@@ -190,15 +191,14 @@ class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSyste
 
     void updateVolume(void);
 
-    bool attachUpdateListener(WindowEventProducerRefPtr UpdateProducer);
-    void dettachUpdateListener(WindowEventProducerRefPtr UpdateProducer);
-
-    void attachUpdateProducer(EventProducerPtr TheProducer);
+    void attachUpdateProducer(ReflexiveContainer* const producer);
     void detachUpdateProducer(void);
-    virtual void eventProduced(const EventUnrecPtr EventDetails, UInt32 ProducedEventId);
 
     static StatElemDesc<StatIntElem    > statNParticles;
-    static StatElemDesc<StatTimeElem    > statParticleSystemUpdate;
+    static StatElemDesc<StatIntElem    > statNParticlesCreated;
+    static StatElemDesc<StatIntElem    > statNParticlesKilled;
+    static StatElemDesc<StatTimeElem    > statParticleUpdateTime;
+    static StatElemDesc<StatTimeElem    > statParticleSortTime;
 
 
     std::vector<UInt32> intersect(const Line& Ray, Real32 MinDistFromRay, Real32 MinDistFromRayOrigin, bool sort = false, NodeRefPtr Beacon = NULL) const;
@@ -248,11 +248,6 @@ class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSyste
 
     /*! \}                                                                 */
 
-    typedef std::set<ParticleSystemListenerPtr> ParticleSystemListenerSet;
-    typedef ParticleSystemListenerSet::iterator ParticleSystemListenerSetItor;
-
-    ParticleSystemListenerSet       _ParticleSystemListeners;
-
     void produceSystemUpdated(void);
     void produceVolumeChanged(void);
     void produceParticleGenerated(Int32 Index);
@@ -286,18 +281,7 @@ class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSyste
                                const StringToUInt32Map& Attributes,
                                UInt32& ID);
 
-    class SystemUpdateListener : public UpdateListener
-    {
-      public:
-        SystemUpdateListener(ParticleSystem* TheSystem);
-        virtual void update(const UpdateEventUnrecPtr e);
-      private:
-        ParticleSystem* _System;
-    };
-
-    friend class SystemUpdateListener;
-
-    SystemUpdateListener _SystemUpdateListener;
+    void attachedUpdate(EventDetails* const details);
 
     virtual void update(const Time& elps);
 
@@ -330,7 +314,7 @@ class OSG_CONTRIBPARTICLESYSTEM_DLLMAPPING ParticleSystem : public ParticleSyste
 
     bool _isUpdating;
     std::set<UInt32, GreaterThanUInt32> _ParticlesToKill;
-    EventConnection _UpdateEventConnection;
+    boost::signals2::connection _UpdateEventConnection;
 
 	UInt32 _curID;
 
@@ -353,6 +337,8 @@ OSG_END_NAMESPACE
 #include "OSGParticleGenerator.h"
 #include "OSGParticleAffector.h"
 #include "OSGParticleSystemAffector.h"
+#include "OSGParticleEventDetails.h"
+#include "OSGParticleSystemEventDetails.h"
 
 #include "OSGParticleSystemBase.inl"
 #include "OSGParticleSystem.inl"

@@ -48,7 +48,7 @@
 #include "OSGComponentContainer.h"
 #include "OSGUIDrawUtils.h"
 
-#include "OSGMouseEvent.h"
+#include "OSGMouseEventDetails.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -79,7 +79,7 @@ void ComponentContainer::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-Int32 ComponentContainer::getChildIndex(ComponentRefPtr Child)
+Int32 ComponentContainer::getChildIndex(Component* const Child)
 {
     for(Int32 i(0) ; i<getMFChildren()->size() ; ++i)
     {
@@ -193,7 +193,7 @@ void ComponentContainer::setBottomInset ( const Real32 &value )
 }
 
 
-void ComponentContainer::drawInternal(const GraphicsWeakPtr TheGraphics, Real32 Opacity) const
+void ComponentContainer::drawInternal(Graphics* const TheGraphics, Real32 Opacity) const
 {
     //Render all of my Child Components
     for(UInt32 i(0) ; i<getMFChildren()->size() ; ++i)
@@ -205,11 +205,14 @@ void ComponentContainer::drawInternal(const GraphicsWeakPtr TheGraphics, Real32 
 	//Because child components may have changed it when they were drawn
     setupClipping(TheGraphics);
 }
-void ComponentContainer::mouseClicked(const MouseEventUnrecPtr e)
+void ComponentContainer::mouseClicked(MouseEventDetails* const e)
 {
     bool isContained;
     for(Int32 i(getMFChildren()->size()-1) ; i>=0 ; --i)
     {
+        //If the event is consumed then stop sending the event
+        if(e->isConsumed()) return;
+
         isContained = getChildren(i)->isContained(e->getLocation(), true);
         checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained,e->getViewport());
         if(isContained)
@@ -221,33 +224,42 @@ void ComponentContainer::mouseClicked(const MouseEventUnrecPtr e)
     Component::mouseClicked(e);
 }
 
-void ComponentContainer::mouseEntered(const MouseEventUnrecPtr e)
+void ComponentContainer::mouseEntered(MouseEventDetails* const e)
 {
     bool isContained;
     for(Int32 i(0) ; i<getMFChildren()->size() ; ++i)
     {
+        //If the event is consumed then stop sending the event
+        if(e->isConsumed()) return;
+
         isContained = getChildren(i)->isContained(e->getLocation(), true);
         checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained,e->getViewport());
     }
     Component::mouseEntered(e);
 }
 
-void ComponentContainer::mouseExited(const MouseEventUnrecPtr e)
+void ComponentContainer::mouseExited(MouseEventDetails* const e)
 {
     bool isContained;
     for(Int32 i(0) ; i<getMFChildren()->size() ; ++i)
     {
+        //If the event is consumed then stop sending the event
+        if(e->isConsumed()) return;
+
         isContained = getChildren(i)->isContained(e->getLocation(), true);
         checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained,e->getViewport());
     }
     Component::mouseExited(e);
 }
 
-void ComponentContainer::mousePressed(const MouseEventUnrecPtr e)
+void ComponentContainer::mousePressed(MouseEventDetails* const e)
 {
     bool isContained(false);
     for(Int32 i(getMFChildren()->size()-1) ; i>=0 ; --i)
     {
+        //If the event is consumed then stop sending the event
+        if(e->isConsumed()) return;
+
         isContained = getChildren(i)->isContained(e->getLocation(), true);
         checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained,e->getViewport());
         if(isContained)
@@ -275,11 +287,14 @@ void ComponentContainer::mousePressed(const MouseEventUnrecPtr e)
     Component::mousePressed(e);
 }
 
-void ComponentContainer::mouseReleased(const MouseEventUnrecPtr e)
+void ComponentContainer::mouseReleased(MouseEventDetails* const e)
 {
     bool isContained;
     for(Int32 i(getMFChildren()->size()-1) ; i>=0 ; --i)
     {
+        //If the event is consumed then stop sending the event
+        if(e->isConsumed()) return;
+
         isContained = getChildren(i)->isContained(e->getLocation(), true);
         checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained,e->getViewport());
         if(isContained)
@@ -292,7 +307,7 @@ void ComponentContainer::mouseReleased(const MouseEventUnrecPtr e)
 }
 
 
-void ComponentContainer::mouseMoved(const MouseEventUnrecPtr e)
+void ComponentContainer::mouseMoved(MouseEventDetails* const e)
 {
     Component::mouseMoved(e);
 
@@ -300,6 +315,9 @@ void ComponentContainer::mouseMoved(const MouseEventUnrecPtr e)
     bool isContainedAbove(false);
     for(Int32 i(getMFChildren()->size()-1) ; i>=0 ; --i)
     {
+        //If the event is consumed then stop sending the event
+        if(e->isConsumed()) return;
+
         isContained = getChildren(i)->isContained(e->getLocation(), true);
         checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained && !isContainedAbove,e->getViewport());
         if(isContained && !isContainedAbove)
@@ -310,12 +328,15 @@ void ComponentContainer::mouseMoved(const MouseEventUnrecPtr e)
     }
 }
 
-void ComponentContainer::mouseDragged(const MouseEventUnrecPtr e)
+void ComponentContainer::mouseDragged(MouseEventDetails* const e)
 {
     bool isContained;
     bool isContainedAbove(false);
     for(Int32 i(getMFChildren()->size()-1) ; i>=0 ; --i)
     {
+        //If the event is consumed then stop sending the event
+        if(e->isConsumed()) return;
+
         isContained = getChildren(i)->isContained(e->getLocation(), true);
         checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained && !isContainedAbove,e->getViewport());
         if(isContained && !isContainedAbove)
@@ -327,11 +348,14 @@ void ComponentContainer::mouseDragged(const MouseEventUnrecPtr e)
     Component::mouseDragged(e);
 }
 
-void ComponentContainer::mouseWheelMoved(const MouseWheelEventUnrecPtr e)
+void ComponentContainer::mouseWheelMoved(MouseWheelEventDetails* const e)
 {
     bool isContained;
     for(Int32 i(0) ; i<getMFChildren()->size() ; ++i)
     {
+        //If the event is consumed then stop sending the event
+        if(e->isConsumed()) return;
+
         isContained = getChildren(i)->isContained(e->getLocation(), true);
         checkMouseEnterExit(e,e->getLocation(),getChildren(i),isContained,e->getViewport());
         if(isContained)
@@ -342,17 +366,17 @@ void ComponentContainer::mouseWheelMoved(const MouseWheelEventUnrecPtr e)
     Component::mouseWheelMoved(e);
 }
 
-void ComponentContainer::produceMouseExitOnComponent(const MouseEventUnrecPtr e, ComponentRefPtr Comp)
+void ComponentContainer::produceMouseExitOnComponent(MouseEventDetails* const e, Component* const Comp)
 {
     Comp->mouseExited(e);
 }
 
-void ComponentContainer::produceMouseEnterOnComponent(const MouseEventUnrecPtr e, ComponentRefPtr Comp)
+void ComponentContainer::produceMouseEnterOnComponent(MouseEventDetails* const e, Component* const Comp)
 {
     Comp->mouseEntered(e);
 }
 
-void ComponentContainer::checkMouseEnterExit(const InputEventUnrecPtr e, const Pnt2f& MouseLocation, ComponentRefPtr Comp, bool isMouseContained, ViewportRefPtr TheViewport)
+void ComponentContainer::checkMouseEnterExit(InputEventDetails* const e, const Pnt2f& MouseLocation, Component* const Comp, bool isMouseContained, Viewport* const TheViewport)
 {
     //Check if mouse is inside of this component
     if(!isMouseContained)
@@ -360,8 +384,8 @@ void ComponentContainer::checkMouseEnterExit(const InputEventUnrecPtr e, const P
         if(Comp->getMouseContained())
         {
             //Mouse has exited the component
-            const MouseEventUnrecPtr ExitedEvent = MouseEvent::create(e->getSource(), e->getTimeStamp(), MouseEvent::NO_BUTTON,0,MouseLocation,TheViewport);
-            produceMouseExitOnComponent(ExitedEvent, Comp);
+            MouseEventDetailsUnrecPtr Details = MouseEventDetails::create(e->getSource(), e->getTimeStamp(), MouseEventDetails::NO_BUTTON,0,MouseLocation,TheViewport);
+            produceMouseExitOnComponent(Details, Comp);
         }
         Comp->setMouseContained(false);
     }
@@ -370,8 +394,8 @@ void ComponentContainer::checkMouseEnterExit(const InputEventUnrecPtr e, const P
         if(!Comp->getMouseContained())
         {
             //Mouse has exited the frame
-            const MouseEventUnrecPtr EnteredEvent = MouseEvent::create(e->getSource(), e->getTimeStamp(), MouseEvent::NO_BUTTON,0,MouseLocation,TheViewport);
-            produceMouseEnterOnComponent(EnteredEvent, Comp);
+            MouseEventDetailsUnrecPtr Details = MouseEventDetails::create(e->getSource(), e->getTimeStamp(), MouseEventDetails::NO_BUTTON,0,MouseLocation,TheViewport);
+            produceMouseEnterOnComponent(Details, Comp);
         }
         Comp->setMouseContained(true);
     }
@@ -382,6 +406,17 @@ void ComponentContainer::removeMousePresenceOnComponents(void)
     for(UInt32 i(0) ; i<getMFChildren()->size() ; ++i)
     {
         getChildren(i)->setMouseContained(false);
+    }
+}
+
+void ComponentContainer::setParentWindow(InternalWindow* const parent)
+{
+    Inherited::setParentWindow(parent);
+
+    //Set All of my children's parent window to mine
+    for(UInt32 i(0) ; i<getMFChildren()->size() ; ++i)
+    {
+        getChildren(i)->setParentWindow(getParentWindow());
     }
 }
 
@@ -420,20 +455,13 @@ void ComponentContainer::changed(ConstFieldMaskArg whichField,
                                  UInt32            origin,
                                  BitVector         details)
 {
-    if( (whichField & ChildrenFieldMask) ||
-        (whichField & ParentWindowFieldMask))
+    if(whichField & ChildrenFieldMask)
     {
         //Set All of my children's parent to me
         for(UInt32 i(0) ; i<getMFChildren()->size() ; ++i)
         {
-            getChildren(i)->setParentContainer(this);
             getChildren(i)->setParentWindow(getParentWindow());
         }
-    }
-    if( (whichField & LayoutFieldMask) &&
-        getLayout() != NULL)
-    {
-        getLayout()->setParentContainer(this);
     }
 
     if( whichField & ClipBoundsFieldMask )
@@ -445,14 +473,15 @@ void ComponentContainer::changed(ConstFieldMaskArg whichField,
         }
     }
 
-    if( (whichField & LayoutFieldMask) ||
+    if( ((whichField & LayoutFieldMask) ||
         (whichField & InsetFieldMask) ||
         (whichField & ChildrenFieldMask) ||
         (whichField & SizeFieldMask) ||
         (whichField & BorderFieldMask) ||
         (whichField & DisabledBorderFieldMask) ||
         (whichField & FocusedBorderFieldMask) ||
-        (whichField & RolloverBorderFieldMask))
+        (whichField & RolloverBorderFieldMask)) &&
+        getParentWindow())
     {
         //Layout needs to be recalculated
         updateLayout();

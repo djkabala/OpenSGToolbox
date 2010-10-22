@@ -60,6 +60,7 @@
 
 #include "OSGListModel.h"               // Model Class
 #include "OSGComponentGenerator.h"      // CellGenerator Class
+#include "OSGListSelectionModel.h"      // SelectionModel Class
 
 #include "OSGListBase.h"
 #include "OSGList.h"
@@ -88,6 +89,10 @@ OSG_BEGIN_NAMESPACE
     
 */
 
+/*! \var bool            ListBase::_sfSelectable
+    
+*/
+
 /*! \var UInt32          ListBase::_sfCellMajorAxisLength
     
 */
@@ -101,6 +106,10 @@ OSG_BEGIN_NAMESPACE
 */
 
 /*! \var bool            ListBase::_sfAutoScrollToFocused
+    
+*/
+
+/*! \var ListSelectionModel * ListBase::_sfSelectionModel
     
 */
 
@@ -141,6 +150,18 @@ void ListBase::classDescInserter(TypeObject &oType)
         (Field::SFDefaultFlags | Field::FStdAccess),
         static_cast<FieldEditMethodSig>(&List::editHandleOrientation),
         static_cast<FieldGetMethodSig >(&List::getHandleOrientation));
+
+    oType.addInitialDesc(pDesc);
+
+    pDesc = new SFBool::Description(
+        SFBool::getClassType(),
+        "Selectable",
+        "",
+        SelectableFieldId, SelectableFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&List::editHandleSelectable),
+        static_cast<FieldGetMethodSig >(&List::getHandleSelectable));
 
     oType.addInitialDesc(pDesc);
 
@@ -191,6 +212,18 @@ void ListBase::classDescInserter(TypeObject &oType)
         static_cast<FieldGetMethodSig >(&List::getHandleAutoScrollToFocused));
 
     oType.addInitialDesc(pDesc);
+
+    pDesc = new SFUnrecListSelectionModelPtr::Description(
+        SFUnrecListSelectionModelPtr::getClassType(),
+        "SelectionModel",
+        "",
+        SelectionModelFieldId, SelectionModelFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&List::editHandleSelectionModel),
+        static_cast<FieldGetMethodSig >(&List::getHandleSelectionModel));
+
+    oType.addInitialDesc(pDesc);
 }
 
 
@@ -228,6 +261,16 @@ ListBase::TypeObject ListBase::_type(
     "\t\tcardinality=\"single\"\n"
     "\t\tvisibility=\"external\"\n"
     "\t\tdefaultValue=\"List::VERTICAL_ORIENTATION\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t\t>\n"
+    "\t</Field>\n"
+    "\t<Field\n"
+    "\t\tname=\"Selectable\"\n"
+    "\t\ttype=\"bool\"\n"
+    "\t\tcategory=\"data\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "\t\tvisibility=\"external\"\n"
+    "\t\tdefaultValue=\"true\"\n"
     "\t\taccess=\"public\"\n"
     "\t\t>\n"
     "\t</Field>\n"
@@ -271,6 +314,16 @@ ListBase::TypeObject ListBase::_type(
     "\t\tdefaultValue=\"true\"\n"
     "\t\t>\n"
     "\t</Field>\n"
+    "\t<Field\n"
+    "\t\tname=\"SelectionModel\"\n"
+    "\t\ttype=\"ListSelectionModel\"\n"
+    "\t\tcategory=\"pointer\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "\t\tvisibility=\"external\"\n"
+    "\t\tdefaultValue=\"NULL\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t>\n"
+    "\t</Field>\n"
     "</FieldContainer>\n",
     "A UI List.\n"
     );
@@ -305,6 +358,19 @@ SFUInt32 *ListBase::editSFOrientation(void)
 const SFUInt32 *ListBase::getSFOrientation(void) const
 {
     return &_sfOrientation;
+}
+
+
+SFBool *ListBase::editSFSelectable(void)
+{
+    editSField(SelectableFieldMask);
+
+    return &_sfSelectable;
+}
+
+const SFBool *ListBase::getSFSelectable(void) const
+{
+    return &_sfSelectable;
 }
 
 
@@ -360,6 +426,19 @@ const SFBool *ListBase::getSFAutoScrollToFocused(void) const
 }
 
 
+//! Get the List::_sfSelectionModel field.
+const SFUnrecListSelectionModelPtr *ListBase::getSFSelectionModel(void) const
+{
+    return &_sfSelectionModel;
+}
+
+SFUnrecListSelectionModelPtr *ListBase::editSFSelectionModel (void)
+{
+    editSField(SelectionModelFieldMask);
+
+    return &_sfSelectionModel;
+}
+
 
 
 
@@ -373,6 +452,10 @@ UInt32 ListBase::getBinSize(ConstFieldMaskArg whichField)
     if(FieldBits::NoField != (OrientationFieldMask & whichField))
     {
         returnValue += _sfOrientation.getBinSize();
+    }
+    if(FieldBits::NoField != (SelectableFieldMask & whichField))
+    {
+        returnValue += _sfSelectable.getBinSize();
     }
     if(FieldBits::NoField != (CellMajorAxisLengthFieldMask & whichField))
     {
@@ -390,6 +473,10 @@ UInt32 ListBase::getBinSize(ConstFieldMaskArg whichField)
     {
         returnValue += _sfAutoScrollToFocused.getBinSize();
     }
+    if(FieldBits::NoField != (SelectionModelFieldMask & whichField))
+    {
+        returnValue += _sfSelectionModel.getBinSize();
+    }
 
     return returnValue;
 }
@@ -402,6 +489,10 @@ void ListBase::copyToBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (OrientationFieldMask & whichField))
     {
         _sfOrientation.copyToBin(pMem);
+    }
+    if(FieldBits::NoField != (SelectableFieldMask & whichField))
+    {
+        _sfSelectable.copyToBin(pMem);
     }
     if(FieldBits::NoField != (CellMajorAxisLengthFieldMask & whichField))
     {
@@ -419,6 +510,10 @@ void ListBase::copyToBin(BinaryDataHandler &pMem,
     {
         _sfAutoScrollToFocused.copyToBin(pMem);
     }
+    if(FieldBits::NoField != (SelectionModelFieldMask & whichField))
+    {
+        _sfSelectionModel.copyToBin(pMem);
+    }
 }
 
 void ListBase::copyFromBin(BinaryDataHandler &pMem,
@@ -429,6 +524,10 @@ void ListBase::copyFromBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (OrientationFieldMask & whichField))
     {
         _sfOrientation.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (SelectableFieldMask & whichField))
+    {
+        _sfSelectable.copyFromBin(pMem);
     }
     if(FieldBits::NoField != (CellMajorAxisLengthFieldMask & whichField))
     {
@@ -445,6 +544,10 @@ void ListBase::copyFromBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (AutoScrollToFocusedFieldMask & whichField))
     {
         _sfAutoScrollToFocused.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (SelectionModelFieldMask & whichField))
+    {
+        _sfSelectionModel.copyFromBin(pMem);
     }
 }
 
@@ -566,26 +669,29 @@ FieldContainerTransitPtr ListBase::shallowCopy(void) const
 
 
 
-
 /*------------------------- constructors ----------------------------------*/
 
 ListBase::ListBase(void) :
     Inherited(),
     _sfOrientation            (UInt32(List::VERTICAL_ORIENTATION)),
+    _sfSelectable             (bool(true)),
     _sfCellMajorAxisLength    (UInt32(50)),
     _sfModel                  (NULL),
     _sfCellGenerator          (NULL),
-    _sfAutoScrollToFocused    (bool(true))
+    _sfAutoScrollToFocused    (bool(true)),
+    _sfSelectionModel         (NULL)
 {
 }
 
 ListBase::ListBase(const ListBase &source) :
     Inherited(source),
     _sfOrientation            (source._sfOrientation            ),
+    _sfSelectable             (source._sfSelectable             ),
     _sfCellMajorAxisLength    (source._sfCellMajorAxisLength    ),
     _sfModel                  (NULL),
     _sfCellGenerator          (NULL),
-    _sfAutoScrollToFocused    (source._sfAutoScrollToFocused    )
+    _sfAutoScrollToFocused    (source._sfAutoScrollToFocused    ),
+    _sfSelectionModel         (NULL)
 {
 }
 
@@ -607,6 +713,8 @@ void ListBase::onCreate(const List *source)
         pThis->setModel(source->getModel());
 
         pThis->setCellGenerator(source->getCellGenerator());
+
+        pThis->setSelectionModel(source->getSelectionModel());
     }
 }
 
@@ -631,6 +739,31 @@ EditFieldHandlePtr ListBase::editHandleOrientation    (void)
 
 
     editSField(OrientationFieldMask);
+
+    return returnValue;
+}
+
+GetFieldHandlePtr ListBase::getHandleSelectable      (void) const
+{
+    SFBool::GetHandlePtr returnValue(
+        new  SFBool::GetHandle(
+             &_sfSelectable,
+             this->getType().getFieldDesc(SelectableFieldId),
+             const_cast<ListBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr ListBase::editHandleSelectable     (void)
+{
+    SFBool::EditHandlePtr returnValue(
+        new  SFBool::EditHandle(
+             &_sfSelectable,
+             this->getType().getFieldDesc(SelectableFieldId),
+             this));
+
+
+    editSField(SelectableFieldMask);
 
     return returnValue;
 }
@@ -741,6 +874,35 @@ EditFieldHandlePtr ListBase::editHandleAutoScrollToFocused(void)
     return returnValue;
 }
 
+GetFieldHandlePtr ListBase::getHandleSelectionModel  (void) const
+{
+    SFUnrecListSelectionModelPtr::GetHandlePtr returnValue(
+        new  SFUnrecListSelectionModelPtr::GetHandle(
+             &_sfSelectionModel,
+             this->getType().getFieldDesc(SelectionModelFieldId),
+             const_cast<ListBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr ListBase::editHandleSelectionModel (void)
+{
+    SFUnrecListSelectionModelPtr::EditHandlePtr returnValue(
+        new  SFUnrecListSelectionModelPtr::EditHandle(
+             &_sfSelectionModel,
+             this->getType().getFieldDesc(SelectionModelFieldId),
+             this));
+
+    returnValue->setSetMethod(
+        boost::bind(&List::setSelectionModel,
+                    static_cast<List *>(this), _1));
+
+    editSField(SelectionModelFieldMask);
+
+    return returnValue;
+}
+
+
 
 #ifdef OSG_MT_CPTR_ASPECT
 void ListBase::execSyncV(      FieldContainer    &oFrom,
@@ -781,6 +943,8 @@ void ListBase::resolveLinks(void)
     static_cast<List *>(this)->setModel(NULL);
 
     static_cast<List *>(this)->setCellGenerator(NULL);
+
+    static_cast<List *>(this)->setSelectionModel(NULL);
 
 
 }

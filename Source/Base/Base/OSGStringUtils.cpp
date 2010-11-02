@@ -270,12 +270,6 @@ bool isWhitespaceChar(UChar8 c)
 	return false;
 }
 
-bool isPrintableChar(UChar8 c)
-{
-    return (isAlphabetChar(c) ||
-            isNumericChar(c) ||
-            isPunctuationChar(c));
-}
 
 OSG_END_NAMESPACE
 

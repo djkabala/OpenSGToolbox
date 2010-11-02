@@ -4,6 +4,8 @@
  *                                                                           *
  *               Copyright (C) 2000-2006 by the OpenSG Forum                 *
  *                                                                           *
+ *                            www.opensg.org                                 *
+ *                                                                           *
  *   contact:  David Kabala (djkabala@gmail.com)                             *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
@@ -24,20 +26,28 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*\
- *                                Changes                                    *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
-\*---------------------------------------------------------------------------*/
-
-//---------------------------------------------------------------------------
-//  Includes
-//---------------------------------------------------------------------------
+#include "OSGConfig.h"
 
 OSG_BEGIN_NAMESPACE
+
+inline
+DeleteSelectedCommand::DeleteSelectedCommand(TextDomLayoutManagerRefPtr TheManager,TextDomAreaRefPtr TheTextDomArea) : Inherited(),
+Manager(TheManager),
+_TextDomArea(TheTextDomArea)
+{
+}
+
+inline
+DeleteSelectedCommand::DeleteSelectedCommand(const DeleteSelectedCommand& source) : Inherited(source),
+Manager(source.Manager),
+_TextDomArea(source._TextDomArea)
+{
+}
+
+inline 
+const CommandType &DeleteSelectedCommand::getClassType(void)
+{
+	return _Type;
+}
 
 OSG_END_NAMESPACE

@@ -6,9 +6,9 @@
  *                                                                           *
  *                            www.opensg.org                                 *
  *                                                                           *
- *   contact:  David Kabala (djkabala@gmail.com)                             *
+ *   contact:  David Kabala (djkabala@gmail.com)*
  *                                                                           *
- \*---------------------------------------------------------------------------*/
+\*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*\
  *                                License                                    *
  *                                                                           *
@@ -36,21 +36,25 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGABSTRACTBRANCHELEMENT_H_
-#define _OSGABSTRACTBRANCHELEMENT_H_
+#ifndef _OSGSEARCHWINDOW_H_
+#define _OSGSEARCHWINDOW_H_
 #ifdef __sgi
 #pragma once
 #endif
 
-#include "OSGAbstractBranchElementBase.h"
+#include "OSGSearchWindowBase.h"
+#include "OSGDefaultMutableComboBoxModelFields.h"
+#include "OSGComboBoxFields.h"
+#include "OSGCheckboxButtonFields.h"
+
 
 OSG_BEGIN_NAMESPACE
 
-/*! \brief AbstractBranchElement class. See \ref
-           PageContribTextDomAbstractBranchElement for a description.
+/*! \brief SearchWindow class. See \ref
+           PageContribTextDomSearchWindow for a description.
 */
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranchElementBase
+class OSG_CONTRIBTEXTDOM_DLLMAPPING SearchWindow : public SearchWindowBase
 {
   protected:
 
@@ -58,49 +62,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
 
   public:
 
-    typedef AbstractBranchElementBase Inherited;
-    typedef AbstractBranchElement     Self;
-
-	
-	////   Returns the children of the receiver as an Enumeration.
-	//std::vector<std::string> children(void);
-	
-	//   Returns true if the receiver allows children.
-	bool getAllowsChildren(void) const;
-	
-	//  Gets a child element.
-	Element*	getElement(UInt32 index) const;
-    
-	//  Gets the number of children for the element.
-	UInt32 getElementCount(void) const;
-    
-	//  Gets the child element index closest to the given model offset.
-	UInt32 getElementIndex(UInt32 offset) const;
-    
-	//  Gets the ending offset in the model for the element.
-	UInt32 getEndOffset(void) const;
-    
-	// Gets the element name.
-	std::string getName(void) const;
-     
-	// Gets the starting offset in the model for the element.
-	UInt32 getStartOffset(void) const;
-     
-	// Checks whether the element is a leaf.
-	bool	isLeaf(void) const;
-     
-	//Gets the child element that contains the given model position.
-	Element* positionToElement(UInt32 pos) const;
-      
-	//Replaces content with a new set of elements.
-	void replace(int offset, int length, MFRecElementPtr elems);
-      
-	//Converts the element to a string.
-	std::string toString(void) const;
-      
-	void removeChildElement(UInt32 index);
-
-	void addChildElement(UInt32 index,Element* const newPtr);
+    typedef SearchWindowBase Inherited;
+    typedef SearchWindow     Self;
 
     /*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
@@ -119,25 +82,60 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
                       const BitVector  bvFlags  = 0) const;
 
     /*! \}                                                                 */
+    static SearchWindowTransitPtr create(const std::string& WindowTitle);
+	
+	std::string getSearchText(void);
+	std::string getReplaceText(void);
+	bool isCaseChecked(void);
+	bool isWholeWordChecked(void);
+	bool isUseRegExChecked(void);
+	bool isSearchUpChecked(void);
+	bool isWrapAroundChecked(void);
+	
     /*=========================  PROTECTED  ===============================*/
 
   protected:
 
-    // Variables should all be in AbstractBranchElementBase.
+ 	DefaultMutableComboBoxModelRefPtr _SearchComboBoxModel;
+    ComboBoxRefPtr _SearchComboBox;
+
+	DefaultMutableComboBoxModelRefPtr _ReplaceComboBoxModel;
+    ComboBoxRefPtr _ReplaceComboBox;
+	
+	CheckboxButtonRefPtr _MatchCaseCheckboxButton;
+	CheckboxButtonRefPtr _MatchWholeWordCheckboxButton;
+	CheckboxButtonRefPtr _MatchUseRegExCheckboxButton;
+	CheckboxButtonRefPtr _SearchUpCheckboxButton;
+	CheckboxButtonRefPtr _WrapAroundCheckboxButton;
+
+	void handleSearchButtonAction(ActionEventDetails* const details);
+	void handleReplaceButtonAction(ActionEventDetails* const details);
+	void handleReplaceAllButtonAction(ActionEventDetails* const details);
+	void handleBookmarkAllButtonAction(ActionEventDetails* const details);
+
+
+	boost::signals2::connection _SearchButtonActionConnection,
+								_ReplaceButtonActionConnection,
+								_ReplaceAllButtonActionConnection,
+								_BookmarkAllButtonActionConnection;
+
+
+	
+    // Variables should all be in SearchWindowBase.
 
     /*---------------------------------------------------------------------*/
     /*! \name                  Constructors                                */
     /*! \{                                                                 */
 
-    AbstractBranchElement(void);
-    AbstractBranchElement(const AbstractBranchElement &source);
+    SearchWindow(void);
+    SearchWindow(const SearchWindow &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~AbstractBranchElement(void);
+    virtual ~SearchWindow(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -152,17 +150,17 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
   private:
 
     friend class FieldContainer;
-    friend class AbstractBranchElementBase;
+    friend class SearchWindowBase;
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const AbstractBranchElement &source);
+    void operator =(const SearchWindow &source);
 };
 
-typedef AbstractBranchElement *AbstractBranchElementP;
+typedef SearchWindow *SearchWindowP;
 
 OSG_END_NAMESPACE
 
-#include "OSGAbstractBranchElementBase.inl"
-#include "OSGAbstractBranchElement.inl"
+#include "OSGSearchWindowBase.inl"
+#include "OSGSearchWindow.inl"
 
-#endif /* _OSGABSTRACTBRANCHELEMENT_H_ */
+#endif /* _OSGSEARCHWINDOW_H_ */

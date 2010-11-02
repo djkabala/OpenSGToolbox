@@ -40,124 +40,158 @@
 //  Includes
 //---------------------------------------------------------------------------
 
-#define OSG_COMPILETEXTDOMLIB
+#define OSG_COMPILEUSERINTERFACELIB
 
 #include "OSGConfig.h"
 
-#include "OSGInsertStringCommand.h"
+#include "OSGTextFileType.h"
+#include "OSGTextFileHandler.h"
+#include "OSGLog.h"
 
-#include "OSGTextDomLayoutManager.h"
-#include "OSGPlainDocument.h"
-#include "OSGDocumentElementAttributes.h"
-#include "OSGGlyphView.h"
-#include "OSGElement.h"
-#include "OSGDocumentElementAttributes.h"
+#ifndef OSG_EMBEDDED
+#include "OSGTextFileHandler.h"
+#endif
+#include "OSGBaseInitFunctions.h"
 
-OSG_USING_NAMESPACE
+OSG_BEGIN_NAMESPACE
 
 /***************************************************************************\
  *                            Description                                  *
 \***************************************************************************/
 
-/*! \class OSG::InsertStringCommand
-A InsertStringCommand. 
+/*! \class osg::TextFileType
+A TextFileType. 
 */
 
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
 
-CommandType InsertStringCommand::_Type("InsertStringCommand", "UndoableCommand");
-
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/
-
-InsertStringCommandPtr InsertStringCommand::create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString)
-{
-	return RefPtr(new InsertStringCommand(Manager,DocumentModel,theCaretPosition,theString));
-}
 
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
 
-void InsertStringCommand::execute(void)
+ DocumentTransitPtr TextFileType::read(std::istream &is,
+	                     const std::string& fileNameOrExtension)
 {
-	_OriginalHSL = _Manager->getHSL();
-	_OriginalHSI = _Manager->getHSI();
-	_OriginalHEL = _Manager->getHEL();
-	_OriginalHEI = _Manager->getHEI();
-	_theOriginalCaretLine= _Manager->getCaretLine();
-	_theOriginalCaretIndex = _Manager->getCaretIndex();
+	FWARNING (("STREAM INTERFACE NOT IMPLEMENTED!\n"));
 
-	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
-
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-
-	_HasBeenDone = true;
+	return DocumentTransitPtr(NULL);
 }
 
-std::string InsertStringCommand::getCommandDescription(void) const
+bool TextFileType::write(Document* const Doc, std::ostream &os,
+        const std::string& fileNameOrExtension)
 {
-	return std::string("Insert String ");
+    FWARNING (("STREAM INTERFACE NOT IMPLEMENTED!\n"));
+
+    return false;
 }
 
-std::string InsertStringCommand::getPresentationName(void) const
+/*! Print supported suffixes to osgLog. */
+void TextFileType::print(void)
 {
-	return getCommandDescription();
+    std::vector<std::string>::iterator sI;
+
+    osgLog() << getName();
+
+    if (_suffixList.empty())
+    {
+        osgLog() << "NONE";
+    }
+    else
+    {
+        for (sI = _suffixList.begin(); sI != _suffixList.end(); sI++)
+        {
+            osgLog().stream(OSG::LOG_DEBUG) << sI->c_str() << " ";
+        }
+    }
+    osgLog() << std::endl;
 }
 
-void InsertStringCommand::redo(void)
+//---------------------------------------------------------
+/*
+bool TextFileType::doOverride(void)
 {
-	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
-
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-
-	Inherited::redo();
+    return _override;
 }
 
-void InsertStringCommand::undo(void)
+//---------------------------------------------------------
+
+UInt32 TextFileType::getOverridePriority(void)
 {
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-	_Manager->deleteSelected();
-
-	// restoring highlighted text and caret position
-	_Manager->setHSL(_OriginalHSL);
-	_Manager->setHSI(_OriginalHSI);
-	_Manager->setHEL(_OriginalHEL);
-	_Manager->setHEI(_OriginalHEI);
-	_Manager->setCaretLine(_theOriginalCaretLine);
-	_Manager->setCaretIndex(_theOriginalCaretIndex);
-	_Manager->recalculateCaretPositions();
-	_Manager->checkCaretVisibility();
-
-	Inherited::undo();
+    return _overridePriority;
 }
-
-const CommandType &InsertStringCommand::getType(void) const
-{
-	return _Type;
-}
+*/
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
 
 /*----------------------- constructors & destructors ----------------------*/
 
-InsertStringCommand::~InsertStringCommand(void)
+/**
+ * Constructor for TextFileType.
+ *
+ * \param suffixArray     Raw char buffer of supported suffix values.
+ * \param suffixByteCount Length of suffix strings to extract.
+ * \param override
+ * \param overridePriority Priority of this file handler in overload resolution.
+ * \param flags    Combination of OSG_READ_SUPPORTED and OSG_WRITE_SUPPORTED to say what
+ *                 this handler supports.
+ */
+TextFileType::TextFileType(const ExtensionVector&  suffixArray,
+                        //bool    override,
+                        //UInt32  overridePriority,
+                        UInt32  flags)
+    : Inherited        (flags           ),
+      _suffixList      (suffixArray     )
+     // _override        (override        ),
+     // _overridePriority(overridePriority)
+{
+    SINFO << "Init " <<  _suffixList[0] << "Text File Type " << std::endl;
+
+#ifndef OSG_EMBEDDED
+	TextFileHandler::the()->addTextFileType(TextFileTypeP(this));
+#endif
+}
+
+TextFileType::TextFileType(const TextFileType &obj)
+    : Inherited        (obj           )
+{
+	SWARNING << "In TextFileType copy constructor" << std::endl;
+}
+
+TextFileType::~TextFileType(void)
+{
+#ifndef OSG_EMBEDDED
+    if(GlobalSystemState < OSG::Shutdown)
+        TextFileHandler::the()->subTextFileType(TextFileTypeP(this));
+#endif
+}
+
+void TextFileType::terminate(void)
 {
 }
 
 /*----------------------------- class specific ----------------------------*/
 
-void InsertStringCommand::operator =(const InsertStringCommand& source)
-{
-    if(this != &source)
-    {
-	    Inherited::operator=(source);
-    }
-}
+/*------------------------------------------------------------------------*/
+/*                              cvs id's                                  */
+
+#ifdef OSG_SGI_CC
+#pragma set woff 1174
+#endif
+
+#ifdef OSG_LINUX_ICC
+#pragma warning( disable : 177 )
+#endif
+
+#ifdef __sgi
+#pragma reset woff 1174
+#endif
+
+OSG_END_NAMESPACE
 

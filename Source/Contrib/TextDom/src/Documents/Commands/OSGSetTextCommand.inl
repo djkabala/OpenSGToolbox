@@ -4,6 +4,8 @@
  *                                                                           *
  *               Copyright (C) 2000-2006 by the OpenSG Forum                 *
  *                                                                           *
+ *                            www.opensg.org                                 *
+ *                                                                           *
  *   contact:  David Kabala (djkabala@gmail.com)                             *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
@@ -24,20 +26,28 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*\
- *                                Changes                                    *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
-\*---------------------------------------------------------------------------*/
-
-//---------------------------------------------------------------------------
-//  Includes
-//---------------------------------------------------------------------------
+#include "OSGConfig.h"
 
 OSG_BEGIN_NAMESPACE
+
+inline
+SetTextCommand::SetTextCommand(ElementRefPtr element,std::string newString) : Inherited(),
+_TheElement(element),
+_TheNewString(newString)
+{
+}
+
+inline
+SetTextCommand::SetTextCommand(const SetTextCommand& source) : Inherited(source),
+_TheElement(source._TheElement),
+_TheNewString(source._TheNewString)
+{
+}
+
+inline 
+const CommandType &SetTextCommand::getClassType(void)
+{
+	return _Type;
+}
 
 OSG_END_NAMESPACE

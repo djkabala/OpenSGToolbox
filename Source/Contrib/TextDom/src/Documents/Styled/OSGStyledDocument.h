@@ -8,7 +8,7 @@
  *                                                                           *
  *   contact:  David Kabala (djkabala@gmail.com)                             *
  *                                                                           *
- \*---------------------------------------------------------------------------*/
+\*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*\
  *                                License                                    *
  *                                                                           *
@@ -36,71 +36,114 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGABSTRACTBRANCHELEMENT_H_
-#define _OSGABSTRACTBRANCHELEMENT_H_
+#ifndef _OSGSTYLEDDOCUMENT_H_
+#define _OSGSTYLEDDOCUMENT_H_
 #ifdef __sgi
 #pragma once
 #endif
 
-#include "OSGAbstractBranchElementBase.h"
+#include "OSGConfig.h"
+
+#include "OSGStyledDocumentBase.h"
+
+#include "OSGStyledDocumentBranchElementFields.h"
+#include "OSGStyledDocumentLeafElementFields.h"
 
 OSG_BEGIN_NAMESPACE
 
-/*! \brief AbstractBranchElement class. See \ref
-           PageContribTextDomAbstractBranchElement for a description.
+/*! \brief StyledDocument class. See \ref
+           PageContribTextDomStyledDocument for a description.
 */
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranchElementBase
+class OSG_CONTRIBTEXTDOM_DLLMAPPING StyledDocument : public StyledDocumentBase
 {
   protected:
 
     /*==========================  PUBLIC  =================================*/
 
+  private:
+	
+	UInt32 _DocumentSize;
+
+	void tokenize(std::string sentence,std::vector<std::string> & setOfWords);
+	bool equals(DocumentElementAttribute &oldProps,DocumentElementAttribute &newProps);
+	void removeTheSlashN(std::string& stringWithSlashN);
+
   public:
 
-    typedef AbstractBranchElementBase Inherited;
-    typedef AbstractBranchElement     Self;
+    typedef StyledDocumentBase Inherited;
+    typedef StyledDocument     Self;
+
+	void  displayDebugInfo(void);
+	//This method allows an application to mark a place in a sequence of character content.
+    UInt32 createPosition(Int32 offs);
+
+    //Returns the root element that views should be based upon, unless some other mechanism for assigning views to element structures is provided.
+    Element* getDefaultRootElement(void) const;
+
+    //Returns a position that represents the end of the document.
+    UInt32 getEndPosition(void) const;
+
+    //Returns number of characters of content currently in the document.(including endlines)
+    UInt32 getLength(void) const;
+
+	//Element* getRootElement(UInt32 index);
+
+    //Returns all of the root elements that are defined.
+    std::vector<Element*> getRootElements(void);
+
+    //Returns a position that represents the start of the document.
+    UInt64 getStartPosition(void) const;
+
+    //Fetches the text with properties contained within the given portion of the document.
+    std::vector<DocumentElementAttribute>& getDocumentElementAttribute(Int32 offset, Int32 length) const;
+
+    //Fetches the text with properties contained within the given portion of the document.
+    void getDocumentElementAttribute(Int32 offset, Int32 length, std::vector<DocumentElementAttribute>& txt) const;
+
+	//Fetches the text contained within the given portion of the document.
+    std::string getText(Int32 offset, Int32 length) const;
+
+    //Fetches the text contained within the given portion of the document.
+    void getText(Int32 offset, Int32 length, std::string& txt) const;
+
+
+	void removeElement(UInt32 leafElementIndex,
+                       StyledDocumentBranchElement* const rootElement);
+
+	void addElements(Int32 theLeafElementIndex,
+                     const std::string& theCharactersBefore,
+                     const std::string& theCharactersAfter,
+                     std::vector<std::string> &setOfWords,
+                     StyledDocumentBranchElement* const rootElement,
+                     DocumentElementAttribute &oldProps,
+                     DocumentElementAttribute &newProps);
 
 	
-	////   Returns the children of the receiver as an Enumeration.
-	//std::vector<std::string> children(void);
-	
-	//   Returns true if the receiver allows children.
-	bool getAllowsChildren(void) const;
-	
-	//  Gets a child element.
-	Element*	getElement(UInt32 index) const;
-    
-	//  Gets the number of children for the element.
-	UInt32 getElementCount(void) const;
-    
-	//  Gets the child element index closest to the given model offset.
-	UInt32 getElementIndex(UInt32 offset) const;
-    
-	//  Gets the ending offset in the model for the element.
-	UInt32 getEndOffset(void) const;
-    
-	// Gets the element name.
-	std::string getName(void) const;
-     
-	// Gets the starting offset in the model for the element.
-	UInt32 getStartOffset(void) const;
-     
-	// Checks whether the element is a leaf.
-	bool	isLeaf(void) const;
-     
-	//Gets the child element that contains the given model position.
-	Element* positionToElement(UInt32 pos) const;
-      
-	//Replaces content with a new set of elements.
-	void replace(int offset, int length, MFRecElementPtr elems);
-      
-	//Converts the element to a string.
-	std::string toString(void) const;
-      
-	void removeChildElement(UInt32 index);
+    //Removes a portion of the content of the document.
+    void remove(Int32 offs, Int32 len);
 
-	void addChildElement(UInt32 index,Element* const newPtr);
+
+    //Deletes the region of text from offset to offset + length, and replaces it with text.
+    void replace(Int32 offset, Int32 length, const std::string& str, DocumentElementAttribute& properties);
+
+
+	void setFonts(const std::vector<std::string>& fontArray);
+	void setColors(const std::vector<Color3f>& colorArray);
+	const std::vector<Color3f>& getColors(void) const;
+	const std::vector<std::string>& getFonts(void) const;
+
+	void addTextAsNewElementToDocument(const std::string& str, DocumentElementAttribute& properties,bool createFreshDocument);
+
+	void insertString(UInt32 offset, const std::string& str, DocumentElementAttribute& properties);
+
+	void insertCharacter(UInt32 offset, const char character, DocumentElementAttribute& properties);
+
+	void insertCharacter(UInt32 offsetInElement,UInt32 elementIndex, const char character, DocumentElementAttribute& properties);
+
+	void deleteCharacter(UInt32 elementIndex,UInt32 offsetInChild);
+
+	void deleteCharacters(UInt32 lesserIndex,UInt32 lesserOffset,UInt32 greaterIndex,UInt32 greaterOffset);
 
     /*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
@@ -123,21 +166,28 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
 
   protected:
 
-    // Variables should all be in AbstractBranchElementBase.
+	  
+	
+	std::vector<std::string> _Fonts;
+	std::vector<Color3f> _Colors;
+
+	
+
+    // Variables should all be in StyledDocumentBase.
 
     /*---------------------------------------------------------------------*/
     /*! \name                  Constructors                                */
     /*! \{                                                                 */
 
-    AbstractBranchElement(void);
-    AbstractBranchElement(const AbstractBranchElement &source);
+    StyledDocument(void);
+    StyledDocument(const StyledDocument &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~AbstractBranchElement(void);
+    virtual ~StyledDocument(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -152,17 +202,17 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
   private:
 
     friend class FieldContainer;
-    friend class AbstractBranchElementBase;
+    friend class StyledDocumentBase;
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const AbstractBranchElement &source);
+    void operator =(const StyledDocument &source);
 };
 
-typedef AbstractBranchElement *AbstractBranchElementP;
+typedef StyledDocument *StyledDocumentP;
 
 OSG_END_NAMESPACE
 
-#include "OSGAbstractBranchElementBase.inl"
-#include "OSGAbstractBranchElement.inl"
+#include "OSGStyledDocumentBase.inl"
+#include "OSGStyledDocument.inl"
 
-#endif /* _OSGABSTRACTBRANCHELEMENT_H_ */
+#endif /* _OSGSTYLEDDOCUMENT_H_ */

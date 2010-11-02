@@ -44,14 +44,14 @@
 
 #include "OSGConfig.h"
 
-#include "OSGInsertStringCommand.h"
+#include "OSGInsertCharacterCommand.h"
 
+#include "OSGElement.h"
+#include "OSGGlyphView.h"
+#include "OSGTextDomArea.h"
 #include "OSGTextDomLayoutManager.h"
 #include "OSGPlainDocument.h"
-#include "OSGDocumentElementAttributes.h"
-#include "OSGGlyphView.h"
-#include "OSGElement.h"
-#include "OSGDocumentElementAttributes.h"
+
 
 OSG_USING_NAMESPACE
 
@@ -59,85 +59,123 @@ OSG_USING_NAMESPACE
  *                            Description                                  *
 \***************************************************************************/
 
-/*! \class OSG::InsertStringCommand
-A InsertStringCommand. 
+/*! \class OSG::InsertCharacterCommand
+A InsertCharacterCommand. 
 */
 
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
 
-CommandType InsertStringCommand::_Type("InsertStringCommand", "UndoableCommand");
+CommandType InsertCharacterCommand::_Type("InsertCharacterCommand", "UndoableCommand");
 
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/
 
-InsertStringCommandPtr InsertStringCommand::create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString)
+InsertCharacterCommandPtr InsertCharacterCommand::create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,char theCharacter,UInt32 line,UInt32 index)
 {
-	return RefPtr(new InsertStringCommand(Manager,DocumentModel,theCaretPosition,theString));
+	return RefPtr(new InsertCharacterCommand(Manager,DocumentModel,theCharacter,line,index));
 }
 
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
 
-void InsertStringCommand::execute(void)
+void InsertCharacterCommand::execute(void)
 {
-	_OriginalHSL = _Manager->getHSL();
-	_OriginalHSI = _Manager->getHSI();
-	_OriginalHEL = _Manager->getHEL();
-	_OriginalHEI = _Manager->getHEI();
-	_theOriginalCaretLine= _Manager->getCaretLine();
-	_theOriginalCaretIndex = _Manager->getCaretIndex();
-
 	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
+	if(_theOriginalCaretLine == -1 || _theOriginalCaretIndex == -1)
+	{
+		_theOriginalCaretIndex = _Manager->getCaretIndex();
+		_theOriginalCaretLine = _Manager->getCaretLine();
+	}
 
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
+	if(_TheCharacter == '\n')
+	{
+		numberOfLeadingSpaces = _Manager->getNumberOfLeadingSpaces(_theOriginalCaretLine);
+		_TheDocumentModel->insertCharacter(_theOriginalCaretIndex,_theOriginalCaretLine,'\r',temp);
+		_TheDocumentModel->insertCharacter(_theOriginalCaretIndex+1,_theOriginalCaretLine ,'\n',temp);
+
+		Int32 i,count;
+		for(i = _theOriginalCaretIndex+2,count=0;count<numberOfLeadingSpaces;count++,i++)
+			_TheDocumentModel->insertCharacter(count,_theOriginalCaretLine+1,' ',temp);
+
+		_Manager->moveTheCaret(HOMEOFNEXTLINE,false,false);
+
+		for(count=0;count<numberOfLeadingSpaces;count++)
+			_Manager->moveTheCaret(RIGHT,false,false);
+	}
+	else
+	{
+		_TheDocumentModel->insertCharacter(_theOriginalCaretIndex,_theOriginalCaretLine,_TheCharacter,temp);
+		_Manager->moveTheCaret(RIGHT,false,false);
+		_Manager->DoIfLineLongerThanPreferredSize();
+	}
 
 	_HasBeenDone = true;
 }
 
-std::string InsertStringCommand::getCommandDescription(void) const
+std::string InsertCharacterCommand::getCommandDescription(void) const
 {
-	return std::string("Insert String ");
+	return std::string("Insert Character ");
 }
 
-std::string InsertStringCommand::getPresentationName(void) const
+std::string InsertCharacterCommand::getPresentationName(void) const
 {
 	return getCommandDescription();
 }
 
-void InsertStringCommand::redo(void)
+void InsertCharacterCommand::redo(void)
 {
 	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
+	_Manager->setCaretIndexAndLine(_theOriginalCaretIndex,_theOriginalCaretLine);
 
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
+    if(_TheCharacter == '\n')
+	{
+		_TheDocumentModel->insertCharacter(_theOriginalCaretIndex,_theOriginalCaretLine,'\r',temp);
+		_TheDocumentModel->insertCharacter(_theOriginalCaretIndex+1,_theOriginalCaretLine ,'\n',temp);
+
+		Int32 i,count;
+		for(count=0;count<numberOfLeadingSpaces;count++)
+			_TheDocumentModel->insertCharacter(count,_theOriginalCaretLine+1,' ',temp);
+
+		_Manager->moveTheCaret(HOMEOFNEXTLINE,false,false);
+
+		for(count=0;count<numberOfLeadingSpaces;count++)
+			_Manager->moveTheCaret(RIGHT,false,false);
+	}
+	else
+	{
+		_TheDocumentModel->insertCharacter(_theOriginalCaretIndex,_theOriginalCaretLine,_TheCharacter,temp);
+		_Manager->moveTheCaret(RIGHT,false,false);
+		_Manager->DoIfLineLongerThanPreferredSize();
+	}
 
 	Inherited::redo();
 }
 
-void InsertStringCommand::undo(void)
+void InsertCharacterCommand::undo(void)
 {
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-	_Manager->deleteSelected();
+	_Manager->setCaretIndexAndLine(_theOriginalCaretIndex,_theOriginalCaretLine);
 
-	// restoring highlighted text and caret position
-	_Manager->setHSL(_OriginalHSL);
-	_Manager->setHSI(_OriginalHSI);
-	_Manager->setHEL(_OriginalHEL);
-	_Manager->setHEI(_OriginalHEI);
-	_Manager->setCaretLine(_theOriginalCaretLine);
-	_Manager->setCaretIndex(_theOriginalCaretIndex);
-	_Manager->recalculateCaretPositions();
-	_Manager->checkCaretVisibility();
+	if(_TheCharacter == '\n')
+	{
+		for(UInt32 i=0;i<numberOfLeadingSpaces+1;i++)	
+		{
+			//_Manager->moveTheCaret(LEFT,false,false);
+			_TheDocumentModel->deleteCharacter(_Manager->getCaretLine(),_Manager->getCaretIndex());
+		}
+	}
+	else
+	{
+		_TheDocumentModel->deleteCharacter(_theOriginalCaretLine,_theOriginalCaretIndex);
+	}
 
 	Inherited::undo();
 }
 
-const CommandType &InsertStringCommand::getType(void) const
+const CommandType &InsertCharacterCommand::getType(void) const
 {
 	return _Type;
 }
@@ -147,13 +185,13 @@ const CommandType &InsertStringCommand::getType(void) const
 
 /*----------------------- constructors & destructors ----------------------*/
 
-InsertStringCommand::~InsertStringCommand(void)
+InsertCharacterCommand::~InsertCharacterCommand(void)
 {
 }
 
 /*----------------------------- class specific ----------------------------*/
 
-void InsertStringCommand::operator =(const InsertStringCommand& source)
+void InsertCharacterCommand::operator =(const InsertCharacterCommand& source)
 {
     if(this != &source)
     {

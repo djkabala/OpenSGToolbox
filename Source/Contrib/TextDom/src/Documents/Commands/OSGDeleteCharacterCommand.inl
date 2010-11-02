@@ -4,6 +4,8 @@
  *                                                                           *
  *               Copyright (C) 2000-2006 by the OpenSG Forum                 *
  *                                                                           *
+ *                            www.opensg.org                                 *
+ *                                                                           *
  *   contact:  David Kabala (djkabala@gmail.com)                             *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
@@ -24,20 +26,28 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*\
- *                                Changes                                    *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
-\*---------------------------------------------------------------------------*/
-
-//---------------------------------------------------------------------------
-//  Includes
-//---------------------------------------------------------------------------
+#include "OSGConfig.h"
 
 OSG_BEGIN_NAMESPACE
+
+inline
+DeleteCharacterCommand::DeleteCharacterCommand(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel) : Inherited(),
+_Manager(Manager),
+_TheDocumentModel(DocumentModel)
+{
+}
+
+inline
+DeleteCharacterCommand::DeleteCharacterCommand(const DeleteCharacterCommand& source) : Inherited(source),
+_Manager(source._Manager),
+_TheDocumentModel(source._TheDocumentModel)
+{
+}
+
+inline 
+const CommandType &DeleteCharacterCommand::getClassType(void)
+{
+	return _Type;
+}
 
 OSG_END_NAMESPACE

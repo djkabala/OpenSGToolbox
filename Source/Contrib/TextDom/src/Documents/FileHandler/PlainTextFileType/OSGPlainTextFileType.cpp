@@ -40,124 +40,139 @@
 //  Includes
 //---------------------------------------------------------------------------
 
-#define OSG_COMPILETEXTDOMLIB
+#define OSG_COMPILEUSERINTERFACELIB
 
 #include "OSGConfig.h"
 
-#include "OSGInsertStringCommand.h"
+#include "OSGPlainTextFileType.h"
+#include "windows.h"
+ 
 
-#include "OSGTextDomLayoutManager.h"
-#include "OSGPlainDocument.h"
-#include "OSGDocumentElementAttributes.h"
-#include "OSGGlyphView.h"
-#include "OSGElement.h"
-#include "OSGDocumentElementAttributes.h"
+OSG_BEGIN_NAMESPACE
 
-OSG_USING_NAMESPACE
+
+SYSTEMTIME now;
 
 /***************************************************************************\
  *                            Description                                  *
 \***************************************************************************/
 
-/*! \class OSG::InsertStringCommand
-A InsertStringCommand. 
+/*! \class osg::PlainTextFileType
+A PlainTextFileType. 
 */
 
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
 
-CommandType InsertStringCommand::_Type("InsertStringCommand", "UndoableCommand");
+PlainTextFileType*  PlainTextFileType::_the(new PlainTextFileType());
 
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/
 
-InsertStringCommandPtr InsertStringCommand::create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString)
+PlainTextFileType *PlainTextFileType::the(void)
 {
-	return RefPtr(new InsertStringCommand(Manager,DocumentModel,theCaretPosition,theString));
+	return _the;
 }
 
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
 
-void InsertStringCommand::execute(void)
+std::string PlainTextFileType::getName(void) const
 {
-	_OriginalHSL = _Manager->getHSL();
-	_OriginalHSI = _Manager->getHSI();
-	_OriginalHEL = _Manager->getHEL();
-	_OriginalHEI = _Manager->getHEI();
-	_theOriginalCaretLine= _Manager->getCaretLine();
-	_theOriginalCaretIndex = _Manager->getCaretIndex();
-
-	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
-
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-
-	_HasBeenDone = true;
+	return std::string("PlainTextFileType");	// unnecessary function . Can be removed . There for convenience
 }
 
-std::string InsertStringCommand::getCommandDescription(void) const
+void PlainTextFileType::removeSlashRandSlashN(std::string &word)
 {
-	return std::string("Insert String ");
+	std::string Temp="";
+	for(UInt32 i=0;i<word.length();i++)
+	{
+		if(word[i]!='\r' && word[i]!='\n' && word[i]!='\t')
+		{
+			Temp+=word[i];
+		}
+		else if(word[i]=='\t')
+		{
+			Temp+="    ";
+		}
+	}
+	word = Temp;
 }
 
-std::string InsertStringCommand::getPresentationName(void) const
+DocumentTransitPtr PlainTextFileType::read(std::istream &InputStream,
+	                     const std::string& FileNameOrExtension)
 {
-	return getCommandDescription();
+	PlainDocumentRefPtr Result = PlainDocument::create();
+	DocumentElementAttribute Props;
+	std::string Word;
+	bool FirstTime = true;
+	
+	//GetSystemTime(&now);
+	//unsigned int t1 = now.wSecond * 1000 + now.wMilliseconds;
+
+	while(std::getline(InputStream,Word))
+	{
+		removeSlashRandSlashN(Word);
+		Result->addTextAsNewElementToDocument(Word+"\r\n",Props,FirstTime);
+		if(FirstTime)FirstTime=!FirstTime;
+	}
+
+	//GetSystemTime(&now);
+	//unsigned int t2 = now.wSecond * 1000 + now.wMilliseconds;
+
+//	std::cout<<"\nduration for reading:"<<t2-t1<<std::endl;		// end time in milliseconds
+
+	return DocumentTransitPtr(Result);
 }
 
-void InsertStringCommand::redo(void)
+bool PlainTextFileType::write(Document* const Doc, std::ostream &OutputStream,
+                    const std::string& FileNameOrExtension)
 {
-	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
+	PlainDocumentRefPtr TheDocument = dynamic_cast<PlainDocument*>(Doc);
+	std::vector<Element*> GenericRoots;
+	GenericRoots = TheDocument->getRootElements();
+	for(UInt32 i=0;i<GenericRoots.size();i++)
+	{
+		PlainDocumentBranchElementRefPtr RootElement;
+		RootElement = dynamic_cast<PlainDocumentBranchElement*>(GenericRoots[i]);	
+		
+		for(UInt32 j=0;j<RootElement->getElementCount()-1;j++)
+		{	
+			PlainDocumentLeafElementRefPtr LeafElement;
+			LeafElement = dynamic_cast<PlainDocumentLeafElement*>(RootElement->getElement(j));
+			OutputStream<<LeafElement->getText();
+		}
+		PlainDocumentLeafElementRefPtr LeafElement;
+		LeafElement = dynamic_cast<PlainDocumentLeafElement*>(RootElement->getElement(RootElement->getElementCount()-1));
+		OutputStream<<LeafElement->getText().substr(0,LeafElement->getTextLength()-2);
 
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-
-	Inherited::redo();
+	}
+	return false;
 }
 
-void InsertStringCommand::undo(void)
-{
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-	_Manager->deleteSelected();
-
-	// restoring highlighted text and caret position
-	_Manager->setHSL(_OriginalHSL);
-	_Manager->setHSI(_OriginalHSI);
-	_Manager->setHEL(_OriginalHEL);
-	_Manager->setHEI(_OriginalHEI);
-	_Manager->setCaretLine(_theOriginalCaretLine);
-	_Manager->setCaretIndex(_theOriginalCaretIndex);
-	_Manager->recalculateCaretPositions();
-	_Manager->checkCaretVisibility();
-
-	Inherited::undo();
-}
-
-const CommandType &InsertStringCommand::getType(void) const
-{
-	return _Type;
-}
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
 
 /*----------------------- constructors & destructors ----------------------*/
 
-InsertStringCommand::~InsertStringCommand(void)
+PlainTextFileType::PlainTextFileType(void) : Inherited(TextFileType::ExtensionVector(1, std::string("txt")),
+        TextFileType::OSG_READ_SUPPORTED | TextFileType::OSG_WRITE_SUPPORTED)
+{
+}
+
+PlainTextFileType::PlainTextFileType(const PlainTextFileType &obj) : Inherited(obj)
+{
+}
+
+PlainTextFileType::~PlainTextFileType(void)
 {
 }
 
 /*----------------------------- class specific ----------------------------*/
 
-void InsertStringCommand::operator =(const InsertStringCommand& source)
-{
-    if(this != &source)
-    {
-	    Inherited::operator=(source);
-    }
-}
+OSG_END_NAMESPACE
 

@@ -26,38 +26,79 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
+#ifndef _OSGPLAINTEXTFILETYPE_H_
+#define _OSGPLAINTEXTFILETYPE_H_
+#ifdef __sgi
+#pragma once
+#endif
+
 #include "OSGConfig.h"
-#include "OSGTextDomLayoutManager.h"
+#include "OSGContribTextDomDef.h"
+
+#include <boost/function.hpp>
+#include <utility>
+#include "OSGTextFileType.h"
+#include "OSGTextFileHandler.h"
+#include "OSGContainerIdMapper.h"
+#include "OSGFieldContainer.h"
+
 #include "OSGPlainDocument.h"
+#include "OSGPlainDocumentBranchElement.h"
+#include "OSGPlainDocumentLeafElement.h"
+
+#include "string"
 
 OSG_BEGIN_NAMESPACE
 
-inline
-InsertStringCommand::InsertStringCommand(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString) : Inherited(),
-_Manager(Manager),
-_TheDocumentModel(DocumentModel),
-_TheOriginalCaretPosition(theCaretPosition),
-_StringToBeInserted(theString),
-_theOriginalCaretLine(0),
-_theOriginalCaretIndex(0)
-{
-}
 
-inline
-InsertStringCommand::InsertStringCommand(const InsertStringCommand& source) : Inherited(source),
-_Manager(source._Manager),
-_TheDocumentModel(source._TheDocumentModel),
-_TheOriginalCaretPosition(source._TheOriginalCaretPosition),
-_StringToBeInserted(source._StringToBeInserted),
-_theOriginalCaretLine(source._theOriginalCaretLine),
-_theOriginalCaretIndex(source._theOriginalCaretIndex)
+class OSG_CONTRIBTEXTDOM_DLLMAPPING PlainTextFileType : public TextFileType
 {
-}
+/*==========================  PUBLIC  =================================*/
+public:
 
-inline 
-const CommandType &InsertStringCommand::getClassType(void)
-{
-	return _Type;
-}
+    /*---------------------------------------------------------------------*/
+    static PlainTextFileType *the(void);
+
+    /*---------------------------------------------------------------------*/
+    virtual std::string getName(void) const;
+
+    /*---------------------------------------------------------------------*/
+    virtual ~PlainTextFileType(void);
+
+    /*---------------------------------------------------------------------*/
+     virtual DocumentTransitPtr read(std::istream &is,
+		                     const std::string& FileNameOrExtension);
+
+    /*---------------------------------------------------------------------*/
+     virtual bool write(Document* const Doc, std::ostream &os,
+                        const std::string& FileNameOrExtension);
+
+    
+    /*=========================  PROTECTED  ===============================*/
+protected:
+
+	void removeSlashRandSlashN(std::string& word);
+
+    typedef TextFileType Inherited;
+    static       PlainTextFileType*  _the;
+
+    /*---------------------------------------------------------------------*/
+    PlainTextFileType(void);
+
+    PlainTextFileType(const PlainTextFileType &obj);
+
+    /*==========================  PRIVATE  ================================*/
+private:
+
+    void operator =(const PlainTextFileType &source);
+};
+
+typedef PlainTextFileType* PlainTextFileTypeP;
 
 OSG_END_NAMESPACE
+
+#include "OSGPlainTextFileType.inl"
+
+#endif /* _OSGPLAINTEXTFILETYPE_H_ */
+
+

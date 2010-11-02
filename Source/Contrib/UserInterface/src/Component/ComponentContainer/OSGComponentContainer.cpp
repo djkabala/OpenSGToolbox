@@ -303,7 +303,10 @@ void ComponentContainer::mouseReleased(MouseEventDetails* const e)
             break;
         }
     }
-    Component::mouseReleased(e);
+	if(!e->isConsumed())
+	{
+		Component::mouseReleased(e);
+	}
 }
 
 

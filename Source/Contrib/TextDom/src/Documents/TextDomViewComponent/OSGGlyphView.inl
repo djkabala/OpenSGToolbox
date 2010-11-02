@@ -4,8 +4,6 @@
  *                                                                           *
  *               Copyright (C) 2000-2006 by the OpenSG Forum                 *
  *                                                                           *
- *                            www.opensg.org                                 *
- *                                                                           *
  *   contact:  David Kabala (djkabala@gmail.com)*
  *                                                                           *
 \*---------------------------------------------------------------------------*/
@@ -36,75 +34,59 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGINSERTSTRING_COMMAND_H_
-#define _OSGINSERTSTRING_COMMAND_H_
-#ifdef __sgi
-#pragma once
-#endif
-
-#include "OSGConfig.h"
-#include "OSGContribTextDomDef.h"
-
-
-#include "OSGUndoableCommand.h"
-
-#include "OSGTextDomLayoutManagerFields.h"
-#include "OSGPlainDocumentFields.h"
-
+//---------------------------------------------------------------------------
+//  Includes
+//---------------------------------------------------------------------------
 
 OSG_BEGIN_NAMESPACE
 
-class InsertStringCommand;
-typedef boost::shared_ptr<InsertStringCommand> InsertStringCommandPtr;
-
-class OSG_CONTRIBTEXTDOM_DLLMAPPING InsertStringCommand: public UndoableCommand
+inline
+void GlyphView::setElement(Element* const theElement)
 {
-protected:
+	_Element = theElement;
+}
 
-	enum {LEFT,RIGHT,UP,DOWN,HOME,END,HOMEOFNEXTLINE,PAGEUP,PAGEDOWN};
+inline
+void GlyphView::setCaretLocation(Int32 loc)
+{
+	_Location = loc;
+}
 
-	typedef UndoableCommand Inherited;
-	typedef InsertStringCommand Self;
-	typedef InsertStringCommandPtr RefPtr;
+inline
+void GlyphView::setInitialPosition(const Pnt2f& init)
+{
+	_InitialPosition = init;
+}
 
-    InsertStringCommand(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
-	InsertStringCommand(const InsertStringCommand& source);
+inline
+void GlyphView::setLines(UInt32 lines)
+{
+	_Lines = lines;
+}
 
-	void operator =(const InsertStringCommand& source);
+inline
+void GlyphView::setLineHeight(Real32 lineheight)
+{
+	_LineHeight = lineheight;
+}
 
-	static CommandType _Type;
-	
-	virtual void execute(void);
-	virtual std::string getPresentationName(void) const;
-	virtual void redo(void);
-	virtual void undo(void);
+inline
+void GlyphView::setLineWidth(Real32 lineWidth)
+{
+	_LineWidth = lineWidth;
+}
 
-	TextDomLayoutManagerRefPtr _Manager;
-	PlainDocumentRefPtr _TheDocumentModel;
-	UInt32 _TheOriginalCaretPosition;
-	std::string _StringToBeInserted;
-	UInt32 _theOriginalCaretLine;
-	UInt32 _theOriginalCaretIndex;
-	UInt32 _OriginalHSL;
-	UInt32 _OriginalHSI;
-	UInt32 _OriginalHEL;
-	UInt32 _OriginalHEI;
 
-public:
+inline
+void GlyphView::setFont(UIFont* const font)
+{
+	_Font = font;
+}
 
-	virtual std::string getCommandDescription(void) const;
-
-    virtual const CommandType &getType(void) const;
-	
-    static const CommandType &getClassType(void);
-
-	virtual ~InsertStringCommand(void);
-	
-    static InsertStringCommandPtr create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
-};
+inline
+void GlyphView::setLineNumber(UInt32 lineNumber)
+{
+	_LineNumber = lineNumber;
+}
 
 OSG_END_NAMESPACE
-
-#include "OSGInsertStringCommand.inl"
-
-#endif /* _OSGINSERTSTRING_COMMAND_H_ */

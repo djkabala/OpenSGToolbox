@@ -36,8 +36,8 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGINSERTSTRING_COMMAND_H_
-#define _OSGINSERTSTRING_COMMAND_H_
+#ifndef _OSGDELETESELECTED_COMMAND_H_
+#define _OSGDELETESELECTED_COMMAND_H_
 #ifdef __sgi
 #pragma once
 #endif
@@ -50,27 +50,24 @@
 
 #include "OSGTextDomLayoutManagerFields.h"
 #include "OSGPlainDocumentFields.h"
-
+#include "OSGTextDomAreaFields.h"
 
 OSG_BEGIN_NAMESPACE
 
-class InsertStringCommand;
-typedef boost::shared_ptr<InsertStringCommand> InsertStringCommandPtr;
+class DeleteSelectedCommand;
+typedef boost::shared_ptr<DeleteSelectedCommand> DeleteSelectedCommandPtr;
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING InsertStringCommand: public UndoableCommand
+class OSG_CONTRIBTEXTDOM_DLLMAPPING DeleteSelectedCommand: public UndoableCommand
 {
 protected:
-
-	enum {LEFT,RIGHT,UP,DOWN,HOME,END,HOMEOFNEXTLINE,PAGEUP,PAGEDOWN};
-
 	typedef UndoableCommand Inherited;
-	typedef InsertStringCommand Self;
-	typedef InsertStringCommandPtr RefPtr;
+	typedef DeleteSelectedCommand Self;
+	typedef DeleteSelectedCommandPtr RefPtr;
 
-    InsertStringCommand(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
-	InsertStringCommand(const InsertStringCommand& source);
+    DeleteSelectedCommand(TextDomLayoutManagerRefPtr Manager,TextDomAreaRefPtr TheTextDomArea);// here
+	DeleteSelectedCommand(const DeleteSelectedCommand& source);
 
-	void operator =(const InsertStringCommand& source);
+	void operator =(const DeleteSelectedCommand& source);
 
 	static CommandType _Type;
 	
@@ -79,16 +76,15 @@ protected:
 	virtual void redo(void);
 	virtual void undo(void);
 
-	TextDomLayoutManagerRefPtr _Manager;
-	PlainDocumentRefPtr _TheDocumentModel;
-	UInt32 _TheOriginalCaretPosition;
-	std::string _StringToBeInserted;
+	TextDomLayoutManagerRefPtr Manager;
+	UInt32 old_HSI;
+	UInt32 old_HSL;
+	UInt32 old_HEI;
+	UInt32 old_HEL;
+	TextDomAreaRefPtr _TextDomArea;
+	std::string deletedString;
 	UInt32 _theOriginalCaretLine;
 	UInt32 _theOriginalCaretIndex;
-	UInt32 _OriginalHSL;
-	UInt32 _OriginalHSI;
-	UInt32 _OriginalHEL;
-	UInt32 _OriginalHEI;
 
 public:
 
@@ -98,13 +94,13 @@ public:
 	
     static const CommandType &getClassType(void);
 
-	virtual ~InsertStringCommand(void);
+	virtual ~DeleteSelectedCommand(void);
 	
-    static InsertStringCommandPtr create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
+    static DeleteSelectedCommandPtr create(TextDomLayoutManagerRefPtr Manager,TextDomAreaRefPtr TheTextDomArea);// here
 };
 
 OSG_END_NAMESPACE
 
-#include "OSGInsertStringCommand.inl"
+#include "OSGDeleteSelectedCommand.inl"
 
-#endif /* _OSGINSERTSTRING_COMMAND_H_ */
+#endif /* _OSGINSERTCHARACTER_COMMAND_H_ */

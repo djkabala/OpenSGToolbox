@@ -6,7 +6,7 @@
  *                                                                           *
  *                            www.opensg.org                                 *
  *                                                                           *
- *   contact:  David Kabala (djkabala@gmail.com)                             *
+ *   contact:  David Kabala (djkabala@gmail.com)*
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*\
@@ -40,124 +40,129 @@
 //  Includes
 //---------------------------------------------------------------------------
 
-#define OSG_COMPILETEXTDOMLIB
+#include <cstdlib>
+#include <cstdio>
 
-#include "OSGConfig.h"
+#define OSG_COMPILECONTRIBTEXTDOMLIB
 
-#include "OSGInsertStringCommand.h"
+#include <OSGConfig.h>
 
-#include "OSGTextDomLayoutManager.h"
-#include "OSGPlainDocument.h"
-#include "OSGDocumentElementAttributes.h"
 #include "OSGGlyphView.h"
-#include "OSGElement.h"
-#include "OSGDocumentElementAttributes.h"
+#include "OSGGraphics.h"
+#include "OSGSyntaxHighlighter.h"
 
-OSG_USING_NAMESPACE
 
-/***************************************************************************\
- *                            Description                                  *
-\***************************************************************************/
+OSG_BEGIN_NAMESPACE
 
-/*! \class OSG::InsertStringCommand
-A InsertStringCommand. 
-*/
+// Documentation for this class is emitted in the
+// OSGGlyphViewBase.cpp file.
+// To modify it, please change the .fcd file (OSGGlyphView.fcd) and
+// regenerate the base file.
 
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
 
-CommandType InsertStringCommand::_Type("InsertStringCommand", "UndoableCommand");
-
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/
 
-InsertStringCommandPtr InsertStringCommand::create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString)
+void GlyphView::initMethod(InitPhase ePhase)
 {
-	return RefPtr(new InsertStringCommand(Manager,DocumentModel,theCaretPosition,theString));
+    Inherited::initMethod(ePhase);
+
+    if(ePhase == TypeObject::SystemPost)
+    {
+    }
+}
+
+void GlyphView::drawView(Graphics * const TheGraphics, Real32 Opacity)
+{
+	if(!_IsWordWrapEnabled)
+	{
+		Pnt2f tempPosition;
+		tempPosition = _InitialPosition;
+		
+		std::vector<UInt32> theColoredIndices = SyntaxHighlighter::the()->processInput(dynamic_cast<PlainDocumentLeafElement*>(_Element)->getText());
+		if(theColoredIndices.size())
+		{
+			std::string theString;
+			Pnt2f topLeft,bottomRight;
+			for(Int32 i=0;i<theColoredIndices.size();i+=2)
+			{
+				if(i==0)theString = dynamic_cast<PlainDocumentLeafElement*>(_Element)->getText().substr(0,theColoredIndices[i]);
+				else	theString = dynamic_cast<PlainDocumentLeafElement*>(_Element)->getText().substr(theColoredIndices[i-1],theColoredIndices[i] - theColoredIndices[i-1]);
+				
+				TheGraphics->drawText(tempPosition,theString,_Font,Color4f(0.0,0.0,0.0,1.0),Opacity);
+				_Font->getBounds(theString,topLeft,bottomRight);
+				tempPosition.setValues(tempPosition.x() + bottomRight.x(),tempPosition.y());
+			
+
+				theString = dynamic_cast<PlainDocumentLeafElement*>(_Element)->getText().substr(theColoredIndices[i],theColoredIndices[i+1] - theColoredIndices[i]);
+				TheGraphics->drawText(tempPosition,theString,_Font,Color4f(0.0,0.0,1.0,1.0),Opacity);
+				_Font->getBounds(theString,topLeft,bottomRight);
+				tempPosition.setValues(tempPosition.x() + bottomRight.x(),tempPosition.y());
+
+				if(i==theColoredIndices.size()-2)
+				{
+					theString = dynamic_cast<PlainDocumentLeafElement*>(_Element)->getText().substr(theColoredIndices[theColoredIndices.size()-1]);
+					TheGraphics->drawText(tempPosition,theString,_Font,Color4f(0.0,0.0,0.0,1.0),Opacity);
+				}
+			}
+		}
+		else
+		{
+			TheGraphics->drawText(_InitialPosition,dynamic_cast<PlainDocumentLeafElement*>(_Element)->getText(),_Font,Color4f(0.0,0.0,0.0,1.0),Opacity);
+		}
+	}
 }
 
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
 
-void InsertStringCommand::execute(void)
-{
-	_OriginalHSL = _Manager->getHSL();
-	_OriginalHSI = _Manager->getHSI();
-	_OriginalHEL = _Manager->getHEL();
-	_OriginalHEI = _Manager->getHEI();
-	_theOriginalCaretLine= _Manager->getCaretLine();
-	_theOriginalCaretIndex = _Manager->getCaretIndex();
-
-	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
-
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-
-	_HasBeenDone = true;
-}
-
-std::string InsertStringCommand::getCommandDescription(void) const
-{
-	return std::string("Insert String ");
-}
-
-std::string InsertStringCommand::getPresentationName(void) const
-{
-	return getCommandDescription();
-}
-
-void InsertStringCommand::redo(void)
-{
-	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
-
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-
-	Inherited::redo();
-}
-
-void InsertStringCommand::undo(void)
-{
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-	_Manager->deleteSelected();
-
-	// restoring highlighted text and caret position
-	_Manager->setHSL(_OriginalHSL);
-	_Manager->setHSI(_OriginalHSI);
-	_Manager->setHEL(_OriginalHEL);
-	_Manager->setHEI(_OriginalHEI);
-	_Manager->setCaretLine(_theOriginalCaretLine);
-	_Manager->setCaretIndex(_theOriginalCaretIndex);
-	_Manager->recalculateCaretPositions();
-	_Manager->checkCaretVisibility();
-
-	Inherited::undo();
-}
-
-const CommandType &InsertStringCommand::getType(void) const
-{
-	return _Type;
-}
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
 
 /*----------------------- constructors & destructors ----------------------*/
 
-InsertStringCommand::~InsertStringCommand(void)
+
+
+GlyphView::GlyphView(void) :
+	Inherited(),
+	_InitialPosition(Pnt2f(0,0)),
+	_Element(NULL),
+	_IsWordWrapEnabled(false)
+{
+
+}
+
+GlyphView::GlyphView(const GlyphView &source) :
+    Inherited(source),
+	_InitialPosition(source._InitialPosition),
+	_Element(source._Element),
+	_IsWordWrapEnabled(source._IsWordWrapEnabled)
+{
+}
+
+GlyphView::~GlyphView(void)
 {
 }
 
 /*----------------------------- class specific ----------------------------*/
 
-void InsertStringCommand::operator =(const InsertStringCommand& source)
+void GlyphView::changed(ConstFieldMaskArg whichField, 
+                            UInt32            origin,
+                            BitVector         details)
 {
-    if(this != &source)
-    {
-	    Inherited::operator=(source);
-    }
+    Inherited::changed(whichField, origin, details);
 }
 
+void GlyphView::dump(      UInt32    ,
+                         const BitVector ) const
+{
+    SLOG << "Dump GlyphView NI" << std::endl;
+}
+
+OSG_END_NAMESPACE

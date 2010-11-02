@@ -45,14 +45,14 @@
  **           regenerated, which can become necessary at any time.          **
  **                                                                         **
  **     Do not change this file, changes should be done in the derived      **
- **     class AbstractDocument
+ **     class TextDomLayoutManager
  **                                                                         **
  *****************************************************************************
 \*****************************************************************************/
 
 
-#ifndef _OSGABSTRACTDOCUMENTBASE_H_
-#define _OSGABSTRACTDOCUMENTBASE_H_
+#ifndef _OSGTEXTDOMLAYOUTMANAGERBASE_H_
+#define _OSGTEXTDOMLAYOUTMANAGERBASE_H_
 #ifdef __sgi
 #pragma once
 #endif
@@ -63,29 +63,30 @@
 
 //#include "OSGBaseTypes.h"
 
-#include "OSGDocument.h" // Parent
+#include "OSGFieldContainer.h" // Parent
 
-#include "OSGElementFields.h"           // RootElements type
+#include "OSGGlyphViewFields.h"         // VisibleViews type
+#include "OSGFieldContainerFields.h"    // ParentTextDomArea type
 
-#include "OSGAbstractDocumentFields.h"
+#include "OSGTextDomLayoutManagerFields.h"
 
 OSG_BEGIN_NAMESPACE
 
-class AbstractDocument;
+class TextDomLayoutManager;
 
-//! \brief AbstractDocument Base Class.
+//! \brief TextDomLayoutManager Base Class.
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
+class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomLayoutManagerBase : public FieldContainer
 {
   public:
 
-    typedef Document Inherited;
-    typedef Document ParentContainer;
+    typedef FieldContainer Inherited;
+    typedef FieldContainer ParentContainer;
 
     typedef Inherited::TypeObject TypeObject;
     typedef TypeObject::InitPhase InitPhase;
 
-    OSG_GEN_INTERNALPTR(AbstractDocument);
+    OSG_GEN_INTERNALPTR(TextDomLayoutManager);
     
     
 
@@ -95,16 +96,20 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
 
     enum
     {
-        RootElementsFieldId = Inherited::NextFieldId,
-        NextFieldId = RootElementsFieldId + 1
+        VisibleViewsFieldId = Inherited::NextFieldId,
+        ParentTextDomAreaFieldId = VisibleViewsFieldId + 1,
+        NextFieldId = ParentTextDomAreaFieldId + 1
     };
 
-    static const OSG::BitVector RootElementsFieldMask =
-        (TypeTraits<BitVector>::One << RootElementsFieldId);
+    static const OSG::BitVector VisibleViewsFieldMask =
+        (TypeTraits<BitVector>::One << VisibleViewsFieldId);
+    static const OSG::BitVector ParentTextDomAreaFieldMask =
+        (TypeTraits<BitVector>::One << ParentTextDomAreaFieldId);
     static const OSG::BitVector NextFieldMask =
         (TypeTraits<BitVector>::One << NextFieldId);
         
-    typedef MFUnrecElementPtr MFRootElementsType;
+    typedef MFUnrecGlyphViewPtr MFVisibleViewsType;
+    typedef SFParentFieldContainerPtr SFParentTextDomAreaType;
 
     /*---------------------------------------------------------------------*/
     /*! \name                    Class Get                                 */
@@ -123,6 +128,39 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
     virtual const FieldContainerType &getType         (void) const;
 
     virtual       UInt32              getContainerSize(void) const;
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                    Field Get                                 */
+    /*! \{                                                                 */
+
+            const MFUnrecGlyphViewPtr *getMFVisibleViews   (void) const;
+                  MFUnrecGlyphViewPtr *editMFVisibleViews   (void);
+
+
+                  GlyphView * getVisibleViews   (const UInt32 index) const;
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                    Field Set                                 */
+    /*! \{                                                                 */
+
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr Field Set                                 */
+    /*! \{                                                                 */
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr MField Set                                */
+    /*! \{                                                                 */
+
+    void pushToVisibleViews           (GlyphView * const value   );
+    void assignVisibleViews          (const MFUnrecGlyphViewPtr &value);
+    void removeFromVisibleViews (UInt32               uiIndex );
+    void removeObjFromVisibleViews(GlyphView * const value   );
+    void clearVisibleViews            (void                         );
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -150,65 +188,51 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
     /*! \name                      Fields                                  */
     /*! \{                                                                 */
 
-    MFUnrecElementPtr _mfRootElements;
+    MFUnrecGlyphViewPtr _mfVisibleViews;
+    SFParentFieldContainerPtr _sfParentTextDomArea;
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Constructors                               */
     /*! \{                                                                 */
 
-    AbstractDocumentBase(void);
-    AbstractDocumentBase(const AbstractDocumentBase &source);
+    TextDomLayoutManagerBase(void);
+    TextDomLayoutManagerBase(const TextDomLayoutManagerBase &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~AbstractDocumentBase(void);
+    virtual ~TextDomLayoutManagerBase(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                     onCreate                                */
     /*! \{                                                                 */
 
-    void onCreate(const AbstractDocument *source = NULL);
+    void onCreate(const TextDomLayoutManager *source = NULL);
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name Parent linking                                               */
+    /*! \{                                                                 */
+
+    virtual bool linkParent  (FieldContainer * const pParent,
+                              UInt16           const childFieldId,
+                              UInt16           const parentFieldId);
+    virtual bool unlinkParent(FieldContainer * const pParent,
+                              UInt16           const parentFieldId);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                    Generic Field Access                      */
     /*! \{                                                                 */
 
-    GetFieldHandlePtr  getHandleRootElements    (void) const;
-    EditFieldHandlePtr editHandleRootElements   (void);
-
-    /*! \}                                                                 */
-    /*---------------------------------------------------------------------*/
-    /*! \name                    Field Get                                 */
-    /*! \{                                                                 */
-
-            const MFUnrecElementPtr   *getMFRootElements    (void) const;
-                  MFUnrecElementPtr   *editMFRootElements   (void);
-
-
-                  Element * getRootElements   (const UInt32 index) const;
-
-    /*! \}                                                                 */
-    /*---------------------------------------------------------------------*/
-    /*! \name                    Field Set                                 */
-    /*! \{                                                                 */
-
-
-    /*! \}                                                                 */
-    /*---------------------------------------------------------------------*/
-    /*! \name                Ptr MField Set                                */
-    /*! \{                                                                 */
-
-    void pushToRootElements           (Element * const value   );
-    void assignRootElements           (const MFUnrecElementPtr &value);
-    void removeFromRootElements (UInt32                uiIndex );
-    void removeObjFromRootElements(Element * const value   );
-    void clearRootElements            (void                          );
+    GetFieldHandlePtr  getHandleVisibleViews    (void) const;
+    EditFieldHandlePtr editHandleVisibleViews   (void);
+    GetFieldHandlePtr  getHandleParentTextDomArea (void) const;
+    EditFieldHandlePtr editHandleParentTextDomArea(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -222,7 +246,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
                                  ConstFieldMaskArg  syncMode  ,
                            const UInt32             uiSyncInfo);
 
-            void execSync (      AbstractDocumentBase *pFrom,
+            void execSync (      TextDomLayoutManagerBase *pFrom,
                                  ConstFieldMaskArg  whichField,
                                  AspectOffsetStore &oOffsets,
                                  ConstFieldMaskArg  syncMode  ,
@@ -257,11 +281,11 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
     /*---------------------------------------------------------------------*/
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const AbstractDocumentBase &source);
+    void operator =(const TextDomLayoutManagerBase &source);
 };
 
-typedef AbstractDocumentBase *AbstractDocumentBaseP;
+typedef TextDomLayoutManagerBase *TextDomLayoutManagerBaseP;
 
 OSG_END_NAMESPACE
 
-#endif /* _OSGABSTRACTDOCUMENTBASE_H_ */
+#endif /* _OSGTEXTDOMLAYOUTMANAGERBASE_H_ */

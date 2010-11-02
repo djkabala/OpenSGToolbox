@@ -6,7 +6,7 @@
  *                                                                           *
  *                            www.opensg.org                                 *
  *                                                                           *
- *   contact:  David Kabala (djkabala@gmail.com)                             *
+ *   contact:  David Kabala (djkabala@gmail.com)*
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*\
@@ -45,14 +45,14 @@
  **           regenerated, which can become necessary at any time.          **
  **                                                                         **
  **     Do not change this file, changes should be done in the derived      **
- **     class AbstractDocument
+ **     class AdvancedTextDomArea
  **                                                                         **
  *****************************************************************************
 \*****************************************************************************/
 
 
-#ifndef _OSGABSTRACTDOCUMENTBASE_H_
-#define _OSGABSTRACTDOCUMENTBASE_H_
+#ifndef _OSGADVANCEDTEXTDOMAREABASE_H_
+#define _OSGADVANCEDTEXTDOMAREABASE_H_
 #ifdef __sgi
 #pragma once
 #endif
@@ -63,29 +63,31 @@
 
 //#include "OSGBaseTypes.h"
 
-#include "OSGDocument.h" // Parent
+#include "OSGComponentContainer.h" // Parent
 
-#include "OSGElementFields.h"           // RootElements type
+#include "OSGSysFields.h"               // GutterVisible type
+#include "OSGBaseFields.h"              // GutterColor type
+#include "OSGUIFontFields.h"            // GutterFont type
 
-#include "OSGAbstractDocumentFields.h"
+#include "OSGAdvancedTextDomAreaFields.h"
 
 OSG_BEGIN_NAMESPACE
 
-class AbstractDocument;
+class AdvancedTextDomArea;
 
-//! \brief AbstractDocument Base Class.
+//! \brief AdvancedTextDomArea Base Class.
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
+class OSG_CONTRIBTEXTDOM_DLLMAPPING AdvancedTextDomAreaBase : public ComponentContainer
 {
   public:
 
-    typedef Document Inherited;
-    typedef Document ParentContainer;
+    typedef ComponentContainer Inherited;
+    typedef ComponentContainer ParentContainer;
 
     typedef Inherited::TypeObject TypeObject;
     typedef TypeObject::InitPhase InitPhase;
 
-    OSG_GEN_INTERNALPTR(AbstractDocument);
+    OSG_GEN_INTERNALPTR(AdvancedTextDomArea);
     
     
 
@@ -95,16 +97,32 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
 
     enum
     {
-        RootElementsFieldId = Inherited::NextFieldId,
-        NextFieldId = RootElementsFieldId + 1
+        GutterVisibleFieldId = Inherited::NextFieldId,
+        GutterWidthFieldId = GutterVisibleFieldId + 1,
+        GutterColorFieldId = GutterWidthFieldId + 1,
+        GutterTextColorFieldId = GutterColorFieldId + 1,
+        GutterFontFieldId = GutterTextColorFieldId + 1,
+        NextFieldId = GutterFontFieldId + 1
     };
 
-    static const OSG::BitVector RootElementsFieldMask =
-        (TypeTraits<BitVector>::One << RootElementsFieldId);
+    static const OSG::BitVector GutterVisibleFieldMask =
+        (TypeTraits<BitVector>::One << GutterVisibleFieldId);
+    static const OSG::BitVector GutterWidthFieldMask =
+        (TypeTraits<BitVector>::One << GutterWidthFieldId);
+    static const OSG::BitVector GutterColorFieldMask =
+        (TypeTraits<BitVector>::One << GutterColorFieldId);
+    static const OSG::BitVector GutterTextColorFieldMask =
+        (TypeTraits<BitVector>::One << GutterTextColorFieldId);
+    static const OSG::BitVector GutterFontFieldMask =
+        (TypeTraits<BitVector>::One << GutterFontFieldId);
     static const OSG::BitVector NextFieldMask =
         (TypeTraits<BitVector>::One << NextFieldId);
         
-    typedef MFUnrecElementPtr MFRootElementsType;
+    typedef SFBool            SFGutterVisibleType;
+    typedef SFReal32          SFGutterWidthType;
+    typedef SFColor4f         SFGutterColorType;
+    typedef SFColor4f         SFGutterTextColorType;
+    typedef SFUnrecUIFontPtr  SFGutterFontType;
 
     /*---------------------------------------------------------------------*/
     /*! \name                    Class Get                                 */
@@ -126,6 +144,62 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
+    /*! \name                    Field Get                                 */
+    /*! \{                                                                 */
+
+
+                  SFBool              *editSFGutterVisible  (void);
+            const SFBool              *getSFGutterVisible   (void) const;
+
+                  SFReal32            *editSFGutterWidth    (void);
+            const SFReal32            *getSFGutterWidth     (void) const;
+
+                  SFColor4f           *editSFGutterColor    (void);
+            const SFColor4f           *getSFGutterColor     (void) const;
+
+                  SFColor4f           *editSFGutterTextColor(void);
+            const SFColor4f           *getSFGutterTextColor (void) const;
+            const SFUnrecUIFontPtr    *getSFGutterFont     (void) const;
+                  SFUnrecUIFontPtr    *editSFGutterFont     (void);
+
+
+                  bool                &editGutterVisible  (void);
+                  bool                 getGutterVisible   (void) const;
+
+                  Real32              &editGutterWidth    (void);
+                  Real32               getGutterWidth     (void) const;
+
+                  Color4f             &editGutterColor    (void);
+            const Color4f             &getGutterColor     (void) const;
+
+                  Color4f             &editGutterTextColor(void);
+            const Color4f             &getGutterTextColor (void) const;
+
+                  UIFont * getGutterFont     (void) const;
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                    Field Set                                 */
+    /*! \{                                                                 */
+
+            void setGutterVisible  (const bool value);
+            void setGutterWidth    (const Real32 value);
+            void setGutterColor    (const Color4f &value);
+            void setGutterTextColor(const Color4f &value);
+            void setGutterFont     (UIFont * const value);
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr Field Set                                 */
+    /*! \{                                                                 */
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr MField Set                                */
+    /*! \{                                                                 */
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
     /*! \name                   Binary Access                              */
     /*! \{                                                                 */
 
@@ -135,6 +209,33 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
     virtual void   copyFromBin(BinaryDataHandler &pMem,
                                ConstFieldMaskArg  whichField);
 
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                   Construction                               */
+    /*! \{                                                                 */
+
+    static  AdvancedTextDomAreaTransitPtr  create          (void);
+    static  AdvancedTextDomArea           *createEmpty     (void);
+
+    static  AdvancedTextDomAreaTransitPtr  createLocal     (
+                                               BitVector bFlags = FCLocal::All);
+
+    static  AdvancedTextDomArea            *createEmptyLocal(
+                                              BitVector bFlags = FCLocal::All);
+
+    static  AdvancedTextDomAreaTransitPtr  createDependent  (BitVector bFlags);
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                       Copy                                   */
+    /*! \{                                                                 */
+
+    virtual FieldContainerTransitPtr shallowCopy     (void) const;
+    virtual FieldContainerTransitPtr shallowCopyLocal(
+                                       BitVector bFlags = FCLocal::All) const;
+    virtual FieldContainerTransitPtr shallowCopyDependent(
+                                                      BitVector bFlags) const;
 
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
@@ -150,65 +251,49 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
     /*! \name                      Fields                                  */
     /*! \{                                                                 */
 
-    MFUnrecElementPtr _mfRootElements;
+    SFBool            _sfGutterVisible;
+    SFReal32          _sfGutterWidth;
+    SFColor4f         _sfGutterColor;
+    SFColor4f         _sfGutterTextColor;
+    SFUnrecUIFontPtr  _sfGutterFont;
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Constructors                               */
     /*! \{                                                                 */
 
-    AbstractDocumentBase(void);
-    AbstractDocumentBase(const AbstractDocumentBase &source);
+    AdvancedTextDomAreaBase(void);
+    AdvancedTextDomAreaBase(const AdvancedTextDomAreaBase &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~AbstractDocumentBase(void);
+    virtual ~AdvancedTextDomAreaBase(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                     onCreate                                */
     /*! \{                                                                 */
 
-    void onCreate(const AbstractDocument *source = NULL);
+    void onCreate(const AdvancedTextDomArea *source = NULL);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                    Generic Field Access                      */
     /*! \{                                                                 */
 
-    GetFieldHandlePtr  getHandleRootElements    (void) const;
-    EditFieldHandlePtr editHandleRootElements   (void);
-
-    /*! \}                                                                 */
-    /*---------------------------------------------------------------------*/
-    /*! \name                    Field Get                                 */
-    /*! \{                                                                 */
-
-            const MFUnrecElementPtr   *getMFRootElements    (void) const;
-                  MFUnrecElementPtr   *editMFRootElements   (void);
-
-
-                  Element * getRootElements   (const UInt32 index) const;
-
-    /*! \}                                                                 */
-    /*---------------------------------------------------------------------*/
-    /*! \name                    Field Set                                 */
-    /*! \{                                                                 */
-
-
-    /*! \}                                                                 */
-    /*---------------------------------------------------------------------*/
-    /*! \name                Ptr MField Set                                */
-    /*! \{                                                                 */
-
-    void pushToRootElements           (Element * const value   );
-    void assignRootElements           (const MFUnrecElementPtr &value);
-    void removeFromRootElements (UInt32                uiIndex );
-    void removeObjFromRootElements(Element * const value   );
-    void clearRootElements            (void                          );
+    GetFieldHandlePtr  getHandleGutterVisible   (void) const;
+    EditFieldHandlePtr editHandleGutterVisible  (void);
+    GetFieldHandlePtr  getHandleGutterWidth     (void) const;
+    EditFieldHandlePtr editHandleGutterWidth    (void);
+    GetFieldHandlePtr  getHandleGutterColor     (void) const;
+    EditFieldHandlePtr editHandleGutterColor    (void);
+    GetFieldHandlePtr  getHandleGutterTextColor (void) const;
+    EditFieldHandlePtr editHandleGutterTextColor(void);
+    GetFieldHandlePtr  getHandleGutterFont      (void) const;
+    EditFieldHandlePtr editHandleGutterFont     (void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -222,7 +307,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
                                  ConstFieldMaskArg  syncMode  ,
                            const UInt32             uiSyncInfo);
 
-            void execSync (      AbstractDocumentBase *pFrom,
+            void execSync (      AdvancedTextDomAreaBase *pFrom,
                                  ConstFieldMaskArg  whichField,
                                  AspectOffsetStore &oOffsets,
                                  ConstFieldMaskArg  syncMode  ,
@@ -238,6 +323,11 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
     /*---------------------------------------------------------------------*/
     /*! \name                     Aspect Create                            */
     /*! \{                                                                 */
+
+#ifdef OSG_MT_CPTR_ASPECT
+    virtual FieldContainer *createAspectCopy(
+                                    const FieldContainer *pRefAspect) const;
+#endif
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -257,11 +347,11 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractDocumentBase : public Document
     /*---------------------------------------------------------------------*/
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const AbstractDocumentBase &source);
+    void operator =(const AdvancedTextDomAreaBase &source);
 };
 
-typedef AbstractDocumentBase *AbstractDocumentBaseP;
+typedef AdvancedTextDomAreaBase *AdvancedTextDomAreaBaseP;
 
 OSG_END_NAMESPACE
 
-#endif /* _OSGABSTRACTDOCUMENTBASE_H_ */
+#endif /* _OSGADVANCEDTEXTDOMAREABASE_H_ */

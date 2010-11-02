@@ -6,9 +6,9 @@
  *                                                                           *
  *                            www.opensg.org                                 *
  *                                                                           *
- *   contact:  David Kabala (djkabala@gmail.com)                             *
+ *   contact:  David Kabala (djkabala@gmail.com)*
  *                                                                           *
- \*---------------------------------------------------------------------------*/
+\*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*\
  *                                License                                    *
  *                                                                           *
@@ -36,71 +36,48 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGABSTRACTBRANCHELEMENT_H_
-#define _OSGABSTRACTBRANCHELEMENT_H_
+#ifndef _OSGADVANCEDTEXTDOMAREA_H_
+#define _OSGADVANCEDTEXTDOMAREA_H_
 #ifdef __sgi
 #pragma once
 #endif
 
-#include "OSGAbstractBranchElementBase.h"
+#include "OSGAdvancedTextDomAreaBase.h"
+#include "OSGTextDomAreaFields.h"
+#include "OSGUIFontFields.h"
 
 OSG_BEGIN_NAMESPACE
 
-/*! \brief AbstractBranchElement class. See \ref
-           PageContribTextDomAbstractBranchElement for a description.
+/*! \brief AdvancedTextDomArea class. See \ref
+           PageContribTextDomAdvancedTextDomArea for a description.
 */
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranchElementBase
+class OSG_CONTRIBTEXTDOM_DLLMAPPING AdvancedTextDomArea : public AdvancedTextDomAreaBase
 {
   protected:
 
+	
+  	virtual Vec2f getPreferredScrollableViewportSize(void);
+    virtual Int32 getScrollableUnitIncrement(const Pnt2f& VisibleRectTopLeft, const Pnt2f& VisibleRectBottomRight, const UInt32& orientation, const Int32& direction);
+	virtual Vec2f getContentRequestedSize(void) const;
+	void drawGutter(Graphics * const TheGraphics, Real32 Opacity) const;
+
+	TextDomAreaRefPtr _TheTextDomArea;
+	UIFontRefPtr _Font;
     /*==========================  PUBLIC  =================================*/
 
   public:
 
-    typedef AbstractBranchElementBase Inherited;
-    typedef AbstractBranchElement     Self;
+	void setTheTextDomArea(TextDomArea* const duplicatedTextDom);
 
-	
-	////   Returns the children of the receiver as an Enumeration.
-	//std::vector<std::string> children(void);
-	
-	//   Returns true if the receiver allows children.
-	bool getAllowsChildren(void) const;
-	
-	//  Gets a child element.
-	Element*	getElement(UInt32 index) const;
-    
-	//  Gets the number of children for the element.
-	UInt32 getElementCount(void) const;
-    
-	//  Gets the child element index closest to the given model offset.
-	UInt32 getElementIndex(UInt32 offset) const;
-    
-	//  Gets the ending offset in the model for the element.
-	UInt32 getEndOffset(void) const;
-    
-	// Gets the element name.
-	std::string getName(void) const;
-     
-	// Gets the starting offset in the model for the element.
-	UInt32 getStartOffset(void) const;
-     
-	// Checks whether the element is a leaf.
-	bool	isLeaf(void) const;
-     
-	//Gets the child element that contains the given model position.
-	Element* positionToElement(UInt32 pos) const;
-      
-	//Replaces content with a new set of elements.
-	void replace(int offset, int length, MFRecElementPtr elems);
-      
-	//Converts the element to a string.
-	std::string toString(void) const;
-      
-	void removeChildElement(UInt32 index);
+	std::string getHighlightedString(void);
+	virtual void updateLayout(void);
+    void loadFile(const BoostPath& path);
+	void drawInternal(Graphics * const TheGraphics, Real32 Opacity) const;
+	AdvancedTextDomAreaTransitPtr createDuplicate(void);
 
-	void addChildElement(UInt32 index,Element* const newPtr);
+    typedef AdvancedTextDomAreaBase Inherited;
+    typedef AdvancedTextDomArea     Self;
 
     /*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
@@ -110,6 +87,12 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
                          UInt32            origin,
                          BitVector         details    );
 
+	/*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                     onCreate                                */
+    /*! \{                                                                 */
+
+    void onCreate(const AdvancedTextDomArea *source = NULL);
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                     Output                                   */
@@ -122,22 +105,23 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
     /*=========================  PROTECTED  ===============================*/
 
   protected:
+	/*! \}                                                                 */
 
-    // Variables should all be in AbstractBranchElementBase.
+    // Variables should all be in AdvancedTextDomAreaBase.
 
     /*---------------------------------------------------------------------*/
     /*! \name                  Constructors                                */
     /*! \{                                                                 */
 
-    AbstractBranchElement(void);
-    AbstractBranchElement(const AbstractBranchElement &source);
+    AdvancedTextDomArea(void);
+    AdvancedTextDomArea(const AdvancedTextDomArea &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~AbstractBranchElement(void);
+    virtual ~AdvancedTextDomArea(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -147,22 +131,28 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
     static void initMethod(InitPhase ePhase);
 
     /*! \}                                                                 */
+    /*! \name                       Sync                                   */
+    /*! \{                                                                 */
+
+    virtual void resolveLinks(void);
+
+    /*! \}                                                                 */
     /*==========================  PRIVATE  ================================*/
 
   private:
 
     friend class FieldContainer;
-    friend class AbstractBranchElementBase;
+    friend class AdvancedTextDomAreaBase;
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const AbstractBranchElement &source);
+    void operator =(const AdvancedTextDomArea &source);
 };
 
-typedef AbstractBranchElement *AbstractBranchElementP;
+typedef AdvancedTextDomArea *AdvancedTextDomAreaP;
 
 OSG_END_NAMESPACE
 
-#include "OSGAbstractBranchElementBase.inl"
-#include "OSGAbstractBranchElement.inl"
+#include "OSGAdvancedTextDomAreaBase.inl"
+#include "OSGAdvancedTextDomArea.inl"
 
-#endif /* _OSGABSTRACTBRANCHELEMENT_H_ */
+#endif /* _OSGADVANCEDTEXTDOMAREA_H_ */

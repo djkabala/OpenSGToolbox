@@ -6,9 +6,9 @@
  *                                                                           *
  *                            www.opensg.org                                 *
  *                                                                           *
- *   contact:  David Kabala (djkabala@gmail.com)                             *
+ *   contact:  David Kabala (djkabala@gmail.com)*
  *                                                                           *
- \*---------------------------------------------------------------------------*/
+\*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*\
  *                                License                                    *
  *                                                                           *
@@ -36,71 +36,114 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGABSTRACTBRANCHELEMENT_H_
-#define _OSGABSTRACTBRANCHELEMENT_H_
+#ifndef _OSGTEXTEDITOR_H_
+#define _OSGTEXTEDITOR_H_
 #ifdef __sgi
 #pragma once
 #endif
 
-#include "OSGAbstractBranchElementBase.h"
+#include "OSGTextEditorBase.h"
+#include "OSGAdvancedTextDomAreaFields.h"
+
+#include "OSGLabelFields.h"
+#include "OSGTextDomAreaFields.h"
+#include "OSGListFields.h"
+#include "OSGListSelectionModelFields.h"
+#include "OSGDefaultListModelFields.h"
+#include "OSGSplitPanelFields.h"
+#include "OSGTabPanelFields.h"
+#include "OSGSearchWindowFields.h"
+#include "OSGScrollPanelFields.h"
+#include "OSGActionEventDetailsFields.h"
+#include "OSGSearchWindowEventDetailsFields.h"
+#include "OSGTextAreaFields.h"
+#include "OSGButtonFields.h"
+#include "OSGPanelFields.h"
+#include "OSGSpringLayoutFields.h"
+
 
 OSG_BEGIN_NAMESPACE
 
-/*! \brief AbstractBranchElement class. See \ref
-           PageContribTextDomAbstractBranchElement for a description.
+/*! \brief TextEditor class. See \ref
+           PageContribTextDomTextEditor for a description.
 */
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranchElementBase
+class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 {
   protected:
+
+	    enum searchWindowButtons{SEARCH,REPLACE,REPLACE_ALL,BOOKMARK_ALL};
+
+		SplitPanelRefPtr _DomAreaAndClipboard;
+		SplitPanelRefPtr _InsideDomArea;
+
+	    // Clipboard related
+		ListRefPtr _TheClipboardList;
+		DefaultListModelRefPtr _TheClipboardListModel;
+		ListSelectionModelRefPtr _TheClipboardListSelectionModel;
+		ScrollPanelRefPtr _TheClipboardScrollPanel;
+		LabelRefPtr _TheClipboardLabel;
+		PanelRefPtr _TheClipboardPanel;
+		SpringLayoutRefPtr _TheClipboardPanelLayout;
+		ButtonRefPtr _TheClipboardButton;
+
+		void clipboardInitialization(void);
+		void createDomArea(void);
+		AdvancedTextDomAreaTransitPtr createDuplicate(AdvancedTextDomArea* const TheAdvancedTextDomArea);
+
+
+
+		void updateLayout(bool isClipboardVisible);	// to update the layout of the editor(to show/hide the copy clipboard)
+		void updateDomLayout(bool isSplit);	// to update the layout of the Document Area (to show/hide the second view)
+
+		void searchWindowButtonClicked(SearchWindowEventDetails* const details,UInt32 button);
+
+		// Dom related
+		TabPanelRefPtr    _LeftTabPanel;
+		LabelRefPtr       _LeftTabPanelLabel;
+		ScrollPanelRefPtr _LeftTabPanelContent;
+		TextAreaRefPtr    _LeftTabPanelTextArea;
+		TabPanelRefPtr    _RightTabPanel;
+		LabelRefPtr       _RightTabPanelLabel;
+		ScrollPanelRefPtr _RightTabPanelContent;
+		TextAreaRefPtr    _RightTabPanelTextArea;
+		void createLeftTabPanel(void);
+		void createRightTabPanel(void);
+		void createDefaultTabs(void);
+
+		void actionPerformed(ActionEventDetails* const details);
+
+		SearchWindowRefPtr _SearchDialog;
+
+		void handleSearchButtonClicked(SearchWindowEventDetails* const details);
+		void handleReplaceButtonClicked(SearchWindowEventDetails* const details);
+		void handleReplaceAllButtonClicked(SearchWindowEventDetails* const details);
+		void handleBookmarkAllButtonClicked(SearchWindowEventDetails* const details);
+
+        boost::signals2::connection _SearchButtonClickedConnection,
+                                    _ReplaceButtonClickedConnection,
+                                    _ReplaceAllButtonClickedConnection,
+                                    _BookmarkAllButtonClickedConnection;
+
+	    void handleClipboardButtonAction(ActionEventDetails* const details);
+        boost::signals2::connection _ClipboardButtonActionConnection;
+
+		void handleCloseButtonAction(ActionEventDetails* const details);
+        boost::signals2::connection _CloseButtonActionConnection;
+
+        virtual void keyTyped(KeyEventDetails* const details);
+
+		virtual void mouseClicked(MouseEventDetails* const details);
 
     /*==========================  PUBLIC  =================================*/
 
   public:
 
-    typedef AbstractBranchElementBase Inherited;
-    typedef AbstractBranchElement     Self;
+	void loadFile(const BoostPath& file);
+	void saveFile(const BoostPath& file);
 
-	
-	////   Returns the children of the receiver as an Enumeration.
-	//std::vector<std::string> children(void);
-	
-	//   Returns true if the receiver allows children.
-	bool getAllowsChildren(void) const;
-	
-	//  Gets a child element.
-	Element*	getElement(UInt32 index) const;
-    
-	//  Gets the number of children for the element.
-	UInt32 getElementCount(void) const;
-    
-	//  Gets the child element index closest to the given model offset.
-	UInt32 getElementIndex(UInt32 offset) const;
-    
-	//  Gets the ending offset in the model for the element.
-	UInt32 getEndOffset(void) const;
-    
-	// Gets the element name.
-	std::string getName(void) const;
-     
-	// Gets the starting offset in the model for the element.
-	UInt32 getStartOffset(void) const;
-     
-	// Checks whether the element is a leaf.
-	bool	isLeaf(void) const;
-     
-	//Gets the child element that contains the given model position.
-	Element* positionToElement(UInt32 pos) const;
-      
-	//Replaces content with a new set of elements.
-	void replace(int offset, int length, MFRecElementPtr elems);
-      
-	//Converts the element to a string.
-	std::string toString(void) const;
-      
-	void removeChildElement(UInt32 index);
-
-	void addChildElement(UInt32 index,Element* const newPtr);
+    typedef TextEditorBase Inherited;
+    typedef TextEditor     Self;
 
     /*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
@@ -119,25 +162,33 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
                       const BitVector  bvFlags  = 0) const;
 
     /*! \}                                                                 */
+    /*! \name                       Sync                                   */
+    /*! \{                                                                 */
+
+    virtual void resolveLinks(void);
+
+    /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 
   protected:
 
-    // Variables should all be in AbstractBranchElementBase.
+  	
+
+    // Variables should all be in TextEditorBase.
 
     /*---------------------------------------------------------------------*/
     /*! \name                  Constructors                                */
     /*! \{                                                                 */
 
-    AbstractBranchElement(void);
-    AbstractBranchElement(const AbstractBranchElement &source);
+    TextEditor(void);
+    TextEditor(const TextEditor &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~AbstractBranchElement(void);
+    virtual ~TextEditor(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -147,22 +198,30 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AbstractBranchElement : public AbstractBranc
     static void initMethod(InitPhase ePhase);
 
     /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                     onCreate                                */
+    /*! \{                                                                 */
+
+    void onCreate(const TextEditor *source = NULL);
+
+
+    /*! \}                                                                 */
     /*==========================  PRIVATE  ================================*/
 
   private:
 
     friend class FieldContainer;
-    friend class AbstractBranchElementBase;
+    friend class TextEditorBase;
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const AbstractBranchElement &source);
+    void operator =(const TextEditor &source);
 };
 
-typedef AbstractBranchElement *AbstractBranchElementP;
+typedef TextEditor *TextEditorP;
 
 OSG_END_NAMESPACE
 
-#include "OSGAbstractBranchElementBase.inl"
-#include "OSGAbstractBranchElement.inl"
+#include "OSGTextEditorBase.inl"
+#include "OSGTextEditor.inl"
 
-#endif /* _OSGABSTRACTBRANCHELEMENT_H_ */
+#endif /* _OSGTEXTEDITOR_H_ */

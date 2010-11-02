@@ -36,8 +36,8 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGINSERTSTRING_COMMAND_H_
-#define _OSGINSERTSTRING_COMMAND_H_
+#ifndef _OSGINSERTCHARACTER_COMMAND_H_
+#define _OSGINSERTCHARACTER_COMMAND_H_
 #ifdef __sgi
 #pragma once
 #endif
@@ -54,23 +54,34 @@
 
 OSG_BEGIN_NAMESPACE
 
-class InsertStringCommand;
-typedef boost::shared_ptr<InsertStringCommand> InsertStringCommandPtr;
+class InsertCharacterCommand;
+typedef boost::shared_ptr<InsertCharacterCommand> InsertCharacterCommandPtr;
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING InsertStringCommand: public UndoableCommand
+class OSG_CONTRIBTEXTDOM_DLLMAPPING InsertCharacterCommand: public UndoableCommand
 {
 protected:
 
-	enum {LEFT,RIGHT,UP,DOWN,HOME,END,HOMEOFNEXTLINE,PAGEUP,PAGEDOWN};
+	enum 
+    {
+        LEFT           = 0,
+        RIGHT          = 1,
+        UP             = 2,
+        DOWN           = 3,
+        HOME           = 4,
+        END            = 5,
+        HOMEOFNEXTLINE = 6,
+        PAGEUP         = 7,
+        PAGEDOWN       = 8
+    };
 
 	typedef UndoableCommand Inherited;
-	typedef InsertStringCommand Self;
-	typedef InsertStringCommandPtr RefPtr;
+	typedef InsertCharacterCommand Self;
+	typedef InsertCharacterCommandPtr RefPtr;
 
-    InsertStringCommand(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
-	InsertStringCommand(const InsertStringCommand& source);
+    InsertCharacterCommand(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,char theCharacter,UInt32 line,UInt32 index);// here
+	InsertCharacterCommand(const InsertCharacterCommand& source);
 
-	void operator =(const InsertStringCommand& source);
+	void operator =(const InsertCharacterCommand& source);
 
 	static CommandType _Type;
 	
@@ -81,14 +92,11 @@ protected:
 
 	TextDomLayoutManagerRefPtr _Manager;
 	PlainDocumentRefPtr _TheDocumentModel;
-	UInt32 _TheOriginalCaretPosition;
-	std::string _StringToBeInserted;
-	UInt32 _theOriginalCaretLine;
+	char _TheCharacter;
 	UInt32 _theOriginalCaretIndex;
-	UInt32 _OriginalHSL;
-	UInt32 _OriginalHSI;
-	UInt32 _OriginalHEL;
-	UInt32 _OriginalHEI;
+	UInt32 _theOriginalCaretLine;
+	UInt32 numberOfLeadingSpaces;
+	
 
 public:
 
@@ -98,13 +106,13 @@ public:
 	
     static const CommandType &getClassType(void);
 
-	virtual ~InsertStringCommand(void);
+	virtual ~InsertCharacterCommand(void);
 	
-    static InsertStringCommandPtr create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
+    static InsertCharacterCommandPtr create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,char theCharacter,UInt32 line,UInt32 index);// here
 };
 
 OSG_END_NAMESPACE
 
-#include "OSGInsertStringCommand.inl"
+#include "OSGInsertCharacterCommand.inl"
 
-#endif /* _OSGINSERTSTRING_COMMAND_H_ */
+#endif /* _OSGINSERTCHARACTER_COMMAND_H_ */

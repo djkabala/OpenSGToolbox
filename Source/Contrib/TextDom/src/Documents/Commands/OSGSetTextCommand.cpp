@@ -44,14 +44,15 @@
 
 #include "OSGConfig.h"
 
-#include "OSGInsertStringCommand.h"
 
+#include "OSGPlainDocumentLeafElement.h"
+#include "OSGElement.h"
+#include "OSGGlyphView.h"
+#include "OSGTextDomArea.h"
 #include "OSGTextDomLayoutManager.h"
 #include "OSGPlainDocument.h"
-#include "OSGDocumentElementAttributes.h"
-#include "OSGGlyphView.h"
-#include "OSGElement.h"
-#include "OSGDocumentElementAttributes.h"
+#include "OSGSetTextCommand.h"
+
 
 OSG_USING_NAMESPACE
 
@@ -59,85 +60,68 @@ OSG_USING_NAMESPACE
  *                            Description                                  *
 \***************************************************************************/
 
-/*! \class OSG::InsertStringCommand
-A InsertStringCommand. 
+/*! \class OSG::SetTextCommand
+A SetTextCommand. 
 */
 
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
 
-CommandType InsertStringCommand::_Type("InsertStringCommand", "UndoableCommand");
+CommandType SetTextCommand::_Type("SetTextCommand", "UndoableCommand");
 
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/
 
-InsertStringCommandPtr InsertStringCommand::create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString)
+SetTextCommandPtr SetTextCommand::create(ElementRefPtr element,std::string newString)
 {
-	return RefPtr(new InsertStringCommand(Manager,DocumentModel,theCaretPosition,theString));
+	return RefPtr(new SetTextCommand(element,newString));
 }
 
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
 
-void InsertStringCommand::execute(void)
+void SetTextCommand::execute(void)
 {
-	_OriginalHSL = _Manager->getHSL();
-	_OriginalHSI = _Manager->getHSI();
-	_OriginalHEL = _Manager->getHEL();
-	_OriginalHEI = _Manager->getHEI();
-	_theOriginalCaretLine= _Manager->getCaretLine();
-	_theOriginalCaretIndex = _Manager->getCaretIndex();
-
-	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
-
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-
+	if(_TheElement)
+	{
+		_TheOriginalString = dynamic_pointer_cast<PlainDocumentLeafElement>(_TheElement)->getText();
+		dynamic_pointer_cast<PlainDocumentLeafElement>(_TheElement)->setText(_TheNewString);
+	}
 	_HasBeenDone = true;
 }
 
-std::string InsertStringCommand::getCommandDescription(void) const
+std::string SetTextCommand::getCommandDescription(void) const
 {
-	return std::string("Insert String ");
+	return std::string("Set Text");
 }
 
-std::string InsertStringCommand::getPresentationName(void) const
+std::string SetTextCommand::getPresentationName(void) const
 {
 	return getCommandDescription();
 }
 
-void InsertStringCommand::redo(void)
+void SetTextCommand::redo(void)
 {
-	DocumentElementAttribute temp;
-	_TheDocumentModel->insertString(_TheOriginalCaretPosition,_StringToBeInserted,temp);
-
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-
+	if(_TheElement)
+	{
+		dynamic_pointer_cast<PlainDocumentLeafElement>(_TheElement)->setText(_TheNewString);
+	}
 	Inherited::redo();
 }
 
-void InsertStringCommand::undo(void)
+void SetTextCommand::undo(void)
 {
-	_Manager->highlightString(_theOriginalCaretLine,_theOriginalCaretIndex,_StringToBeInserted);
-	_Manager->deleteSelected();
-
-	// restoring highlighted text and caret position
-	_Manager->setHSL(_OriginalHSL);
-	_Manager->setHSI(_OriginalHSI);
-	_Manager->setHEL(_OriginalHEL);
-	_Manager->setHEI(_OriginalHEI);
-	_Manager->setCaretLine(_theOriginalCaretLine);
-	_Manager->setCaretIndex(_theOriginalCaretIndex);
-	_Manager->recalculateCaretPositions();
-	_Manager->checkCaretVisibility();
-
+	if(_TheElement)
+	{
+		dynamic_pointer_cast<PlainDocumentLeafElement>(_TheElement)->setText(_TheOriginalString);
+	}
 	Inherited::undo();
 }
 
-const CommandType &InsertStringCommand::getType(void) const
+const CommandType &SetTextCommand::getType(void) const
 {
 	return _Type;
 }
@@ -147,13 +131,13 @@ const CommandType &InsertStringCommand::getType(void) const
 
 /*----------------------- constructors & destructors ----------------------*/
 
-InsertStringCommand::~InsertStringCommand(void)
+SetTextCommand::~SetTextCommand(void)
 {
 }
 
 /*----------------------------- class specific ----------------------------*/
 
-void InsertStringCommand::operator =(const InsertStringCommand& source)
+void SetTextCommand::operator =(const SetTextCommand& source)
 {
     if(this != &source)
     {

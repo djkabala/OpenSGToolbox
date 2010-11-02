@@ -36,8 +36,8 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGINSERTSTRING_COMMAND_H_
-#define _OSGINSERTSTRING_COMMAND_H_
+#ifndef _OSGSETTEXT_COMMAND_H_
+#define _OSGSETTEXT_COMMAND_H_
 #ifdef __sgi
 #pragma once
 #endif
@@ -54,23 +54,21 @@
 
 OSG_BEGIN_NAMESPACE
 
-class InsertStringCommand;
-typedef boost::shared_ptr<InsertStringCommand> InsertStringCommandPtr;
+class SetTextCommand;
+typedef boost::shared_ptr<SetTextCommand> SetTextCommandPtr;
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING InsertStringCommand: public UndoableCommand
+class OSG_CONTRIBTEXTDOM_DLLMAPPING SetTextCommand: public UndoableCommand
 {
 protected:
 
-	enum {LEFT,RIGHT,UP,DOWN,HOME,END,HOMEOFNEXTLINE,PAGEUP,PAGEDOWN};
-
 	typedef UndoableCommand Inherited;
-	typedef InsertStringCommand Self;
-	typedef InsertStringCommandPtr RefPtr;
+	typedef SetTextCommand Self;
+	typedef SetTextCommandPtr RefPtr;
 
-    InsertStringCommand(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
-	InsertStringCommand(const InsertStringCommand& source);
+	SetTextCommand(ElementRefPtr element,std::string newString);// here
+	SetTextCommand(const SetTextCommand& source);
 
-	void operator =(const InsertStringCommand& source);
+	void operator =(const SetTextCommand& source);
 
 	static CommandType _Type;
 	
@@ -79,16 +77,9 @@ protected:
 	virtual void redo(void);
 	virtual void undo(void);
 
-	TextDomLayoutManagerRefPtr _Manager;
-	PlainDocumentRefPtr _TheDocumentModel;
-	UInt32 _TheOriginalCaretPosition;
-	std::string _StringToBeInserted;
-	UInt32 _theOriginalCaretLine;
-	UInt32 _theOriginalCaretIndex;
-	UInt32 _OriginalHSL;
-	UInt32 _OriginalHSI;
-	UInt32 _OriginalHEL;
-	UInt32 _OriginalHEI;
+	ElementRefPtr _TheElement;
+	std::string _TheOriginalString;
+	std::string _TheNewString;
 
 public:
 
@@ -98,13 +89,13 @@ public:
 	
     static const CommandType &getClassType(void);
 
-	virtual ~InsertStringCommand(void);
+	virtual ~SetTextCommand(void);
 	
-    static InsertStringCommandPtr create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
+    static SetTextCommandPtr create(ElementRefPtr element,std::string newString);// here
 };
 
 OSG_END_NAMESPACE
 
-#include "OSGInsertStringCommand.inl"
+#include "OSGSetTextCommand.inl"
 
-#endif /* _OSGINSERTSTRING_COMMAND_H_ */
+#endif /* _OSGSETTEXT_COMMAND_H_ */

@@ -6,7 +6,7 @@
  *                                                                           *
  *                            www.opensg.org                                 *
  *                                                                           *
- *   contact:  David Kabala (djkabala@gmail.com)*
+ *   contact: dirk@opensg.org, gerrit.voss@vossg.org, jbehr@zgdv.de          *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*\
@@ -36,75 +36,88 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGINSERTSTRING_COMMAND_H_
-#define _OSGINSERTSTRING_COMMAND_H_
-#ifdef __sgi
-#pragma once
-#endif
+//---------------------------------------------------------------------------
+//  Includes
+//---------------------------------------------------------------------------
 
-#include "OSGConfig.h"
-#include "OSGContribTextDomDef.h"
+#include <cstdlib>
+#include <cstdio>
 
+#define OSG_COMPILECONTRIBTEXTDOMLIB
 
-#include "OSGUndoableCommand.h"
+#include <OSGConfig.h>
 
-#include "OSGTextDomLayoutManagerFields.h"
-#include "OSGPlainDocumentFields.h"
-
+#include "OSGGlyphView.h"
+#include "OSGTextDomArea.h"
+#include "OSGTextDomLayoutManager.h"
 
 OSG_BEGIN_NAMESPACE
 
-class InsertStringCommand;
-typedef boost::shared_ptr<InsertStringCommand> InsertStringCommandPtr;
+// Documentation for this class is emitted in the
+// OSGTextDomLayoutManagerBase.cpp file.
+// To modify it, please change the .fcd file (OSGTextDomLayoutManager.fcd) and
+// regenerate the base file.
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING InsertStringCommand: public UndoableCommand
+/***************************************************************************\
+ *                           Class variables                               *
+\***************************************************************************/
+
+/***************************************************************************\
+ *                           Class methods                                 *
+\***************************************************************************/
+
+void TextDomLayoutManager::initMethod(InitPhase ePhase)
 {
-protected:
+    Inherited::initMethod(ePhase);
 
-	enum {LEFT,RIGHT,UP,DOWN,HOME,END,HOMEOFNEXTLINE,PAGEUP,PAGEDOWN};
+    if(ePhase == TypeObject::SystemPost)
+    {
+    }
+}
 
-	typedef UndoableCommand Inherited;
-	typedef InsertStringCommand Self;
-	typedef InsertStringCommandPtr RefPtr;
 
-    InsertStringCommand(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
-	InsertStringCommand(const InsertStringCommand& source);
+/***************************************************************************\
+ *                           Instance methods                              *
+\***************************************************************************/
 
-	void operator =(const InsertStringCommand& source);
+TextDomArea* TextDomLayoutManager::getParentTextDomArea(void) const
+{
+    return dynamic_cast<TextDomArea*>(_sfParentTextDomArea.getValue());
+}
 
-	static CommandType _Type;
-	
-	virtual void execute(void);
-	virtual std::string getPresentationName(void) const;
-	virtual void redo(void);
-	virtual void undo(void);
+/*-------------------------------------------------------------------------*\
+ -  private                                                                 -
+\*-------------------------------------------------------------------------*/
 
-	TextDomLayoutManagerRefPtr _Manager;
-	PlainDocumentRefPtr _TheDocumentModel;
-	UInt32 _TheOriginalCaretPosition;
-	std::string _StringToBeInserted;
-	UInt32 _theOriginalCaretLine;
-	UInt32 _theOriginalCaretIndex;
-	UInt32 _OriginalHSL;
-	UInt32 _OriginalHSI;
-	UInt32 _OriginalHEL;
-	UInt32 _OriginalHEI;
+/*----------------------- constructors & destructors ----------------------*/
 
-public:
+TextDomLayoutManager::TextDomLayoutManager(void) :
+    Inherited()
+{
+}
 
-	virtual std::string getCommandDescription(void) const;
+TextDomLayoutManager::TextDomLayoutManager(const TextDomLayoutManager &source) :
+    Inherited(source)
+{
+}
 
-    virtual const CommandType &getType(void) const;
-	
-    static const CommandType &getClassType(void);
+TextDomLayoutManager::~TextDomLayoutManager(void)
+{
+}
 
-	virtual ~InsertStringCommand(void);
-	
-    static InsertStringCommandPtr create(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString);// here
-};
+/*----------------------------- class specific ----------------------------*/
+
+void TextDomLayoutManager::changed(ConstFieldMaskArg whichField, 
+                            UInt32            origin,
+                            BitVector         details)
+{
+    Inherited::changed(whichField, origin, details);
+}
+
+void TextDomLayoutManager::dump(      UInt32    ,
+                         const BitVector ) const
+{
+    SLOG << "Dump TextDomLayoutManager NI" << std::endl;
+}
 
 OSG_END_NAMESPACE
-
-#include "OSGInsertStringCommand.inl"
-
-#endif /* _OSGINSERTSTRING_COMMAND_H_ */

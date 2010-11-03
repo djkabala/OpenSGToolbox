@@ -4,7 +4,9 @@
  *                                                                           *
  *               Copyright (C) 2000-2006 by the OpenSG Forum                 *
  *                                                                           *
- *   contact:  David Kabala (djkabala@gmail.com)*
+ *                            www.opensg.org                                 *
+ *                                                                           *
+ *   contact:  David Kabala (djkabala@gmail.com)                             *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*\
@@ -24,66 +26,38 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*\
- *                                Changes                                    *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
- *                                                                           *
-\*---------------------------------------------------------------------------*/
-
-//---------------------------------------------------------------------------
-//  Includes
-//---------------------------------------------------------------------------
-
-#include "OSGTextField.h"
-#include "OSGComboBox.h"
-#include "OSGCheckboxButton.h"
+#include "OSGConfig.h"
+#include "OSGTextDomLayoutManager.h"
+#include "OSGPlainDocument.h"
 
 OSG_BEGIN_NAMESPACE
 
 inline
-std::string SearchWindow::getSearchText(void)
+InsertStringCommand::InsertStringCommand(TextDomLayoutManagerRefPtr Manager,PlainDocumentRefPtr DocumentModel,UInt32 theCaretPosition,std::string theString) : Inherited(),
+_Manager(Manager),
+_TheDocumentModel(DocumentModel),
+_TheOriginalCaretPosition(theCaretPosition),
+_StringToBeInserted(theString),
+_theOriginalCaretLine(0),
+_theOriginalCaretIndex(0)
 {
-	return (dynamic_cast<TextField*>(this->_SearchComboBox->getEditor()->getEditorComponent())->getDrawnText());
 }
 
 inline
-std::string SearchWindow::getReplaceText(void)
+InsertStringCommand::InsertStringCommand(const InsertStringCommand& source) : Inherited(source),
+_Manager(source._Manager),
+_TheDocumentModel(source._TheDocumentModel),
+_TheOriginalCaretPosition(source._TheOriginalCaretPosition),
+_StringToBeInserted(source._StringToBeInserted),
+_theOriginalCaretLine(source._theOriginalCaretLine),
+_theOriginalCaretIndex(source._theOriginalCaretIndex)
 {
-	return (dynamic_cast<TextField*>(this->_ReplaceComboBox->getEditor()->getEditorComponent())->getDrawnText());
 }
 
-inline
-bool SearchWindow::isCaseChecked(void)
+inline 
+const CommandType &InsertStringCommand::getClassType(void)
 {
-	return _MatchCaseCheckboxButton->getSelected();
-}
-
-inline
-bool SearchWindow::isWholeWordChecked(void)
-{
-	return _MatchWholeWordCheckboxButton->getSelected();
-}
-
-inline
-bool SearchWindow::isUseRegExChecked(void)
-{
-	return _MatchUseRegExCheckboxButton->getSelected();
-}
-
-inline
-bool SearchWindow::isSearchUpChecked(void)
-{
-	return _SearchUpCheckboxButton->getSelected();
-}
-
-inline
-bool SearchWindow::isWrapAroundChecked(void)
-{
-	return _WrapAroundCheckboxButton->getSelected();
+	return _Type;
 }
 
 OSG_END_NAMESPACE

@@ -66,7 +66,10 @@
 #include "OSGDeleteSelectedCommand.h"
 #include "OSGDeleteCharacterCommand.h"
 #include "OSGSetTextCommand.h"
+#include "OSGInsertStringCommand.h"
 #include "OSGPlainDocument.h"
+#include <boost/xpressive/xpressive.hpp>
+#include "cctype" 
 
 
 OSG_BEGIN_NAMESPACE
@@ -128,6 +131,7 @@ void TextDomArea::drawInternal(Graphics * const TheGraphics, Real32 Opacity) con
 	if(getLayoutManager())
 	{
 		drawHighlightBG(TheGraphics,Opacity);
+		drawBookmarkHighlight(TheGraphics,Opacity);
 		drawLineHighlight(TheGraphics,Opacity);
 		drawBraceHighlight(TheGraphics,Opacity);
 	}
@@ -200,6 +204,13 @@ void TextDomArea::drawLineHighlight(Graphics * const TheGraphics, Real32 Opacity
 	TheGraphics->drawRect(Pnt2f(0,getLayoutManager()->getCaretYPosition()),Pnt2f(getLayoutManager()->getPreferredWidth(),getLayoutManager()->getCaretYPosition()+getLayoutManager()->getHeightOfLine()),Color4f(0.7,0.7,0.7,0.5),Opacity);
 }
 
+void TextDomArea::drawBookmarkHighlight(Graphics * const TheGraphics, Real32 Opacity) const
+{
+	for(UInt32 i=0;i<getMFBookmarkedLines()->size();i++)
+		TheGraphics->drawRect(Pnt2f(0,getLayoutManager()->getHeightOfLine()*getBookmarkedLines(i)),Pnt2f(getLayoutManager()->getPreferredWidth(),getLayoutManager()->getHeightOfLine()*(getBookmarkedLines(i)+1)),Color4f(0.7,0.0,0.7,0.5),Opacity);
+}
+
+
 void TextDomArea::drawBraceHighlight(Graphics * const TheGraphics, Real32 Opacity) const
 {
 	if(getLayoutManager()->getBracesHighlightFlag())
@@ -228,6 +239,176 @@ void TextDomArea::drawBraceHighlight(Graphics * const TheGraphics, Real32 Opacit
 void TextDomArea::drawTheCaret(Graphics * const TheGraphics, Real32 Opacity) const
 {
 	TheGraphics->drawRect(Pnt2f(getLayoutManager()->getCaretXPosition(),getLayoutManager()->getCaretYPosition()),Pnt2f(getLayoutManager()->getCaretXPosition()+2,getLayoutManager()->getCaretYPosition()+getLayoutManager()->getHeightOfLine()),Color4f(0,0,0,1),Opacity);
+}
+
+
+void TextDomArea::initialSearchStringModification(std::string& stringToBeLookedFor,const bool& isUseRegExChecked)
+{
+	std::string specialcharacters = ".|*?+(){}[]^$\\";
+	std::string temp="";
+	if(!isUseRegExChecked)
+	{
+		for(UInt32 i=0;i<stringToBeLookedFor.length();i++)
+		{
+			size_t found;
+			found=specialcharacters.find(stringToBeLookedFor[i]);
+			if (found!=std::string::npos)
+			{
+				temp+="\\"+stringToBeLookedFor[i];
+			}
+			else
+			{
+				temp+=stringToBeLookedFor[i];
+			}
+		}
+		stringToBeLookedFor=temp;
+	}
+}
+
+void TextDomArea::regexCompiling(const std::string& stringToBeLookedFor,boost::xpressive::sregex& rex,const bool& isCaseChecked,const bool& isWholeWordChecked)
+{
+	if(isCaseChecked)
+		if(isWholeWordChecked)
+			rex = boost::xpressive::sregex::compile("\\b"+stringToBeLookedFor+"\\b");
+		else
+			rex = boost::xpressive::sregex::compile(stringToBeLookedFor);
+	else
+		if(isWholeWordChecked)
+			rex = boost::xpressive::sregex::compile("\\b"+stringToBeLookedFor+"\\b", boost::xpressive::regex_constants::icase);
+		else
+			rex = boost::xpressive::sregex::compile(stringToBeLookedFor, boost::xpressive::regex_constants::icase);
+}
+
+void TextDomArea::bookmarkAllUsingRegEx(std::string& stringToBeLookedFor,const bool& isCaseChecked,const bool& isWholeWordChecked,const bool& isUseRegExChecked)
+{
+	boost::xpressive::sregex rex;
+	
+	initialSearchStringModification(stringToBeLookedFor,isUseRegExChecked);
+
+	regexCompiling(stringToBeLookedFor,rex,isCaseChecked,isWholeWordChecked);
+
+	for(UInt32 i=0;i<getLayoutManager()->getRootElement()->getElementCount();i++)
+	{
+		PlainDocumentLeafElementRefPtr theElement = dynamic_cast<PlainDocumentLeafElement*>(getLayoutManager()->getRootElement()->getElement(i));
+		std::string stringToBeSearchedIn = theElement->getText();
+
+		boost::xpressive::smatch what;
+ 
+		if( boost::xpressive::regex_search( stringToBeSearchedIn, what, rex ) )
+		{
+			editMFBookmarkedLines()->push_back(i);   
+		}
+	}
+}
+
+void TextDomArea::replaceAllUsingRegEx(std::string& stringToBeLookedFor,const std::string& theReplaceText,const bool& isCaseChecked,const bool &isWholeWordChecked,const bool &isUseRegExChecked)
+{
+	
+	boost::xpressive::sregex rex;
+
+	initialSearchStringModification(stringToBeLookedFor,isUseRegExChecked);
+
+	regexCompiling(stringToBeLookedFor,rex,isCaseChecked,isWholeWordChecked);
+
+	for(UInt32 i=0;i<getLayoutManager()->getRootElement()->getElementCount();i++)
+	{
+		PlainDocumentLeafElementRefPtr theElement = dynamic_cast<PlainDocumentLeafElement*>(getLayoutManager()->getRootElement()->getElement(i));
+		std::string stringToBeSearchedIn = theElement->getText();
+
+		boost::xpressive::smatch what;
+
+		if( boost::xpressive::regex_search( stringToBeSearchedIn, what, rex ) )
+		{
+			std::string str = regex_replace( stringToBeSearchedIn, rex, theReplaceText );
+			setTextUsingCommandManager(theElement,str);
+		}
+	}
+}
+
+bool TextDomArea::searchForStringInDocumentUsingRegEx(std::string& stringToBeLookedFor,const bool &isCaseChecked,const bool &isWholeWordChecked,const bool &searchUp,const bool &wrapAround,const bool &isUseRegExChecked)
+{
+	
+	boost::xpressive::sregex rex;
+
+	initialSearchStringModification(stringToBeLookedFor,isUseRegExChecked);
+
+	regexCompiling(stringToBeLookedFor,rex,isCaseChecked,isWholeWordChecked);
+
+	Int32 i=getLayoutManager()->getCaretLine();
+	UInt32 count=0;
+	UInt32 totalElements = getLayoutManager()->getRootElement()->getElementCount();
+
+	for(;;count++)
+	{
+		// conditions to exit on...
+		if(!wrapAround)
+		{
+			if(!searchUp)
+			{
+				if(i>=totalElements)break;
+			}
+			else
+			{
+				if(i<0)break;
+			}
+		}
+		else
+		{
+			if(count>=totalElements)break;
+		}
+
+		PlainDocumentLeafElementRefPtr theElement = dynamic_cast<PlainDocumentLeafElement*>(getLayoutManager()->getRootElement()->getElement(i));
+		std::string stringToBeSearchedIn = theElement->getText();
+
+		if(i==getLayoutManager()->getCaretLine()) stringToBeSearchedIn = stringToBeSearchedIn.substr(getLayoutManager()->getCaretIndex());
+
+		boost::xpressive::smatch what;
+ 
+		if( boost::xpressive::regex_search( stringToBeSearchedIn, what, rex ) )
+		{
+			UInt32 temphsi = what.position();
+			if(i==getLayoutManager()->getCaretLine())temphsi+=getLayoutManager()->getCaretIndex();
+			getLayoutManager()->setHSI(temphsi);
+			getLayoutManager()->setHSL(i);
+			getLayoutManager()->setHEL(i);
+			getLayoutManager()->setHEI(temphsi+ what.length());
+			getLayoutManager()->setCaretLine(i);
+			getLayoutManager()->setCaretIndex(temphsi+ what.length() );
+			getLayoutManager()->recalculateCaretPositions();
+			getLayoutManager()->checkCaretVisibility();
+
+			return true;
+		}
+
+		// incrementing values 
+		if(!wrapAround)
+		{
+			if(!searchUp)
+			{
+				++i;
+			}
+			else
+			{
+				--i;
+			}
+		}
+		else
+		{
+			if(!searchUp)
+			{
+				i=(i+1)%totalElements;
+			}
+			else
+			{
+				--i;
+				if(i<0)
+				{
+					i=totalElements-1;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 void TextDomArea::handleDocumentChanged(DocumentEventDetails* const details)
@@ -492,7 +673,9 @@ void TextDomArea::handlePastingAString(const std::string& theClipboard)
 		deleteSelectedUsingCommandManager();//getLayoutManager()->deleteSelected();
 	}
 	
-	getDocumentModel()->insertString(getCaretPosition(),theClipboard,temp);/// need to deal with this......
+	//getDocumentModel()->insertString(getCaretPosition(),theClipboard,temp);/// need to deal with this......
+	insertStringUsingCommandManager(getLayoutManager()->CaretLineAndIndexToCaretOffsetInDOM(getLayoutManager()->getCaretLine(),getLayoutManager()->getCaretIndex()),theClipboard);
+	
 	getLayoutManager()->updateViews();
 	getLayoutManager()->updateSize();
 	updatePreferredSize();
@@ -501,6 +684,12 @@ void TextDomArea::handlePastingAString(const std::string& theClipboard)
 void TextDomArea::insertCharacterUsingCommandManager(char theCharacter,UInt32 line,UInt32 index)
 {
 	CommandPtr theCommand = InsertCharacterCommand::create(getLayoutManager(),dynamic_cast<PlainDocument*>(getDocumentModel()),theCharacter,line,index);
+	_TheCommandManager->executeCommand(theCommand);
+}
+
+void TextDomArea::insertStringUsingCommandManager(UInt32 caretPosition,std::string theString)
+{
+	CommandPtr theCommand = InsertStringCommand::create(getLayoutManager(),dynamic_cast<PlainDocument*>(getDocumentModel()),caretPosition,theString);
 	_TheCommandManager->executeCommand(theCommand);
 }
 
@@ -583,6 +772,16 @@ std::string TextDomArea::getHighlightedStringInternal(UInt32 lesserLine,UInt32 l
 
 	return firstLine + intermediateLines + lastLine;
 }
+
+//void TextDomArea::stringToUpper(std::string& strToConvert)
+//{
+//   for(unsigned int i=0;i<strToConvert.length();i++)
+//   {
+//	   strToConvert[i] = toupper(strToConvert[i]);
+//   }
+//}
+
+
 
 void TextDomArea::setupCursor(void)
 {

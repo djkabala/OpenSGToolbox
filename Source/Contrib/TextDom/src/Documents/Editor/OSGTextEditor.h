@@ -72,13 +72,15 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 {
   protected:
 
+	    enum searchWindowButtons{SEARCH,REPLACE,REPLACE_ALL,BOOKMARK_ALL};
+
 		SplitPanelRefPtr _DomAreaAndClipboard;
 		SplitPanelRefPtr _InsideDomArea;
 
 	    // Clipboard related
 		ListRefPtr _TheClipboardList;
 		DefaultListModelRefPtr _TheClipboardListModel;
-		ListSelectionModelPtr _TheClipboardListSelectionModel;
+		ListSelectionModelRefPtr _TheClipboardListSelectionModel;
 		ScrollPanelRefPtr _TheClipboardScrollPanel;
 		LabelRefPtr _TheClipboardLabel;
 		PanelRefPtr _TheClipboardPanel;
@@ -93,6 +95,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 
 		void updateLayout(bool isClipboardVisible);	// to update the layout of the editor(to show/hide the copy clipboard)
 		void updateDomLayout(bool isSplit);	// to update the layout of the Document Area (to show/hide the second view)
+
+		void searchWindowButtonClicked(SearchWindowEventDetails* const details,UInt32 button);
 
 		// Dom related
 		TabPanelRefPtr    _LeftTabPanel;
@@ -127,9 +131,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 		void handleCloseButtonAction(ActionEventDetails* const details);
         boost::signals2::connection _CloseButtonActionConnection;
 
-        void saveFile(const BoostPath& file);
-
-		virtual void keyTyped(KeyEventDetails* const details);
+        virtual void keyTyped(KeyEventDetails* const details);
 
 		virtual void mouseClicked(MouseEventDetails* const details);
 
@@ -138,6 +140,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
   public:
 
 	void loadFile(const BoostPath& file);
+	void saveFile(const BoostPath& file);
 
     typedef TextEditorBase Inherited;
     typedef TextEditor     Self;

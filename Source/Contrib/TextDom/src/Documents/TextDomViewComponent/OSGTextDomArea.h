@@ -51,7 +51,9 @@
 #include "OSGCommandManager.h"
 #include "OSGDocumentEventDetailsFields.h"
 #include "OSGPlainDocumentLeafElementFields.h"
- 
+#include <boost/xpressive/xpressive.hpp>
+
+
 
 OSG_BEGIN_NAMESPACE
 
@@ -71,6 +73,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	  bool _IsMousePressed;
 	  void drawHighlightBG(Graphics * const TheGraphics, Real32 Opacity) const;
 	  void drawLineHighlight(Graphics * const TheGraphics, Real32 Opacity) const;
+	  void drawBookmarkHighlight(Graphics * const TheGraphics, Real32 Opacity) const;
 	  void drawBraceHighlight(Graphics * const TheGraphics, Real32 Opacity) const;
 	  void drawTheCaret(Graphics * const TheGraphics, Real32 Opacity) const;
 
@@ -90,6 +93,9 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	  void deleteSelectedUsingCommandManager(void);
 	  void deleteCharacterUsingCommandManager(void);
 	  void setTextUsingCommandManager(PlainDocumentLeafElement* const theElement,std::string theString);
+	  void insertStringUsingCommandManager(UInt32 caretPosition,std::string theString);
+	  //void stringToUpper(std::string& strToConvert);
+
 
 	  CommandManagerPtr	_TheCommandManager;
 	  UndoManagerPtr	_TheUndoManager;
@@ -142,6 +148,13 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	UInt32 getLinesToBeDisplayed(void);
 	Real32 getHeightOfLine(void);
 	void tabHandler(bool isShiftPressed);
+	bool searchForStringInDocumentUsingRegEx(std::string& stringToBeLookedFor,const bool& isCaseChecked,const bool& isWholeWordChecked,const bool &searchUp,const bool &wrapAround,const bool &isUseRegExChecked);
+	void replaceAllUsingRegEx(std::string& theSearchText,const std::string& theReplaceText,const bool& isCaseChecked,const bool &isWholeWordChecked,const bool &isUseRegExChecked);
+	void bookmarkAllUsingRegEx(std::string& stringToBeLookedFor,const bool& isCaseChecked,const bool& isWholeWordChecked,const bool &isUseRegExChecked);
+
+	void initialSearchStringModification(std::string& stringToBeLookedFor,const bool& isUseRegExChecked);
+	void regexCompiling(const std::string& stringToBeLookedFor,boost::xpressive::sregex& rex,const bool& isCaseChecked,const bool& isWholeWordChecked);
+
 	/*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
     /*! \{                                                                 */

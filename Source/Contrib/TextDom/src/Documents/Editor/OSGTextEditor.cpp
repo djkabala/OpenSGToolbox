@@ -178,31 +178,70 @@ void TextEditor::mouseClicked(MouseEventDetails* const details)
 
 void TextEditor::handleSearchButtonClicked(SearchWindowEventDetails* const details)
 {
-	SearchWindowRefPtr theSearchWindow = dynamic_cast<SearchWindow*>(details->getSource());
+	searchWindowButtonClicked(details,SEARCH);
 }
 
 void TextEditor::handleReplaceButtonClicked(SearchWindowEventDetails* const details)
 {
+	searchWindowButtonClicked(details,REPLACE);
 }
 
 void TextEditor::handleReplaceAllButtonClicked(SearchWindowEventDetails* const details)
 {
+	searchWindowButtonClicked(details,REPLACE_ALL);
 }
 
 void TextEditor::handleBookmarkAllButtonClicked(SearchWindowEventDetails* const details)
 {
+	searchWindowButtonClicked(details,BOOKMARK_ALL);
 }
+
+
+void TextEditor::searchWindowButtonClicked(SearchWindowEventDetails* const details,UInt32 button)
+{
+	SearchWindowRefPtr theSearchWindow = dynamic_cast<SearchWindow*>(details->getSource());
+
+	if(theSearchWindow)
+	{
+		TextDomAreaRefPtr theFocussedDomArea = getFocusedDomArea();
+
+		if(theFocussedDomArea)
+		{
+			switch(button)
+			{
+			case SEARCH: 
+				theFocussedDomArea->searchForStringInDocumentUsingRegEx(theSearchWindow->getSearchText(),theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked(),theSearchWindow->isSearchUpChecked(),theSearchWindow->isWrapAroundChecked(),theSearchWindow->isUseRegExChecked());
+				break;
+			case REPLACE:
+				theFocussedDomArea->handlePastingAString(theSearchWindow->getReplaceText());
+				break;
+			case REPLACE_ALL:
+				theFocussedDomArea->replaceAllUsingRegEx(theSearchWindow->getSearchText(),theSearchWindow->getReplaceText(),theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked(),theSearchWindow->isUseRegExChecked());
+				break;
+			case BOOKMARK_ALL:
+				theFocussedDomArea->editMFBookmarkedLines()->clear();
+				theFocussedDomArea->bookmarkAllUsingRegEx(theSearchWindow->getSearchText(),theSearchWindow->isCaseChecked(),theSearchWindow->isWholeWordChecked(),theSearchWindow->isUseRegExChecked());
+				break;
+			}
+		}
+	}
+}
+
 
 void TextEditor::saveFile(const BoostPath& file)
 {
+	TextDomAreaRefPtr theFocussedDomArea = getFocusedDomArea();
+	theFocussedDomArea->saveFile(file);
 }
 
 void TextEditor::handleCloseButtonAction(ActionEventDetails* const details)
 {
-	ButtonRefPtr _TempCloseButton = dynamic_cast<Button*>(details->getSource());
-	PanelRefPtr _TempPanel = dynamic_cast<Panel*>(_TempCloseButton->getParentContainer());
-	TabPanelRefPtr _TempTabPanel = dynamic_cast<TabPanel*>(_TempPanel->getParentContainer());
+	Button* _TempCloseButton = dynamic_cast<Button*>(details->getSource());
+	Panel* _TempPanel = dynamic_cast<Panel*>(_TempCloseButton->getParentContainer());
+	TabPanel* _TempTabPanel = dynamic_cast<TabPanel*>(_TempPanel->getParentContainer());
 	UInt32 _ChildIndex = (_TempTabPanel->getChildIndex(_TempPanel))/2;
+
+	std::cout<<"childindex:"<<_ChildIndex;
 
 	_LeftTabPanel->removeTab(_ChildIndex);
 

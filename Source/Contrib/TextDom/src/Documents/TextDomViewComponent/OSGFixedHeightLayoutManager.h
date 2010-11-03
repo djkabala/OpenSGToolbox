@@ -120,14 +120,14 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING FixedHeightLayoutManager : public FixedHeigh
 	virtual UInt32 getLinesToBeDisplayed(void) const;
 	virtual void calculatePreferredSize(void);
 	virtual void updateSize(void);
-	virtual virtual void updateViews(void);
+	virtual void updateViews(void);
 	virtual bool isLastCharacterOfDocument(void) const;
-	virtual virtual Vec2f getContentRequestedSize(void) const;
+	virtual Vec2f getContentRequestedSize(void) const;
 	virtual void calculateLineHeight(void);
 	virtual UInt32 calculateCaretPosition(Pnt2f PointOnComponent,bool isDragging);
-	virtual void checkCaretVisibility(UInt32 dir);
+	virtual void checkCaretVisibility(void);
 	virtual bool isCaretVisible(void);
-	virtual void makeCaretVisible(UInt32 dir);
+	virtual void makeCaretVisible(void);
 	virtual bool isSomethingSelected(void);
 	virtual bool isStartLocationBeforeEndLocation(void) const;
 	virtual void moveCaretEnd(bool isControlPressed);
@@ -142,6 +142,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING FixedHeightLayoutManager : public FixedHeigh
 	virtual void DoIfLineLongerThanPreferredSize(void) const;
 	virtual UInt32 getCaretIndex(void) const;
 	virtual UInt32 getCaretLine(void) const;
+	virtual void setCaretIndex(UInt32);
+	virtual void setCaretLine(UInt32);
 	virtual void setHighlight(UInt32 startline,UInt32 startindex,UInt32 endline,UInt32 endindex);
 	virtual Real32 getHeightOfLine(void);
 	virtual void doubleClickHandler(void);
@@ -182,6 +184,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING FixedHeightLayoutManager : public FixedHeigh
 	virtual void setCaretIndexAndLine(UInt32 _theOriginalCaretIndex,UInt32 _theOriginalCaretLine);
 	virtual char getNextCharacter(UInt32 _theOriginalCaretIndex,UInt32 _theOriginalCaretLine);
 	virtual bool isLastCharacterOfLine(UInt32 _theOriginalCaretIndex,UInt32 _theOriginalCaretLine);
+	virtual void highlightString(UInt32 _theOriginalCaretLine,UInt32 _theOriginalCaretIndex,std::string _StringToBeInserted);
 
 	/*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */

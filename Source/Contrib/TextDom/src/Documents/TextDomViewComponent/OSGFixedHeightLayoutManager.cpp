@@ -206,6 +206,24 @@ bool FixedHeightLayoutManager::isLastCharacterOfDocument() const
 	return  false;
 }
 
+void FixedHeightLayoutManager::highlightString(UInt32 _theOriginalCaretLine,UInt32 _theOriginalCaretIndex,std::string _StringToBeInserted)
+{
+	HSL = HEL = _theOriginalCaretLine;
+	HSI = HEI = _theOriginalCaretIndex;
+	for(UInt32 i=0;i<_StringToBeInserted.size();i++)
+	{
+		HEI++;
+		if(_StringToBeInserted[i] == '\n' || _StringToBeInserted[i] == '\r')
+		{
+			if(i+1<_StringToBeInserted.size() && (_StringToBeInserted[i+1] == '\n' || _StringToBeInserted[i+1] == '\r'))
+			{
+				i++;
+			}
+			HEI = 0;
+			HEL++;
+		}
+	}
+}
 
 UInt32 FixedHeightLayoutManager::getTopmostVisibleLineNumber() const
 {
@@ -1011,7 +1029,7 @@ void FixedHeightLayoutManager::moveTheCaret(UInt32 dir,bool isShiftPressed,bool 
 
 		break;
 	}
-	checkCaretVisibility(dir);
+	checkCaretVisibility();
 }
 
 UInt32 FixedHeightLayoutManager::getNumberOfLeadingSpaces(UInt32 line)
@@ -1026,9 +1044,9 @@ UInt32 FixedHeightLayoutManager::getNumberOfLeadingSpaces(UInt32 line)
 	return count;
 }
 
-void FixedHeightLayoutManager::checkCaretVisibility(UInt32 dir)
+void FixedHeightLayoutManager::checkCaretVisibility(void)
 {
-	if(!isCaretVisible())makeCaretVisible(dir);
+	if(!isCaretVisible())makeCaretVisible();
 }
 
 bool FixedHeightLayoutManager::isCaretInWidthRange()
@@ -1092,7 +1110,7 @@ void FixedHeightLayoutManager::doubleClickHandler(void)
 
 
 
-void FixedHeightLayoutManager::makeCaretVisible(UInt32 dir)
+void FixedHeightLayoutManager::makeCaretVisible(void)
 {
 	Pnt2f TempTopLeft, TempBottomRight;
 	

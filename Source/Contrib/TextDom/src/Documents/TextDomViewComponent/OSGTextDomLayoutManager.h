@@ -89,9 +89,9 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomLayoutManager : public TextDomLayoutM
 	virtual bool isLastCharacterOfDocument(void) const = 0;
 	virtual void calculateLineHeight(void) = 0;
 	virtual UInt32 calculateCaretPosition(Pnt2f PointOnComponent,bool isDragging) = 0;
-	virtual void checkCaretVisibility(UInt32 dir) = 0;
+	virtual void checkCaretVisibility(void) = 0;
 	virtual bool isCaretVisible(void) = 0;
-	virtual void makeCaretVisible(UInt32 dir) = 0;
+	virtual void makeCaretVisible(void) = 0;
 	virtual bool isSomethingSelected(void) = 0;
 	virtual bool isStartLocationBeforeEndLocation(void) const = 0;
 	virtual void moveCaretEnd(bool isControlPressed) = 0;
@@ -106,6 +106,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomLayoutManager : public TextDomLayoutM
 	virtual void DoIfLineLongerThanPreferredSize(void) const = 0;
 	virtual UInt32 getCaretIndex(void) const = 0;
 	virtual UInt32 getCaretLine(void) const = 0;
+	virtual void setCaretIndex(UInt32) = 0;
+	virtual void setCaretLine(UInt32) = 0;
 	virtual void setHighlight(UInt32 startline,UInt32 startindex,UInt32 endline,UInt32 endindex) = 0;
 	virtual Real32 getHeightOfLine(void) = 0;
 	virtual void doubleClickHandler(void) = 0;
@@ -146,7 +148,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomLayoutManager : public TextDomLayoutM
 	virtual void setCaretIndexAndLine(UInt32 _theOriginalCaretIndex,UInt32 _theOriginalCaretLine) = 0;
 	virtual char getNextCharacter(UInt32 _theOriginalCaretIndex,UInt32 _theOriginalCaretLine) = 0;
 	virtual bool isLastCharacterOfLine(UInt32 _theOriginalCaretIndex,UInt32 _theOriginalCaretLine) = 0;
-
+	virtual void highlightString(UInt32 _theOriginalCaretLine,UInt32 _theOriginalCaretIndex,std::string _StringToBeInserted) = 0;
     /*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
     /*! \{                                                                 */

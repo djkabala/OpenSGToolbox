@@ -94,6 +94,10 @@ OSG_BEGIN_NAMESPACE
     
 */
 
+/*! \var UInt32          TextDomAreaBase::_mfBookmarkedLines
+    
+*/
+
 /*! \var UInt32          TextDomAreaBase::_sfCaretPosition
     
 */
@@ -167,6 +171,18 @@ void TextDomAreaBase::classDescInserter(TypeObject &oType)
         (Field::SFDefaultFlags | Field::FStdAccess),
         static_cast<FieldEditMethodSig>(&TextDomArea::editHandleFont),
         static_cast<FieldGetMethodSig >(&TextDomArea::getHandleFont));
+
+    oType.addInitialDesc(pDesc);
+
+    pDesc = new MFUInt32::Description(
+        MFUInt32::getClassType(),
+        "BookmarkedLines",
+        "",
+        BookmarkedLinesFieldId, BookmarkedLinesFieldMask,
+        false,
+        (Field::MFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&TextDomArea::editHandleBookmarkedLines),
+        static_cast<FieldGetMethodSig >(&TextDomArea::getHandleBookmarkedLines));
 
     oType.addInitialDesc(pDesc);
 
@@ -293,6 +309,17 @@ TextDomAreaBase::TypeObject TextDomAreaBase::_type(
     "\t>\n"
     "\t</Field>\n"
     "\t<Field\n"
+    "\t\tname=\"BookmarkedLines\"\n"
+    "\t\ttype=\"UInt32\"\n"
+    "\t\tcategory=\"data\"\n"
+    "\t\tcardinality=\"multi\"\n"
+    "\t\tvisibility=\"external\"\n"
+    "\t\tdefaultValue=\"0\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t>\n"
+    "\t</Field>\n"
+    "\n"
+    "\t<Field\n"
     "\t\tname=\"CaretPosition\"\n"
     "\t\ttype=\"UInt32\"\n"
     "\t\tcategory=\"data\"\n"
@@ -405,6 +432,19 @@ SFUnrecUIFontPtr    *TextDomAreaBase::editSFFont           (void)
     return &_sfFont;
 }
 
+MFUInt32 *TextDomAreaBase::editMFBookmarkedLines(void)
+{
+    editMField(BookmarkedLinesFieldMask, _mfBookmarkedLines);
+
+    return &_mfBookmarkedLines;
+}
+
+const MFUInt32 *TextDomAreaBase::getMFBookmarkedLines(void) const
+{
+    return &_mfBookmarkedLines;
+}
+
+
 SFUInt32 *TextDomAreaBase::editSFCaretPosition(void)
 {
     editSField(CaretPositionFieldMask);
@@ -501,6 +541,10 @@ UInt32 TextDomAreaBase::getBinSize(ConstFieldMaskArg whichField)
     {
         returnValue += _sfFont.getBinSize();
     }
+    if(FieldBits::NoField != (BookmarkedLinesFieldMask & whichField))
+    {
+        returnValue += _mfBookmarkedLines.getBinSize();
+    }
     if(FieldBits::NoField != (CaretPositionFieldMask & whichField))
     {
         returnValue += _sfCaretPosition.getBinSize();
@@ -542,6 +586,10 @@ void TextDomAreaBase::copyToBin(BinaryDataHandler &pMem,
     {
         _sfFont.copyToBin(pMem);
     }
+    if(FieldBits::NoField != (BookmarkedLinesFieldMask & whichField))
+    {
+        _mfBookmarkedLines.copyToBin(pMem);
+    }
     if(FieldBits::NoField != (CaretPositionFieldMask & whichField))
     {
         _sfCaretPosition.copyToBin(pMem);
@@ -580,6 +628,10 @@ void TextDomAreaBase::copyFromBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (FontFieldMask & whichField))
     {
         _sfFont.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (BookmarkedLinesFieldMask & whichField))
+    {
+        _mfBookmarkedLines.copyFromBin(pMem);
     }
     if(FieldBits::NoField != (CaretPositionFieldMask & whichField))
     {
@@ -730,6 +782,7 @@ TextDomAreaBase::TextDomAreaBase(void) :
     Inherited(),
     _sfDocumentModel          (NULL),
     _sfFont                   (NULL),
+    _mfBookmarkedLines        (UInt32(0)),
     _sfCaretPosition          (UInt32(0)),
     _sfLineWrap               (bool(true)),
     _sfWrapStyleWord          (bool(true)),
@@ -745,6 +798,7 @@ TextDomAreaBase::TextDomAreaBase(const TextDomAreaBase &source) :
     Inherited(source),
     _sfDocumentModel          (NULL),
     _sfFont                   (NULL),
+    _mfBookmarkedLines        (source._mfBookmarkedLines        ),
     _sfCaretPosition          (source._sfCaretPosition          ),
     _sfLineWrap               (source._sfLineWrap               ),
     _sfWrapStyleWord          (source._sfWrapStyleWord          ),
@@ -867,6 +921,31 @@ EditFieldHandlePtr TextDomAreaBase::editHandleFont           (void)
                     static_cast<TextDomArea *>(this), _1));
 
     editSField(FontFieldMask);
+
+    return returnValue;
+}
+
+GetFieldHandlePtr TextDomAreaBase::getHandleBookmarkedLines (void) const
+{
+    MFUInt32::GetHandlePtr returnValue(
+        new  MFUInt32::GetHandle(
+             &_mfBookmarkedLines,
+             this->getType().getFieldDesc(BookmarkedLinesFieldId),
+             const_cast<TextDomAreaBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr TextDomAreaBase::editHandleBookmarkedLines(void)
+{
+    MFUInt32::EditHandlePtr returnValue(
+        new  MFUInt32::EditHandle(
+             &_mfBookmarkedLines,
+             this->getType().getFieldDesc(BookmarkedLinesFieldId),
+             this));
+
+
+    editMField(BookmarkedLinesFieldMask, _mfBookmarkedLines);
 
     return returnValue;
 }
@@ -1068,7 +1147,16 @@ void TextDomAreaBase::resolveLinks(void)
 
     static_cast<TextDomArea *>(this)->setLayoutManager(NULL);
 
+#ifdef OSG_MT_CPTR_ASPECT
+    AspectOffsetStore oOffsets;
 
+    _pAspectStore->fillOffsetArray(oOffsets, this);
+#endif
+
+#ifdef OSG_MT_CPTR_ASPECT
+    _mfBookmarkedLines.terminateShare(Thread::getCurrentAspect(),
+                                      oOffsets);
+#endif
 }
 
 

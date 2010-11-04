@@ -114,10 +114,10 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomLayoutManager : public TextDomLayoutM
 	virtual void selectAll(void) = 0;
 	virtual bool isLastCharacter(void) = 0;
 	virtual void setTheClipBounds(Pnt2f topLeft,Pnt2f bottomRight) = 0;
-	virtual void setStartingBraces(char theChar,UInt32 CaretIndex,UInt32 CaretLine) = 0;
+	virtual void setStartingBraces(char theChar,UInt32 CaretIndex,UInt32 CaretLine,bool isNewCharacter) = 0;
 	virtual void setEndingBraces(char theChar,UInt32 CaretIndex,UInt32 CaretLine) = 0;
 	virtual char oppositeBrace(char val) = 0;
-	virtual void findBrace(char theChar,UInt32 direction) = 0;
+	virtual void findBrace(char theChar,UInt32 direction,bool isNewCharacter) = 0;
 	virtual void removeBracesHighlightIndices(void) = 0;
 	virtual bool isStartingBraces(char value) = 0;
 	virtual bool isEndingBraces(char value) = 0;

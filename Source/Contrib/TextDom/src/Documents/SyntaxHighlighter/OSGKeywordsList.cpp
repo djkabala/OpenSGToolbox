@@ -40,99 +40,92 @@
 //  Includes
 //---------------------------------------------------------------------------
 
-#define OSG_COMPILETEXTDOMLIB
+#include <cstdlib>
+#include <cstdio>
 
-#include "OSGConfig.h"
+#include <OSGConfig.h>
 
-#include "OSGSyntaxHighlighter.h"
-
-
-#include "OSGSingletonHolder.ins"
-
+#include "OSGKeywordsList.h");
+#include <set>
 OSG_BEGIN_NAMESPACE
 
-/***************************************************************************\
- *                            Description                                  *
-\***************************************************************************/
-
-/*! \class osg::SyntaxHighlighterBase
-A SyntaxHighlighterBase. 
-*/
 
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
-
-OSG_SINGLETON_INST(SyntaxHighlighterBase, addPostFactoryExitFunction)
-
-template class SingletonHolder<SyntaxHighlighterBase>;
 
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/
 
 
-std::vector<UInt32> SyntaxHighlighterBase::processInput(std::string inputString)
+/***************************************************************************\
+ *                           Instance methods                              *
+\***************************************************************************/
+
+void KeywordsList::initialize(void)
 {
-	std::vector<UInt32> indices;
-	UInt32 index = 0;
-	std::istringstream iss(inputString);
-	std::string theString;
-	while(iss>>theString)
-	{
-		if(theKeywordsList.isKeyword(theString))
+	addKeyword("int");
+	addKeyword("void");
+	addKeyword("main");
+	addKeyword("while");
+	addKeyword("for");
+	addKeyword("next");
+	addKeyword("do");
+	addKeyword("if");
+	addKeyword("then");
+	addKeyword("else");
+	addKeyword("endif");
+	addKeyword("elif");
+	addKeyword("end");
+}
+
+void KeywordsList::addKeyword(std::string keyword)
+{
+	theKeywords.insert(keyword);
+}
+
+void KeywordsList::removeKeyword(std::string keyword)
+{
+	theKeywords.erase(keyword);
+}
+
+bool KeywordsList::isKeyword(const std::string& keyword)
+{
+	return (theKeywords.find(keyword) != theKeywords.end());
+}
+
+void KeywordsList::displayAll(void)
+{
+		std::cout<<"Displaying dictionary..."<<std::endl;
+		for(theKeywords_itr = theKeywords.begin();theKeywords_itr!=theKeywords.end();theKeywords_itr++)
 		{
-			UInt32 loc = inputString.find( theString, index );
-			indices.push_back(loc);
-			index = loc + theString.size();
-			indices.push_back(index);
+			std::cout<<*theKeywords_itr<<std::endl;
 		}
-	};
-	return indices;
+		std::cout<<std::endl;
 }
 
-void SyntaxHighlighterBase::initializeKeywordsList(void)
-{
-	theKeywordsList.initialize();
-	//displayKeywordsList();
-}
 
-void SyntaxHighlighterBase::displayKeywordsList(void)
-{
-	theKeywordsList.displayAll();
-}
+/*-------------------------------------------------------------------------*\
+ -  private                                                                 -
+\*-------------------------------------------------------------------------*/
+
 /*----------------------- constructors & destructors ----------------------*/
 
-SyntaxHighlighterBase::SyntaxHighlighterBase(void)
+KeywordsList::KeywordsList()
 {
-	initializeKeywordsList();
 }
 
-SyntaxHighlighterBase::SyntaxHighlighterBase(const SyntaxHighlighterBase &obj)
+KeywordsList::KeywordsList(const KeywordsList &source)
 {
-	SWARNING << "In SyntaxHighlighterBase copy constructor" << std::endl;
+	theKeywords = source.theKeywords;
 }
 
-SyntaxHighlighterBase::~SyntaxHighlighterBase(void)
+KeywordsList::~KeywordsList(void)
 {
 }
 
 /*----------------------------- class specific ----------------------------*/
 
-/*------------------------------------------------------------------------*/
-/*                              cvs id's                                  */
-
-#ifdef OSG_SGI_CC
-#pragma set woff 1174
-#endif
-
-#ifdef OSG_LINUX_ICC
-#pragma warning( disable : 177 )
-#endif
-
-#ifdef __sgi
-#pragma reset woff 1174
-#endif
 
 OSG_END_NAMESPACE
-

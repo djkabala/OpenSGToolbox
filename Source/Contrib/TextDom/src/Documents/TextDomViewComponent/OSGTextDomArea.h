@@ -94,6 +94,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	  void deleteCharacterUsingCommandManager(void);
 	  void setTextUsingCommandManager(PlainDocumentLeafElement* const theElement,std::string theString);
 	  void insertStringUsingCommandManager(UInt32 caretPosition,std::string theString);
+	  void highlightIfNextCharacterIsABrace(void);
 	  //void stringToUpper(std::string& strToConvert);
 
 

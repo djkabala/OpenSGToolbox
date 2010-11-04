@@ -26,72 +26,51 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*\
+ *                                Changes                                    *
+ *                                                                           *
+ *                                                                           *
+ *                                                                           *
+ *                                                                           *
+ *                                                                           *
+ *                                                                           *
+\*---------------------------------------------------------------------------*/
 
-#ifndef _OSGSYNTAXHIGHLIGHTER_H_
-#define _OSGSYNTAXHIGHLIGHTER_H_
+#ifndef _OSGKEYWORDSLIST_H_
+#define _OSGKEYWORDSLIST_H_
 #ifdef __sgi
 #pragma once
 #endif
 
 #include "OSGConfig.h"
 #include "OSGContribTextDomDef.h"
-
-#include <vector>
+#include "OSGBaseTypes.h"
 #include <set>
-#include <string>
-#include <iostream>
-#include <fstream>
-
-#include "OSGSingletonHolder.h"
-
-#include "OSGDocument.h"
-#include "OSGKeywordsList.h"
-//#include <map>
 
 OSG_BEGIN_NAMESPACE
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING SyntaxHighlighterBase
+class OSG_CONTRIBTEXTDOM_DLLMAPPING KeywordsList
 {
-     /*==========================  PUBLIC  =================================*/
-   public:
- 
-     virtual ~SyntaxHighlighterBase(void);
+private:
 
-	 std::vector<UInt32> processInput(std::string inputString);
+	std::set<std::string> theKeywords;
+	std::set<std::string>::const_iterator theKeywords_itr;
 
- 
-     /*=========================  PROTECTED  ===============================*/
-   protected:
+public:
 
+	void addKeyword(std::string);
+	void removeKeyword(std::string);
+	bool isKeyword(const std::string&);
+	void initialize();
+	void displayAll(void);
 
-	 void initializeKeywordsList(void);
-	 void displayKeywordsList(void);
-	 KeywordsList theKeywordsList;
+	KeywordsList();
 
-     SyntaxHighlighterBase(void);
-     SyntaxHighlighterBase(const SyntaxHighlighterBase &obj);
- 
-     /*==========================  PRIVATE  ================================*/
-   private:
- 
-    template <class SingletonT>
-    friend class SingletonHolder;
+    KeywordsList(const KeywordsList &source);
     
-     friend class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileType;
-     
-     void operator =(const SyntaxHighlighterBase &source);
- 
-  
+    ~KeywordsList(void);
 };
-
-typedef SingletonHolder<SyntaxHighlighterBase> SyntaxHighlighter;
-
-typedef SyntaxHighlighter* SyntaxHighlighterP;
 
 OSG_END_NAMESPACE
 
-#include "OSGSyntaxHighlighter.inl"
-
-#endif /* _OSGSyntaxHighlighter_H_ */
-
-
+#endif //_OSGKEYWORDSLIST_H_

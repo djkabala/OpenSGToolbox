@@ -1192,14 +1192,14 @@ Pnt2f FixedHeightLayoutManager::getEndXYPosition(UInt32 lineNumber) const
 }
 
 
-void FixedHeightLayoutManager::setStartingBraces(char theChar,UInt32 CaretIndex,UInt32 CaretLine)
+void FixedHeightLayoutManager::setStartingBraces(char theChar,UInt32 CaretIndex,UInt32 CaretLine,bool isNewCharacter)
 {
 	_BracesHighlightFlag = true;
 	_StartingBraceIndex = CaretIndex;
 	_StartingBraceLine = CaretLine;
 	_EndingBraceIndex = CaretIndex;
 	_EndingBraceLine = CaretLine;
-	findBrace(theChar,AFTER);
+	findBrace(theChar,AFTER,isNewCharacter);
 }
 
 void FixedHeightLayoutManager::setEndingBraces(char theChar,UInt32 CaretIndex,UInt32 CaretLine)
@@ -1209,7 +1209,7 @@ void FixedHeightLayoutManager::setEndingBraces(char theChar,UInt32 CaretIndex,UI
 	_StartingBraceLine = CaretLine;
 	_EndingBraceIndex = CaretIndex;
 	_EndingBraceLine = CaretLine;
-	findBrace(theChar,BEFORE);
+	findBrace(theChar,BEFORE,true);
 }
 
 char FixedHeightLayoutManager::oppositeBrace(char val)
@@ -1227,7 +1227,7 @@ char FixedHeightLayoutManager::oppositeBrace(char val)
 	}
 }
 
-void FixedHeightLayoutManager::findBrace(char theChar,UInt32 direction)
+void FixedHeightLayoutManager::findBrace(char theChar,UInt32 direction,bool isNewCharacter)
 {
 	bool found = false;
 	Int32 currentLine;
@@ -1244,7 +1244,10 @@ void FixedHeightLayoutManager::findBrace(char theChar,UInt32 direction)
 				std::string theString = temp->getText();
 				if(currentLine == _StartingBraceLine)
 				{
-					theString = theString.substr(_StartingBraceIndex);
+					if(isNewCharacter)
+						theString = theString.substr(_StartingBraceIndex);
+					else
+						theString = theString.substr(_StartingBraceIndex+1);
 				}
 				if(find(theString.begin(),theString.end(),theChar) == theString.end() && find(theString.begin(),theString.end(),oppositeBrace(theChar)) == theString.end())
 				{

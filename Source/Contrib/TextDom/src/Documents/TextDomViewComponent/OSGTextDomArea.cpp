@@ -207,7 +207,7 @@ void TextDomArea::drawLineHighlight(Graphics * const TheGraphics, Real32 Opacity
 void TextDomArea::drawBookmarkHighlight(Graphics * const TheGraphics, Real32 Opacity) const
 {
 	for(UInt32 i=0;i<getMFBookmarkedLines()->size();i++)
-		TheGraphics->drawRect(Pnt2f(0,getLayoutManager()->getHeightOfLine()*getBookmarkedLines(i)),Pnt2f(getLayoutManager()->getPreferredWidth(),getLayoutManager()->getHeightOfLine()*(getBookmarkedLines(i)+1)),Color4f(0.7,0.0,0.7,0.5),Opacity);
+		TheGraphics->drawRect(Pnt2f(0,getLayoutManager()->getHeightOfLine()*getBookmarkedLines(i)),Pnt2f(getLayoutManager()->getPreferredWidth(),getLayoutManager()->getHeightOfLine()*(getBookmarkedLines(i)+1)),Color4f(0.7,0.7,1.0,0.5),Opacity);
 }
 
 
@@ -446,25 +446,33 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 	_CurrentCaretBlinkElps=0;
 	_DrawCaret = true;
 
+	getLayoutManager()->removeBracesHighlightIndices();
+
     switch(details->getKey())
     {
     case KeyEventDetails::KEY_UP:
         getLayoutManager()->moveTheCaret(UP,(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT),(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_CONTROL));
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_DOWN:
         getLayoutManager()->moveTheCaret(DOWN,(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT),(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_CONTROL));
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_LEFT:
 	    getLayoutManager()->moveTheCaret(LEFT,(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT),(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_CONTROL));
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_RIGHT:
         getLayoutManager()->moveTheCaret(RIGHT,(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT),(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_CONTROL));
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_PAGE_UP:
         getLayoutManager()->moveTheCaret(PAGEUP,(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT),(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_CONTROL));
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_PAGE_DOWN:
         getLayoutManager()->moveTheCaret(PAGEDOWN,(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT),(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_CONTROL));
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_BACK_SPACE:
 	    if(getLayoutManager()->isSomethingSelected())
@@ -479,6 +487,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 			    deleteCharacterUsingCommandManager();//getDocumentModel()->deleteCharacter(getLayoutManager()->getCaretLine(),getLayoutManager()->getCaretIndex());
 		    }
 	    }
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_DELETE:
 	    if(getLayoutManager()->isSomethingSelected())
@@ -489,6 +498,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 	    {
 		    deleteCharacterUsingCommandManager();//getDocumentModel()->deleteCharacter(getLayoutManager()->getCaretLine(),getLayoutManager()->getCaretIndex());
 	    }
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_ENTER:
 	    if(getLayoutManager()->isSomethingSelected())
@@ -496,15 +506,19 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 		    deleteSelectedUsingCommandManager();//getLayoutManager()->deleteSelected();
 	    }
 	    insertCharacterUsingCommandManager('\n',-1,-1);
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_HOME:
 	    getLayoutManager()->moveTheCaret(HOME,(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT),(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_CONTROL));
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_END:
 	    getLayoutManager()->moveTheCaret(END,(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT),(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_CONTROL));
+		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_TAB:
 	    tabHandler(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT);
+		highlightIfNextCharacterIsABrace();
         break;
     default:
 	    if(isPrintableChar(details->getKeyChar()) || details->getKey() == KeyEventDetails::KEY_SPACE)
@@ -549,16 +563,16 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 			    {
 				    deleteSelectedUsingCommandManager();//getLayoutManager()->deleteSelected();
 			    }
+					
 			    if(getLayoutManager()->isStartingBraces(details->getKeyChar()))
 			    {
-				    getLayoutManager()->removeBracesHighlightIndices();
-				    getLayoutManager()->setStartingBraces(details->getKeyChar(),getLayoutManager()->getCaretIndex(),getLayoutManager()->getCaretLine());
+				    getLayoutManager()->setStartingBraces(details->getKeyChar(),getLayoutManager()->getCaretIndex(),getLayoutManager()->getCaretLine(),true);
 			    }
 			    else if(getLayoutManager()->isEndingBraces(details->getKeyChar()))
 			    {
-				    getLayoutManager()->removeBracesHighlightIndices();
 				    getLayoutManager()->setEndingBraces(details->getKeyChar(),getLayoutManager()->getCaretIndex(),getLayoutManager()->getCaretLine());
 			    }
+				
 			    insertCharacterUsingCommandManager(details->getKeyChar(),-1,-1);
 
 			    /*getDocumentModel()->insertCharacter(getLayoutManager()->getCaretIndex(),getLayoutManager()->getCaretLine(),details->getKeyChar(),temp);
@@ -566,8 +580,26 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 			    getLayoutManager()->DoIfLineLongerThanPreferredSize();*/
 		    }
 	    }
-        break;
+		break;
     }
+}
+
+void TextDomArea::highlightIfNextCharacterIsABrace(void)
+{
+	
+	std::string nextCharacterInString = getDocumentModel()->getText(getLayoutManager()->CaretLineAndIndexToCaretOffsetInDOM(getLayoutManager()->getCaretLine(),getLayoutManager()->getCaretIndex()),1);
+
+	char nextCharacter = nextCharacterInString[0];
+
+	if(getLayoutManager()->isStartingBraces(nextCharacter))
+	{
+		getLayoutManager()->setStartingBraces(nextCharacter,getLayoutManager()->getCaretIndex(),getLayoutManager()->getCaretLine(),false);
+	}
+	else if(getLayoutManager()->isEndingBraces(nextCharacter))
+	{
+		getLayoutManager()->setEndingBraces(nextCharacter,getLayoutManager()->getCaretIndex(),getLayoutManager()->getCaretLine());
+	}
+				
 }
 
 void TextDomArea::tabHandler(bool isShiftPressed)

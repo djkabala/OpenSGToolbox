@@ -150,10 +150,10 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING FixedHeightLayoutManager : public FixedHeigh
 	virtual void selectAll(void);
 	virtual bool isLastCharacter(void);
 	virtual void setTheClipBounds(Pnt2f topLeft,Pnt2f bottomRight);
-	virtual void setStartingBraces(char theChar,UInt32 CaretIndex,UInt32 CaretLine);
+	virtual void setStartingBraces(char theChar,UInt32 CaretIndex,UInt32 CaretLine,bool isNewCharacter);
 	virtual void setEndingBraces(char theChar,UInt32 CaretIndex,UInt32 CaretLine);
 	virtual char oppositeBrace(char val);
-	virtual void findBrace(char theChar,UInt32 direction);
+	virtual void findBrace(char theChar,UInt32 direction,bool isNewCharacter);
 	virtual void removeBracesHighlightIndices(void);
 	virtual bool isStartingBraces(char value);
 	virtual bool isEndingBraces(char value);

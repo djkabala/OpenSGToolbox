@@ -541,7 +541,7 @@ UInt32 FixedHeightLayoutManager::calculateCaretPosition(Pnt2f PointOnComponent,b
 }
 
 
-void FixedHeightLayoutManager::DoIfLineLongerThanPreferredSize() const
+void FixedHeightLayoutManager::DoIfLineLongerThanPreferredSize()
 {
 	PlainDocumentLeafElementRefPtr temp = dynamic_cast<PlainDocumentLeafElement*>(rootElement->getElement(_CaretLine));
 
@@ -554,6 +554,8 @@ void FixedHeightLayoutManager::DoIfLineLongerThanPreferredSize() const
 	
 	getParentTextDomArea()->setPreferredSize(preferredSize);
 
+	_preferredWidth = preferredSize.x();
+	_preferredHeight = preferredSize.y();
 }
 
 

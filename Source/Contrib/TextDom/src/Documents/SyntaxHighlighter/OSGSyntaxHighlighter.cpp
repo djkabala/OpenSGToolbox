@@ -46,7 +46,6 @@
 
 #include "OSGSyntaxHighlighter.h"
 
-
 #include "OSGSingletonHolder.ins"
 
 OSG_BEGIN_NAMESPACE
@@ -89,6 +88,21 @@ std::vector<UInt32> SyntaxHighlighterBase::processInput(std::string inputString)
 		}
 	};
 	return indices;
+}
+
+void SyntaxHighlighterBase::loadFromFile(BoostPath& FilePath)
+{
+	if(!boost::filesystem::exists(FilePath))
+	{
+		SWARNING << "SyntaxHighlighterBase::loadFromFile(): " << FilePath.string() << " does not exists." << std::endl;
+		return;
+	}
+	std::ifstream input(FilePath.string().c_str());
+	std::string keyword;
+	while(input>>keyword)
+	{
+		theKeywordsList.addKeyword(keyword);
+	}
 }
 
 void SyntaxHighlighterBase::initializeKeywordsList(void)

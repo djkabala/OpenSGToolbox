@@ -282,16 +282,16 @@ void TextEditor::createDefaultTabs()
 
     // set the fields of the labels
     _LeftTabPanelLabel->setPreferredSize(Vec2f(120,20));
-    _LeftTabPanelLabel->setText("Welcome!");
+    _LeftTabPanelLabel->setText("Untitled");
     _LeftTabPanelLabel->setBorders(NULL);
     _LeftTabPanelLabel->setBackgrounds(NULL);
 
     // Create a _StackTraceTextArea
-    _LeftTabPanelTextArea = TextArea::create();
-    _LeftTabPanelTextArea->setEditable(false);
-
+    _LeftTabPanelTextArea = AdvancedTextDomArea::create();
+	//_LeftTabPanelTextArea->setText("____");
+	//_LeftTabPanelTextArea->setPreferredSize(Vec2f(200.0,500.0));
     _LeftTabPanelContent = ScrollPanel::create();
-    _LeftTabPanelContent->setPreferredSize(Vec2f(200,1200));
+    //_LeftTabPanelContent->setPreferredSize(getPreferredSize());
     _LeftTabPanelContent->setHorizontalResizePolicy(ScrollPanel::RESIZE_TO_VIEW);
     // Add the _LeftTabPanelTextArea to the ScrollPanel so it is displayed
     _LeftTabPanelContent->setViewComponent(_LeftTabPanelTextArea);
@@ -300,20 +300,23 @@ void TextEditor::createDefaultTabs()
     _RightTabPanelLabel = Label::create();
 
     // set the fields of the labels
-    _RightTabPanelLabel->setText("Screen2");
+    _RightTabPanelLabel->setText("Untitled");
     _RightTabPanelLabel->setBorders(NULL);
     _RightTabPanelLabel->setBackgrounds(NULL);
 
     // Create a _StackTraceTextArea
-    _RightTabPanelTextArea = TextArea::create();
-    _RightTabPanelTextArea->setEditable(false);
+    _RightTabPanelTextArea = createDuplicate(_LeftTabPanelTextArea);
+	//_LeftTabPanelTextArea->setPreferredSize(Vec2f(200.0,500.0));
+    //_RightTabPanelTextArea->setEditable(false);
 
     _RightTabPanelContent = ScrollPanel::create();
-    _RightTabPanelContent->setPreferredSize(Vec2f(200,400));
+    //_RightTabPanelContent->setPreferredSize(_LeftTabPanelTextArea->getPreferredSize());
     _RightTabPanelContent->setHorizontalResizePolicy(ScrollPanel::RESIZE_TO_VIEW);
     // Add the _RightTabPanelTextArea to the ScrollPanel so it is displayed
     _RightTabPanelContent->setViewComponent(_RightTabPanelTextArea);
 
+	_LeftTabPanelTextArea->setText(" \r\n");
+	
 }
 
 void TextEditor::updateDomLayout(bool isSplit)
@@ -467,6 +470,38 @@ void TextEditor::loadFile(const BoostPath& file)
 		_RightTabPanel->setSelectedIndex((_RightTabPanel->getMFTabs()->size())-1);
 	
 	}
+}
+
+void TextEditor::setText(std::string txt)
+{
+	if(getFocusedDomArea() != NULL)
+		getFocusedDomArea()->setText(txt);
+}
+
+void TextEditor::clear(void) 
+{
+	if(getFocusedDomArea() != NULL)
+		getFocusedDomArea()->clear();
+}
+
+void TextEditor::write(std::string txt) 
+{
+	if(getFocusedDomArea() != NULL)
+		getFocusedDomArea()->write(txt);
+}
+
+std::string TextEditor::getText(void)
+{
+	if(getFocusedDomArea() != NULL)
+		return getFocusedDomArea()->getText();
+	else 
+		return "";
+}
+
+void TextEditor::setEditable(bool val)
+{
+	if(getFocusedDomArea() != NULL)
+		getFocusedDomArea()->setEditable(val);
 }
 
 void TextEditor::createDomArea(void)

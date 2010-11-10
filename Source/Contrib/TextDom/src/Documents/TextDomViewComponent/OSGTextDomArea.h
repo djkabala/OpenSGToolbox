@@ -95,7 +95,9 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	  void setTextUsingCommandManager(PlainDocumentLeafElement* const theElement,std::string theString);
 	  void insertStringUsingCommandManager(UInt32 caretPosition,std::string theString);
 	  void highlightIfNextCharacterIsABrace(void);
+	  void createDefaultDocument(void);
 	  //void stringToUpper(std::string& strToConvert);
+
 
 
 	  CommandManagerPtr	_TheCommandManager;
@@ -103,11 +105,12 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 
   public:
 
-    typedef TextDomAreaBase Inherited;
+	typedef TextDomAreaBase Inherited;
     typedef TextDomArea     Self;
 	
 	TextDomAreaTransitPtr createDuplicate(void);
-
+	void setText(std::string txt);
+	std::string getText(void);
 	std::string getHighlightedString(void);
 	TextDomLayoutManager* getTheManager(void);
 	void setupCursor(void);
@@ -141,6 +144,17 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
                                               const Pnt2f& VisibleRectBottomRight, 
                                               const UInt32& orientation, 
                                               const Int32& direction);
+    //Return true if a viewport should always force the height of this Scrollable to match the height of the viewport.
+    virtual bool getScrollableTracksViewportHeight(void);
+
+    //Return true if a viewport should always force the width of this Scrollable to match the width of the viewport.
+    virtual bool getScrollableTracksViewportWidth(void);
+
+    //Return true if a viewport should always force the height of this Scrollable to be at at least the height of the viewport.
+    virtual bool getScrollableHeightMinTracksViewport(void);
+
+    //Return true if a viewport should always force the width of this Scrollable to be at at least the width of the viewport.
+    virtual bool getScrollableWidthMinTracksViewport(void);
 
 	void handleDocumentModelChanged();
 	void handlePastingAString(const std::string& theClipboard);
@@ -156,6 +170,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	void initialSearchStringModification(std::string& stringToBeLookedFor,const bool& isUseRegExChecked);
 	void regexCompiling(const std::string& stringToBeLookedFor,boost::xpressive::sregex& rex,const bool& isCaseChecked,const bool& isWholeWordChecked);
 
+	void write(std::string txt);
+	void clear(void);
 	/*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
     /*! \{                                                                 */
@@ -188,11 +204,12 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomArea : public TextDomAreaBase
 	//Gives notification that an attribute or set of attributes changed.
     void handleDocumentChanged(DocumentEventDetails* const details);
 
-	//Gives notification that there was an insert into the document.
+	//Gives notification that there was an insert of something into the document.
 	void handleDocumentInsert(DocumentEventDetails* const details);
 
-	//Gives notification that a portion of the document has been removed.
+	//Gives notification when something has been removed
 	void handleDocumentRemove(DocumentEventDetails* const details);
+
 
     boost::signals2::connection _DocumentChangedConnection,
                                 _DocumentInsertConnection,

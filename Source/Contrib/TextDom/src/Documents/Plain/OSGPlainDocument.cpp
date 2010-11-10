@@ -341,6 +341,7 @@ void PlainDocument::remove(Int32 offset, Int32 len)
     //TODO: SEND THE CORRECT DETAILS
     DocumentEventDetailsUnrecPtr DocEventDetails(DocumentEventDetails::create(this, getTimeStamp(), this, 0 , 0));
 	produceRemove(DocEventDetails);
+	
 }
 
 void PlainDocument::tokenize(std::string sentence,std::vector<std::string> & setOfWords)

@@ -107,7 +107,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomAreaBase : public Component
         TabSizeFieldId = WrapStyleWordFieldId + 1,
         LineSpacingFieldId = TabSizeFieldId + 1,
         LayoutManagerFieldId = LineSpacingFieldId + 1,
-        NextFieldId = LayoutManagerFieldId + 1
+        EditableFieldId = LayoutManagerFieldId + 1,
+        NextFieldId = EditableFieldId + 1
     };
 
     static const OSG::BitVector DocumentModelFieldMask =
@@ -128,6 +129,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomAreaBase : public Component
         (TypeTraits<BitVector>::One << LineSpacingFieldId);
     static const OSG::BitVector LayoutManagerFieldMask =
         (TypeTraits<BitVector>::One << LayoutManagerFieldId);
+    static const OSG::BitVector EditableFieldMask =
+        (TypeTraits<BitVector>::One << EditableFieldId);
     static const OSG::BitVector NextFieldMask =
         (TypeTraits<BitVector>::One << NextFieldId);
         
@@ -140,6 +143,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomAreaBase : public Component
     typedef SFUInt32          SFTabSizeType;
     typedef SFInt32           SFLineSpacingType;
     typedef SFUnrecChildTextDomLayoutManagerPtr SFLayoutManagerType;
+    typedef SFBool            SFEditableType;
 
     /*---------------------------------------------------------------------*/
     /*! \name                    Class Get                                 */
@@ -189,6 +193,9 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomAreaBase : public Component
             const SFUnrecChildTextDomLayoutManagerPtr *getSFLayoutManager  (void) const;
                   SFUnrecChildTextDomLayoutManagerPtr *editSFLayoutManager  (void);
 
+                  SFBool              *editSFEditable       (void);
+            const SFBool              *getSFEditable        (void) const;
+
 
                   Document * getDocumentModel  (void) const;
 
@@ -214,6 +221,9 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomAreaBase : public Component
 
                   TextDomLayoutManager * getLayoutManager  (void) const;
 
+                  bool                &editEditable       (void);
+                  bool                 getEditable        (void) const;
+
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                    Field Set                                 */
@@ -227,6 +237,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomAreaBase : public Component
             void setTabSize        (const UInt32 value);
             void setLineSpacing    (const Int32 value);
             void setLayoutManager  (TextDomLayoutManager * const value);
+            void setEditable       (const bool value);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -300,6 +311,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomAreaBase : public Component
     SFUInt32          _sfTabSize;
     SFInt32           _sfLineSpacing;
     SFUnrecChildTextDomLayoutManagerPtr _sfLayoutManager;
+    SFBool            _sfEditable;
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -354,6 +366,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomAreaBase : public Component
     EditFieldHandlePtr editHandleLineSpacing    (void);
     GetFieldHandlePtr  getHandleLayoutManager   (void) const;
     EditFieldHandlePtr editHandleLayoutManager  (void);
+    GetFieldHandlePtr  getHandleEditable        (void) const;
+    EditFieldHandlePtr editHandleEditable       (void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/

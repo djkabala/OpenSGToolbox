@@ -247,6 +247,31 @@ void TextDomAreaBase::setLayoutManager(TextDomLayoutManager * const value)
 
     _sfLayoutManager.setValue(value);
 }
+//! Get the value of the TextDomArea::_sfEditable field.
+
+inline
+bool &TextDomAreaBase::editEditable(void)
+{
+    editSField(EditableFieldMask);
+
+    return _sfEditable.getValue();
+}
+
+//! Get the value of the TextDomArea::_sfEditable field.
+inline
+      bool  TextDomAreaBase::getEditable(void) const
+{
+    return _sfEditable.getValue();
+}
+
+//! Set the value of the TextDomArea::_sfEditable field.
+inline
+void TextDomAreaBase::setEditable(const bool value)
+{
+    editSField(EditableFieldMask);
+
+    _sfEditable.setValue(value);
+}
 
 //! Get the value of the \a index element the TextDomArea::_mfBookmarkedLines field.
 inline
@@ -304,6 +329,9 @@ void TextDomAreaBase::execSync (      TextDomAreaBase *pFrom,
 
     if(FieldBits::NoField != (LayoutManagerFieldMask & whichField))
         _sfLayoutManager.syncWith(pFrom->_sfLayoutManager);
+
+    if(FieldBits::NoField != (EditableFieldMask & whichField))
+        _sfEditable.syncWith(pFrom->_sfEditable);
 }
 #endif
 

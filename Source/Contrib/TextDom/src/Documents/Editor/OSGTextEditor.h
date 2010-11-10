@@ -90,8 +90,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 		void clipboardInitialization(void);
 		void createDomArea(void);
 		AdvancedTextDomAreaTransitPtr createDuplicate(AdvancedTextDomArea* const TheAdvancedTextDomArea);
-
-
+	
+		
 
 		void updateLayout(bool isClipboardVisible);	// to update the layout of the editor(to show/hide the copy clipboard)
 		void updateDomLayout(bool isSplit);	// to update the layout of the Document Area (to show/hide the second view)
@@ -102,11 +102,11 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 		TabPanelRefPtr    _LeftTabPanel;
 		LabelRefPtr       _LeftTabPanelLabel;
 		ScrollPanelRefPtr _LeftTabPanelContent;
-		TextAreaRefPtr    _LeftTabPanelTextArea;
+		AdvancedTextDomAreaRefPtr	_LeftTabPanelTextArea;
 		TabPanelRefPtr    _RightTabPanel;
 		LabelRefPtr       _RightTabPanelLabel;
 		ScrollPanelRefPtr _RightTabPanelContent;
-		TextAreaRefPtr    _RightTabPanelTextArea;
+		AdvancedTextDomAreaRefPtr	_RightTabPanelTextArea;
 		void createLeftTabPanel(void);
 		void createRightTabPanel(void);
 		void createDefaultTabs(void);
@@ -135,12 +135,18 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 
 		virtual void mouseClicked(MouseEventDetails* const details);
 
-    /*==========================  PUBLIC  =================================*/
+	/*==========================  PUBLIC  =================================*/
 
   public:
 
 	void loadFile(const BoostPath& file);
 	void saveFile(const BoostPath& file);
+	void setText(std::string txt);
+	std::string getText(void);
+	void setEditable(bool val);
+	void clear(void);
+	void write(std::string txt);
+
 
     typedef TextEditorBase Inherited;
     typedef TextEditor     Self;

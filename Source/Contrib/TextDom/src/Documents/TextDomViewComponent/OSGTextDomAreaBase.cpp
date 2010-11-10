@@ -61,10 +61,9 @@
 #include "OSGDocument.h"                // DocumentModel Class
 #include "OSGUIFont.h"                  // Font Class
 #include "OSGTextDomLayoutManager.h"    // LayoutManager Class
-
+#include "OSGGlyphView.h"
 #include "OSGTextDomAreaBase.h"
 #include "OSGTextDomArea.h"
-#include "OSGGlyphView.h"
 
 #include <boost/bind.hpp>
 
@@ -119,6 +118,10 @@ OSG_BEGIN_NAMESPACE
 */
 
 /*! \var TextDomLayoutManager * TextDomAreaBase::_sfLayoutManager
+    
+*/
+
+/*! \var bool            TextDomAreaBase::_sfEditable
     
 */
 
@@ -257,6 +260,18 @@ void TextDomAreaBase::classDescInserter(TypeObject &oType)
         static_cast<FieldGetMethodSig >(&TextDomArea::getHandleLayoutManager));
 
     oType.addInitialDesc(pDesc);
+
+    pDesc = new SFBool::Description(
+        SFBool::getClassType(),
+        "Editable",
+        "",
+        EditableFieldId, EditableFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&TextDomArea::editHandleEditable),
+        static_cast<FieldGetMethodSig >(&TextDomArea::getHandleEditable));
+
+    oType.addInitialDesc(pDesc);
 }
 
 
@@ -381,6 +396,16 @@ TextDomAreaBase::TypeObject TextDomAreaBase::_type(
     "        ptrFieldAccess = \"nullCheck\"\n"
     "        linkParentField=\"ParentTextDomArea\"\n"
     "\t>\n"
+    "\t</Field>\n"
+    "\t<Field\n"
+    "\t\tname=\"Editable\"\n"
+    "\t\ttype=\"bool\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "        category=\"data\"\n"
+    "        visibility=\"external\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t\tdefaultValue=\"true\"\n"
+    "    >\n"
     "\t</Field>\n"
     "</FieldContainer>\n",
     "A UI TextDomArea\n"
@@ -523,6 +548,19 @@ SFUnrecChildTextDomLayoutManagerPtr *TextDomAreaBase::editSFLayoutManager  (void
     return &_sfLayoutManager;
 }
 
+SFBool *TextDomAreaBase::editSFEditable(void)
+{
+    editSField(EditableFieldMask);
+
+    return &_sfEditable;
+}
+
+const SFBool *TextDomAreaBase::getSFEditable(void) const
+{
+    return &_sfEditable;
+}
+
+
 
 
 
@@ -569,6 +607,10 @@ UInt32 TextDomAreaBase::getBinSize(ConstFieldMaskArg whichField)
     {
         returnValue += _sfLayoutManager.getBinSize();
     }
+    if(FieldBits::NoField != (EditableFieldMask & whichField))
+    {
+        returnValue += _sfEditable.getBinSize();
+    }
 
     return returnValue;
 }
@@ -614,6 +656,10 @@ void TextDomAreaBase::copyToBin(BinaryDataHandler &pMem,
     {
         _sfLayoutManager.copyToBin(pMem);
     }
+    if(FieldBits::NoField != (EditableFieldMask & whichField))
+    {
+        _sfEditable.copyToBin(pMem);
+    }
 }
 
 void TextDomAreaBase::copyFromBin(BinaryDataHandler &pMem,
@@ -656,6 +702,10 @@ void TextDomAreaBase::copyFromBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (LayoutManagerFieldMask & whichField))
     {
         _sfLayoutManager.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (EditableFieldMask & whichField))
+    {
+        _sfEditable.copyFromBin(pMem);
     }
 }
 
@@ -790,7 +840,8 @@ TextDomAreaBase::TextDomAreaBase(void) :
     _sfLineSpacing            (Int32(5)),
     _sfLayoutManager          (this,
                           LayoutManagerFieldId,
-                          TextDomLayoutManager::ParentTextDomAreaFieldId)
+                          TextDomLayoutManager::ParentTextDomAreaFieldId),
+    _sfEditable               (bool(true))
 {
 }
 
@@ -806,7 +857,8 @@ TextDomAreaBase::TextDomAreaBase(const TextDomAreaBase &source) :
     _sfLineSpacing            (source._sfLineSpacing            ),
     _sfLayoutManager          (this,
                           LayoutManagerFieldId,
-                          TextDomLayoutManager::ParentTextDomAreaFieldId)
+                          TextDomLayoutManager::ParentTextDomAreaFieldId),
+    _sfEditable               (source._sfEditable               )
 {
 }
 
@@ -1099,6 +1151,31 @@ EditFieldHandlePtr TextDomAreaBase::editHandleLayoutManager  (void)
                     static_cast<TextDomArea *>(this), _1));
 
     editSField(LayoutManagerFieldMask);
+
+    return returnValue;
+}
+
+GetFieldHandlePtr TextDomAreaBase::getHandleEditable        (void) const
+{
+    SFBool::GetHandlePtr returnValue(
+        new  SFBool::GetHandle(
+             &_sfEditable,
+             this->getType().getFieldDesc(EditableFieldId),
+             const_cast<TextDomAreaBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr TextDomAreaBase::editHandleEditable       (void)
+{
+    SFBool::EditHandlePtr returnValue(
+        new  SFBool::EditHandle(
+             &_sfEditable,
+             this->getType().getFieldDesc(EditableFieldId),
+             this));
+
+
+    editSField(EditableFieldMask);
 
     return returnValue;
 }

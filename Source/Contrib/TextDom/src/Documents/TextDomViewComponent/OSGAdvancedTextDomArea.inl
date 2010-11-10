@@ -37,7 +37,27 @@
 //---------------------------------------------------------------------------
 //  Includes
 //---------------------------------------------------------------------------
+#include "OSGTextDomArea.h"
+
 
 OSG_BEGIN_NAMESPACE
+
+inline
+void AdvancedTextDomArea::setText(std::string txt)
+{
+	if(_TheTextDomArea != NULL)
+	{	
+		_TheTextDomArea->setText(txt);
+	}
+}
+
+inline
+void AdvancedTextDomArea::setEditable(bool val)
+{
+	if(_TheTextDomArea != NULL)
+	{	
+		_TheTextDomArea->setEditable(val);
+	}
+}
 
 OSG_END_NAMESPACE

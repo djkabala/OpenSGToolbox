@@ -139,7 +139,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING FixedHeightLayoutManager : public FixedHeigh
 	virtual void moveTheCaret(UInt32 dir,bool isShiftPressed,bool isControlPressed);
 	virtual void moveAndHighlightWord(UInt32 dir);
 	virtual void recalculateCaretPositions(void);
-	virtual void DoIfLineLongerThanPreferredSize(void) const;
+	virtual void DoIfLineLongerThanPreferredSize(void);
 	virtual UInt32 getCaretIndex(void) const;
 	virtual UInt32 getCaretLine(void) const;
 	virtual void setCaretIndex(UInt32);

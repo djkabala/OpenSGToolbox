@@ -103,7 +103,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextDomLayoutManager : public TextDomLayoutM
 	virtual void moveTheCaret(UInt32 dir,bool isShiftPressed,bool isControlPressed) = 0;
 	virtual void moveAndHighlightWord(UInt32 dir) = 0;
 	virtual void recalculateCaretPositions(void) = 0;
-	virtual void DoIfLineLongerThanPreferredSize(void) const = 0;
+	virtual void DoIfLineLongerThanPreferredSize(void) = 0;
 	virtual UInt32 getCaretIndex(void) const = 0;
 	virtual UInt32 getCaretLine(void) const = 0;
 	virtual void setCaretIndex(UInt32) = 0;

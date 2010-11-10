@@ -56,17 +56,34 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AdvancedTextDomArea : public AdvancedTextDom
 {
   protected:
 
-	
-  	virtual Vec2f getPreferredScrollableViewportSize(void);
-    virtual Int32 getScrollableUnitIncrement(const Pnt2f& VisibleRectTopLeft, const Pnt2f& VisibleRectBottomRight, const UInt32& orientation, const Int32& direction);
-	virtual Vec2f getContentRequestedSize(void) const;
+
 	void drawGutter(Graphics * const TheGraphics, Real32 Opacity) const;
 
 	TextDomAreaRefPtr _TheTextDomArea;
 	UIFontRefPtr _Font;
+
+	
     /*==========================  PUBLIC  =================================*/
 
   public:
+
+	
+  	virtual Vec2f getPreferredScrollableViewportSize(void);
+    virtual Int32 getScrollableUnitIncrement(const Pnt2f& VisibleRectTopLeft, const Pnt2f& VisibleRectBottomRight, const UInt32& orientation, const Int32& direction);
+	virtual Vec2f getContentRequestedSize(void) const;
+	
+	//Return true if a viewport should always force the height of this Scrollable to match the height of the viewport.
+    virtual bool getScrollableTracksViewportHeight(void);
+
+    //Return true if a viewport should always force the width of this Scrollable to match the width of the viewport.
+    virtual bool getScrollableTracksViewportWidth(void);
+
+    //Return true if a viewport should always force the height of this Scrollable to be at at least the height of the viewport.
+    virtual bool getScrollableHeightMinTracksViewport(void);
+
+    //Return true if a viewport should always force the width of this Scrollable to be at at least the width of the viewport.
+    virtual bool getScrollableWidthMinTracksViewport(void);
+
 
 	void setTheTextDomArea(TextDomArea* const duplicatedTextDom);
 
@@ -75,6 +92,8 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AdvancedTextDomArea : public AdvancedTextDom
     void loadFile(const BoostPath& path);
 	void drawInternal(Graphics * const TheGraphics, Real32 Opacity) const;
 	AdvancedTextDomAreaTransitPtr createDuplicate(void);
+	void setText(std::string txt);
+	void setEditable(bool val);
 
     typedef AdvancedTextDomAreaBase Inherited;
     typedef AdvancedTextDomArea     Self;

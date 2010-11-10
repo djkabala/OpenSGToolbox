@@ -43,10 +43,13 @@
 #include <fstream>
 
 #include "OSGSingletonHolder.h"
+#include "OSGPathType.h"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "OSGDocument.h"
 #include "OSGKeywordsList.h"
-//#include <map>
 
 OSG_BEGIN_NAMESPACE
 
@@ -58,7 +61,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING SyntaxHighlighterBase
      virtual ~SyntaxHighlighterBase(void);
 
 	 std::vector<UInt32> processInput(std::string inputString);
-
+	 void loadFromFile(BoostPath& FilePath);
  
      /*=========================  PROTECTED  ===============================*/
    protected:
@@ -67,6 +70,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING SyntaxHighlighterBase
 	 void initializeKeywordsList(void);
 	 void displayKeywordsList(void);
 	 KeywordsList theKeywordsList;
+	 
 
      SyntaxHighlighterBase(void);
      SyntaxHighlighterBase(const SyntaxHighlighterBase &obj);

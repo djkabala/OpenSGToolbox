@@ -109,4 +109,14 @@ A UI TextDomArea
         linkParentField="ParentTextDomArea"
 	>
 	</Field>
+	<Field
+		name="Editable"
+		type="bool"
+		cardinality="single"
+        category="data"
+        visibility="external"
+		access="public"
+		defaultValue="true"
+    >
+	</Field>
 </FieldContainer>

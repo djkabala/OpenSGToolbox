@@ -86,6 +86,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AdvancedTextDomArea : public AdvancedTextDom
 
 
 	void setTheTextDomArea(TextDomArea* const duplicatedTextDom);
+	TextDomArea* getTheTextDomArea(void);
 
 	std::string getHighlightedString(void);
 	virtual void updateLayout(void);

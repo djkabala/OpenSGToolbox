@@ -277,8 +277,14 @@ void AdvancedTextDomArea::drawInternal(Graphics * const TheGraphics, Real32 Opac
 
 void AdvancedTextDomArea::setTheTextDomArea(TextDomArea* const duplicatedTextDom)
 {
-	this->_TheTextDomArea = duplicatedTextDom;
+	_TheTextDomArea = duplicatedTextDom;
 }
+
+TextDomArea* AdvancedTextDomArea::getTheTextDomArea(void)
+{
+	return _TheTextDomArea;
+}
+
 
 AdvancedTextDomAreaTransitPtr AdvancedTextDomArea::createDuplicate()
 {

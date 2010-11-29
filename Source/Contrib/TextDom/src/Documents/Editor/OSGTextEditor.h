@@ -144,6 +144,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextEditor : public TextEditorBase
 	void setText(std::string txt);
 	std::string getText(void);
 	void setEditable(bool val);
+	void setEnabled(bool val);
 	void clear(void);
 	void write(std::string txt);
 

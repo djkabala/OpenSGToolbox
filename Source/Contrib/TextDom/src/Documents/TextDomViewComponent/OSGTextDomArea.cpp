@@ -319,7 +319,7 @@ void TextDomArea::bookmarkAllUsingRegEx(std::string& stringToBeLookedFor,const b
 
 void TextDomArea::replaceAllUsingRegEx(std::string& stringToBeLookedFor,const std::string& theReplaceText,const bool& isCaseChecked,const bool &isWholeWordChecked,const bool &isUseRegExChecked)
 {
-	if(getEditable())
+	if(getEditable() && getEnabled())
 	{
 		boost::xpressive::sregex rex;
 
@@ -504,7 +504,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_BACK_SPACE:
-		if(getEditable())
+		if(getEditable() && getEnabled())
 		{
 			if(getLayoutManager()->isSomethingSelected())
 			{
@@ -522,7 +522,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 		}
         break;
 	case KeyEventDetails::KEY_DELETE:
-		if(getEditable())
+		if(getEditable() && getEnabled())
 		{
 			if(getLayoutManager()->isSomethingSelected())
 			{
@@ -536,7 +536,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 		}
         break;
 	case KeyEventDetails::KEY_ENTER:
-		if(getEditable())
+		if(getEditable() && getEnabled())
 		{
 			if(getLayoutManager()->isSomethingSelected())
 			{
@@ -555,7 +555,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 		highlightIfNextCharacterIsABrace();
         break;
 	case KeyEventDetails::KEY_TAB:
-	    if(getEditable())
+	    if(getEditable() && getEnabled())
 		{
 			tabHandler(details->getModifiers() & KeyEventDetails::KEY_MODIFIER_SHIFT);
 			highlightIfNextCharacterIsABrace();
@@ -580,7 +580,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 			        }
 			    case KeyEventDetails::KEY_V:
 			        {
-						if(getEditable())
+						if(getEditable() && getEnabled())
 						{
 							std::string theClipboard = getParentWindow()->getParentDrawingSurface()->getEventProducer()->getClipboard();
 							handlePastingAString(theClipboard);
@@ -588,7 +588,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
                         break;
 			        }
 			    case KeyEventDetails::KEY_Z:
-					if(getEditable())
+					if(getEditable() && getEnabled())
 					{
 						if(_TheUndoManager->canUndo())
 						{
@@ -597,7 +597,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 					}
                     break;
 			    case KeyEventDetails::KEY_Y:
-					if(getEditable())
+					if(getEditable() && getEnabled())
 					{
 					    if(_TheUndoManager->canRedo())
 						{
@@ -609,7 +609,7 @@ void TextDomArea::keyTyped(KeyEventDetails* const details)
 		    }
 		    else
 		    {
-				if(getEditable())
+				if(getEditable() && getEnabled())
 				{
 					if(getLayoutManager()->isSomethingSelected())
 					{
@@ -807,6 +807,7 @@ TextDomAreaTransitPtr TextDomArea::createDuplicate(void)
 	newPtr->setDocumentModel(this->getDocumentModel());
 	newPtr->handleDocumentModelChanged();
 	newPtr->setEditable(this->getEditable());
+	newPtr->setEnabled(this->getEnabled());
 	return TextDomAreaTransitPtr(newPtr);
 }
 
@@ -960,7 +961,7 @@ void TextDomArea::createDefaultLayer(void)
 {
 	tempBackground = ColorLayer::create();
 	setBackgrounds(tempBackground);
-	if(getEditable())
+	if(getEditable() && getEnabled())
 	{
 		tempBackground->setColor(Color4f(1.0, 1.0, 1.0, 1.0));
 	}

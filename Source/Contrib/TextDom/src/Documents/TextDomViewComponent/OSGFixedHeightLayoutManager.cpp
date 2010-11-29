@@ -255,10 +255,13 @@ void FixedHeightLayoutManager::updateSize()
 
 void FixedHeightLayoutManager::initializeRootElement() 
 {
-	if(getParentTextDomArea()->getDocumentModel())
+	if(getParentTextDomArea())
 	{
-		defaultRoot=getParentTextDomArea()->getDocumentModel()->getDefaultRootElement();
-		rootElement = dynamic_cast<PlainDocumentBranchElement*>(defaultRoot);
+		if(getParentTextDomArea()->getDocumentModel())
+		{
+			defaultRoot=getParentTextDomArea()->getDocumentModel()->getDefaultRootElement();
+			rootElement = dynamic_cast<PlainDocumentBranchElement*>(defaultRoot);
+		}
 	}
 }
 
@@ -545,17 +548,20 @@ void FixedHeightLayoutManager::DoIfLineLongerThanPreferredSize()
 {
 	PlainDocumentLeafElementRefPtr temp = dynamic_cast<PlainDocumentLeafElement*>(rootElement->getElement(_CaretLine));
 
-	Pnt2f topLeft,bottomRight;
-	getParentTextDomArea()->getFont()->getBounds(temp->getText(),topLeft,bottomRight);
-	
-	Vec2f preferredSize = getParentTextDomArea()->getPreferredSize(); 
+	if(temp)
+	{
+		Pnt2f topLeft,bottomRight;
+		getParentTextDomArea()->getFont()->getBounds(temp->getText(),topLeft,bottomRight);
+		
+		Vec2f preferredSize = getParentTextDomArea()->getPreferredSize(); 
 
-	if(bottomRight.x() > preferredSize.x())preferredSize.setValues(bottomRight.x(),preferredSize.y());
-	
-	getParentTextDomArea()->setPreferredSize(preferredSize);
+		if(bottomRight.x() > preferredSize.x())preferredSize.setValues(bottomRight.x(),preferredSize.y());
+		
+		getParentTextDomArea()->setPreferredSize(preferredSize);
 
-	_preferredWidth = preferredSize.x();
-	_preferredHeight = preferredSize.y();
+		_preferredWidth = preferredSize.x();
+		_preferredHeight = preferredSize.y();
+	}
 }
 
 

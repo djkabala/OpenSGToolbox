@@ -288,6 +288,7 @@ void TextEditor::createDefaultTabs()
 
     // Create a _StackTraceTextArea
     _LeftTabPanelTextArea = AdvancedTextDomArea::create();
+	setFocusedDomArea(_LeftTabPanelTextArea->getTheTextDomArea());
 	//_LeftTabPanelTextArea->setText("____");
 	//_LeftTabPanelTextArea->setPreferredSize(Vec2f(200.0,500.0));
     _LeftTabPanelContent = ScrollPanel::create();
@@ -410,7 +411,7 @@ void TextEditor::loadFile(const BoostPath& file)
 		AdvancedTextDomAreaRefPtr ExampleTextDomArea = AdvancedTextDomArea::create();
 		ExampleTextDomArea->setPreferredSize(Vec2f(400,400));
 		ExampleTextDomArea->loadFile(file);
-		
+		setFocusedDomArea(ExampleTextDomArea->getTheTextDomArea());//***************************************
 		/*ExampleTextDomArea->setWrapStyleWord(false);
 		ExampleTextDomArea->setFont(_Font);*/
 
@@ -502,6 +503,12 @@ void TextEditor::setEditable(bool val)
 {
 	if(getFocusedDomArea() != NULL)
 		getFocusedDomArea()->setEditable(val);
+}
+
+void TextEditor::setEnabled(bool val)
+{
+	if(getFocusedDomArea() != NULL)
+		getFocusedDomArea()->setEnabled(val);
 }
 
 void TextEditor::createDomArea(void)
@@ -673,7 +680,7 @@ void TextEditor::changed(ConstFieldMaskArg whichField,
 	{
 		updateLayout(getClipboardVisible());
 	}
-	else if(whichField & TextEditor::IsSplitFieldMask)
+	if(whichField & TextEditor::IsSplitFieldMask)
 	{
 		updateDomLayout(getIsSplit());
 	}

@@ -68,6 +68,10 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING AdvancedTextDomArea : public AdvancedTextDom
   public:
 
 	
+	std::string getText(void);
+	void clear(void);
+	void write(std::string txt);
+
   	virtual Vec2f getPreferredScrollableViewportSize(void);
     virtual Int32 getScrollableUnitIncrement(const Pnt2f& VisibleRectTopLeft, const Pnt2f& VisibleRectBottomRight, const UInt32& orientation, const Int32& direction);
 	virtual Vec2f getContentRequestedSize(void) const;

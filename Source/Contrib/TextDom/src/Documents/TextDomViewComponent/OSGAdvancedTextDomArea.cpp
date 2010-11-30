@@ -85,6 +85,30 @@ void AdvancedTextDomArea::initMethod(InitPhase ePhase)
     }
 }
 
+std::string AdvancedTextDomArea::getText(void)
+{
+	if(getTheTextDomArea())
+	{
+		return getTheTextDomArea()->getText();
+	}
+	else return "";
+}
+
+void AdvancedTextDomArea::clear(void) 
+{
+	if(getTheTextDomArea())
+	{
+		getTheTextDomArea()->clear();
+	}
+}
+
+void AdvancedTextDomArea::write(std::string txt) 
+{
+	if(getTheTextDomArea())
+	{
+		getTheTextDomArea()->write(txt);
+	}
+}
 
 void AdvancedTextDomArea::loadFile(const BoostPath& path)
 {

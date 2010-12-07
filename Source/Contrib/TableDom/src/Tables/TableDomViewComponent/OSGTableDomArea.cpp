@@ -76,6 +76,11 @@ void TableDomArea::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
+void TableDomArea::drawInternal(OSG::Graphics *const Graphics,OSG::Real32 Opacity) const
+{
+	
+}
+
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/

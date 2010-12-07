@@ -27,14 +27,14 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGTEXTFILEHANDLER_H_
-#define _OSGTEXTFILEHANDLER_H_
+#ifndef _OSGTABLEFILEHANDLER_H_
+#define _OSGTABLEFILEHANDLER_H_
 #ifdef __sgi
 #pragma once
 #endif
 
 #include "OSGConfig.h"
-#include "OSGContribTextDomDef.h"
+#include "OSGContribTableDomDef.h"
 
 #include <vector>
 #include <set>
@@ -42,28 +42,28 @@
 #include <iostream>
 
 #include "OSGBaseTypes.h"
-#include "OSGTextFileType.h"
+#include "OSGTableFileType.h"
 #include "OSGPathType.h"
 #include "OSGSingletonHolder.h"
 
-#include "OSGDocument.h"
+#include "OSGTable.h"
 
 OSG_BEGIN_NAMESPACE
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileHandlerBase
+class OSG_CONTRIBTABLEDOM_DLLMAPPING TableFileHandlerBase
 {
      /*==========================  PUBLIC  =================================*/
    public:
  
      /*---------------------------------------------------------------------*/
-     virtual ~TextFileHandlerBase(void);
+     virtual ~TableFileHandlerBase(void);
  
      /*---------------------------------------------------------------------*/
-	 virtual TextFileTypeP getFileType(const std::string& FileExtension, UInt32 Flags = TextFileType::OSG_READ_SUPPORTED |
-                                              TextFileType::OSG_WRITE_SUPPORTED);
+	 virtual TableFileTypeP getFileType(const std::string& FileExtension, UInt32 Flags = TableFileType::OSG_READ_SUPPORTED |
+                                              TableFileType::OSG_WRITE_SUPPORTED);
  
-	 virtual std::vector<std::string> getSuffixList(UInt32 flags = TextFileType::OSG_READ_SUPPORTED |
-                                              TextFileType::OSG_WRITE_SUPPORTED) const;
+	 virtual std::vector<std::string> getSuffixList(UInt32 flags = TableFileType::OSG_READ_SUPPORTED |
+                                              TableFileType::OSG_WRITE_SUPPORTED) const;
  
      /*---------------------------------------------------------------------*/
      typedef void (*progresscbfp) (UInt32 p);
@@ -71,18 +71,18 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileHandlerBase
      progresscbfp getReadProgressCB(void);
  
      /*---------------------------------------------------------------------*/
-     virtual DocumentTransitPtr		read(std::istream &InputStream, const std::string& Extension);
+     virtual TableTransitPtr		read(std::istream &InputStream, const std::string& Extension);
   
-	 virtual DocumentTransitPtr		read(const  BoostPath& FilePath);
+	 virtual TableTransitPtr		read(const  BoostPath& FilePath);
 	
-	 virtual DocumentTransitPtr		forceRead(const  BoostPath& FilePath);
+	 virtual TableTransitPtr		forceRead(const  BoostPath& FilePath);
 	 
 
   
      /*---------------------------------------------------------------------*/
-	 virtual bool write(Document* const Doc, std::ostream &OutputStream, const std::string& Extension,bool Compress = false);
-     virtual bool write(Document* const Doc, const BoostPath& FilePath, bool Compress = false);
-	 virtual bool forceWrite(Document* const Doc, const BoostPath& FilePath, bool Compress = false);
+	 virtual bool write(Table* const Doc, std::ostream &OutputStream, const std::string& Extension,bool Compress = false);
+     virtual bool write(Table* const Doc, const BoostPath& FilePath, bool Compress = false);
+	 virtual bool forceWrite(Table* const Doc, const BoostPath& FilePath, bool Compress = false);
  
      /*---------------------------------------------------------------------*/
      //virtual bool               setOptions(const Char8 *suffix, const Char8 *options);
@@ -93,19 +93,19 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileHandlerBase
      /*=========================  PROTECTED  ===============================*/
    protected:
  
-     typedef std::vector<TextFileTypeP> FileTypeVector;
+     typedef std::vector<TableFileTypeP> FileTypeVector;
 	 typedef std::map <std::string, FileTypeVector> FileTypeMap;
  
      /*---------------------------------------------------------------------*/
             FileTypeMap       _SuffixTypeMap;
  
  
-     bool addTextFileType(TextFileTypeP FileType);
-     bool subTextFileType(TextFileTypeP FileType);
+     bool addTableFileType(TableFileTypeP FileType);
+     bool subTableFileType(TableFileTypeP FileType);
      
      /*---------------------------------------------------------------------*/
-     TextFileHandlerBase(void);
-     TextFileHandlerBase(const TextFileHandlerBase &obj);
+     TableFileHandlerBase(void);
+     TableFileHandlerBase(const TableFileHandlerBase &obj);
  
      /*==========================  PRIVATE  ================================*/
    private:
@@ -113,9 +113,9 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileHandlerBase
     template <class SingletonT>
     friend class SingletonHolder;
     
-     friend class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileType;
+     friend class OSG_CONTRIBTABLEDOM_DLLMAPPING TableFileType;
      
-     void operator =(const TextFileHandlerBase &source);
+     void operator =(const TableFileHandlerBase &source);
  
      typedef struct
      {
@@ -134,14 +134,14 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileHandlerBase
      BoostPath _RootFilePath;
 };
 
-typedef SingletonHolder<TextFileHandlerBase> TextFileHandler;
+typedef SingletonHolder<TableFileHandlerBase> TableFileHandler;
 
-typedef TextFileHandler* TextFileHandlerP;
+typedef TableFileHandler* TableFileHandlerP;
 
 OSG_END_NAMESPACE
 
-#include "OSGTextFileHandler.inl"
+#include "OSGTableFileHandler.inl"
 
-#endif /* _OSGTextFILEHANDLER_H_ */
+#endif /* _OSGTableFILEHANDLER_H_ */
 
 

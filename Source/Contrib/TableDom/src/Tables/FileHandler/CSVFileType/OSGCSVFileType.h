@@ -26,79 +26,79 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
-#ifndef _OSGPLAINTEXTFILETYPE_H_
-#define _OSGPLAINTEXTFILETYPE_H_
+#ifndef _OSGCSVFILETYPE_H_
+#define _OSGCSVFILETYPE_H_
 #ifdef __sgi
 #pragma once
 #endif
 
 #include "OSGConfig.h"
-#include "OSGContribTextDomDef.h"
+#include "OSGContribTableDomDef.h"
 
 #include <boost/function.hpp>
 #include <utility>
-#include "OSGTextFileType.h"
-#include "OSGTextFileHandler.h"
+#include "OSGTableFileType.h"
+#include "OSGTableFileHandler.h"
 #include "OSGContainerIdMapper.h"
 #include "OSGFieldContainer.h"
 
-#include "OSGPlainDocument.h"
-#include "OSGPlainDocumentBranchElement.h"
-#include "OSGPlainDocumentLeafElement.h"
+#include "OSGPlainTable.h"
+#include "OSGPlainTableBranchElement.h"
+#include "OSGPlainTableLeafElement.h"
 
 #include "string"
 
 OSG_BEGIN_NAMESPACE
 
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING PlainTextFileType : public TextFileType
+class OSG_CONTRIBTABLEDOM_DLLMAPPING CSVFileType : public TableFileType
 {
 /*==========================  PUBLIC  =================================*/
 public:
 
     /*---------------------------------------------------------------------*/
-    static PlainTextFileType *the(void);
+    static CSVFileType *the(void);
 
     /*---------------------------------------------------------------------*/
     virtual std::string getName(void) const;
 
     /*---------------------------------------------------------------------*/
-    virtual ~PlainTextFileType(void);
+    virtual ~CSVFileType(void);
 
     /*---------------------------------------------------------------------*/
-     virtual DocumentTransitPtr read(std::istream &is,
+     virtual TableTransitPtr read(std::istream &is,
 		                     const std::string& FileNameOrExtension);
 
     /*---------------------------------------------------------------------*/
-     virtual bool write(Document* const Doc, std::ostream &os,
+     virtual bool write(Table* const Doc, std::ostream &os,
                         const std::string& FileNameOrExtension);
 
     
     /*=========================  PROTECTED  ===============================*/
 protected:
 
-	void removeSlashRandSlashN(std::string& word);
+	//void removeSlashRandSlashN(std::string& word);
 
-    typedef TextFileType Inherited;
-    static       PlainTextFileType*  _the;
+    typedef TableFileType Inherited;
+    static       CSVFileType*  _the;
 
     /*---------------------------------------------------------------------*/
-    PlainTextFileType(void);
+    CSVFileType(void);
 
-    PlainTextFileType(const PlainTextFileType &obj);
+    CSVFileType(const CSVFileType &obj);
 
     /*==========================  PRIVATE  ================================*/
 private:
 
-    void operator =(const PlainTextFileType &source);
+    void operator =(const CSVFileType &source);
 };
 
-typedef PlainTextFileType* PlainTextFileTypeP;
+typedef CSVFileType* CSVFileTypeP;
 
 OSG_END_NAMESPACE
 
-#include "OSGPlainTextFileType.inl"
+#include "OSGCSVFileType.inl"
 
-#endif /* _OSGPLAINTEXTFILETYPE_H_ */
+#endif /* _OSGCSVFILETYPE_H_ */
 
 

@@ -65,9 +65,9 @@
 
 #include "OSGFieldContainer.h" // Parent
 
-#include "OSGCellViewFields.h"          // VisibleViews type
+#include "OSGCellView.h"          // VisibleViews type
 #include "OSGFieldContainerFields.h"    // ParentTableDomArea type
-
+#include "OSGElement.h"
 #include "OSGTableDomLayoutManagerFields.h"
 
 OSG_BEGIN_NAMESPACE

@@ -54,15 +54,17 @@
 #include <cstdio>
 #include <boost/assign/list_of.hpp>
 
-#include "OpenSG/OSGConfig.h"
+#include "OSGConfig.h"
 
 
 
-#include "OpenSG/OSGElement.h"          // Element Class
-#include "OpenSG/OSGUIFont.h"           // Font Class
+#include "OSGElement.h"          // Element Class
+#include "OSGUIFont.h"           // Font Class
 
 #include "OSGTableDomViewBase.h"
 #include "OSGTableDomView.h"
+
+#include "OSGCellView.h"
 
 #include <boost/bind.hpp>
 

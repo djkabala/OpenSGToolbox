@@ -40,11 +40,11 @@
 //  Includes
 //---------------------------------------------------------------------------
 
-#define OSG_COMPILEUSERINTERFACELIB
+#define OSG_COMPILETABLEDOMLIB
 
 #include "OSGConfig.h"
 
-#include "OSGPlainTextFileType.h"
+#include "OSGCSVFileType.h"
 #include "windows.h"
  
 
@@ -57,21 +57,21 @@ SYSTEMTIME now;
  *                            Description                                  *
 \***************************************************************************/
 
-/*! \class osg::PlainTextFileType
-A PlainTextFileType. 
+/*! \class osg::CSVFileType
+A CSVFileType. 
 */
 
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
 
-PlainTextFileType*  PlainTextFileType::_the(new PlainTextFileType());
+CSVFileType*  CSVFileType::_the(new CSVFileType());
 
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/
 
-PlainTextFileType *PlainTextFileType::the(void)
+CSVFileType *CSVFileType::the(void)
 {
 	return _the;
 }
@@ -80,12 +80,13 @@ PlainTextFileType *PlainTextFileType::the(void)
  *                           Instance methods                              *
 \***************************************************************************/
 
-std::string PlainTextFileType::getName(void) const
+std::string CSVFileType::getName(void) const
 {
-	return std::string("PlainTextFileType");	// unnecessary function . Can be removed . There for convenience
+	return std::string("CSVFileType");	// unnecessary function . Can be removed . There for convenience
 }
 
-void PlainTextFileType::removeSlashRandSlashN(std::string &word)
+/*
+void CSVFileType::removeSlashRandSlashN(std::string &word)
 {
 	std::string Temp="";
 	for(UInt32 i=0;i<word.length();i++)
@@ -101,55 +102,71 @@ void PlainTextFileType::removeSlashRandSlashN(std::string &word)
 	}
 	word = Temp;
 }
+*/
 
-DocumentTransitPtr PlainTextFileType::read(std::istream &InputStream,
+TableTransitPtr CSVFileType::read(std::istream &InputStream,
 	                     const std::string& FileNameOrExtension)
 {
-	PlainDocumentRefPtr Result = PlainDocument::create();
-	DocumentElementAttribute Props;
+	PlainTableRefPtr Result = PlainTable::create();
+
+	std::string text;
+	while(std::getline(InputStream,text))
+	{
+		std::cout<<text<<std::endl<<":";
+   	   std::string token="";
+	   int count = 0;
+	   for(int i=0;i<text.size();i++)
+	   {
+		   if(text[i]==',')
+		   {
+			std::cout<<"token "<<count<<":"<<token<<"."<<std::endl;
+			count++;
+			token="";
+		   }
+		   else
+		   {
+			token+=text[i];
+		   }
+	   }
+	   std::cout<<"token "<<count<<":"<<token<<"."<<std::endl;
+	}
+
+	/*TableElementAttribute Props;
 	std::string Word;
 	bool FirstTime = true;
 	
-	//GetSystemTime(&now);
-	//unsigned int t1 = now.wSecond * 1000 + now.wMilliseconds;
-
 	while(std::getline(InputStream,Word))
 	{
 		removeSlashRandSlashN(Word);
-		Result->addTextAsNewElementToDocument(Word+"\r\n",Props,FirstTime);
+		Result->addTableAsNewElementToTable(Word+"\r\n",Props,FirstTime);
 		if(FirstTime)FirstTime=!FirstTime;
-	}
+	}*/
 
-	//GetSystemTime(&now);
-	//unsigned int t2 = now.wSecond * 1000 + now.wMilliseconds;
-
-//	std::cout<<"\nduration for reading:"<<t2-t1<<std::endl;		// end time in milliseconds
-
-	return DocumentTransitPtr(Result);
+	return TableTransitPtr(Result);
 }
 
-bool PlainTextFileType::write(Document* const Doc, std::ostream &OutputStream,
+bool CSVFileType::write(Table* const Doc, std::ostream &OutputStream,
                     const std::string& FileNameOrExtension)
 {
-	PlainDocumentRefPtr TheDocument = dynamic_cast<PlainDocument*>(Doc);
+	/*PlainTableRefPtr TheTable = dynamic_cast<PlainTable*>(Doc);
 	std::vector<Element*> GenericRoots;
-	GenericRoots = TheDocument->getRootElements();
+	GenericRoots = TheTable->getRootElements();
 	for(UInt32 i=0;i<GenericRoots.size();i++)
 	{
-		PlainDocumentBranchElementRefPtr RootElement;
-		RootElement = dynamic_cast<PlainDocumentBranchElement*>(GenericRoots[i]);	
+		PlainTableBranchElementRefPtr RootElement;
+		RootElement = dynamic_cast<PlainTableBranchElement*>(GenericRoots[i]);	
 		
 		for(UInt32 j=0;j<RootElement->getElementCount()-1;j++)
 		{	
-			PlainDocumentLeafElementRefPtr LeafElement;
-			LeafElement = dynamic_cast<PlainDocumentLeafElement*>(RootElement->getElement(j));
-			OutputStream<<LeafElement->getText();
+			PlainTableLeafElementRefPtr LeafElement;
+			LeafElement = dynamic_cast<PlainTableLeafElement*>(RootElement->getElement(j));
+			OutputStream<<LeafElement->getTable();
 		}
-		PlainDocumentLeafElementRefPtr LeafElement;
-		LeafElement = dynamic_cast<PlainDocumentLeafElement*>(RootElement->getElement(RootElement->getElementCount()-1));
-		OutputStream<<LeafElement->getText().substr(0,LeafElement->getTextLength()-2);
+		PlainTableLeafElementRefPtr LeafElement;
+		LeafElement = dynamic_cast<PlainTableLeafElement*>(RootElement->getElement(RootElement->getElementCount()-1));
+		OutputStream<<LeafElement->getTable().substr(0,LeafElement->getTableLength()-2);
 
-	}
+	}*/
 	return false;
 }
 
@@ -159,16 +176,16 @@ bool PlainTextFileType::write(Document* const Doc, std::ostream &OutputStream,
 
 /*----------------------- constructors & destructors ----------------------*/
 
-PlainTextFileType::PlainTextFileType(void) : Inherited(TextFileType::ExtensionVector(1, std::string("txt")),
-        TextFileType::OSG_READ_SUPPORTED | TextFileType::OSG_WRITE_SUPPORTED)
+CSVFileType::CSVFileType(void) : Inherited(TableFileType::ExtensionVector(1, std::string("csv")),
+        TableFileType::OSG_READ_SUPPORTED | TableFileType::OSG_WRITE_SUPPORTED)
 {
 }
 
-PlainTextFileType::PlainTextFileType(const PlainTextFileType &obj) : Inherited(obj)
+CSVFileType::CSVFileType(const CSVFileType &obj) : Inherited(obj)
 {
 }
 
-PlainTextFileType::~PlainTextFileType(void)
+CSVFileType::~CSVFileType(void)
 {
 }
 

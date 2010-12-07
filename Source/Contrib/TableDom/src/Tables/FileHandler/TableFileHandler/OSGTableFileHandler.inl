@@ -31,13 +31,13 @@
 OSG_BEGIN_NAMESPACE
 
 inline 
-void TextFileHandlerBase::operator =(const TextFileHandlerBase& source)
+void TableFileHandlerBase::operator =(const TableFileHandlerBase& source)
 {
-	SWARNING << "In TextFileHandler operator =" << std::endl;
+	SWARNING << "In TableFileHandler operator =" << std::endl;
 }
 
 inline
-const BoostPath& TextFileHandlerBase::getRootFilePath(void) const
+const BoostPath& TableFileHandlerBase::getRootFilePath(void) const
 {
     return _RootFilePath;
 }

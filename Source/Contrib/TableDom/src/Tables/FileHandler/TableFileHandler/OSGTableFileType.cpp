@@ -40,16 +40,16 @@
 //  Includes
 //---------------------------------------------------------------------------
 
-#define OSG_COMPILEUSERINTERFACELIB
+#define OSG_COMPILETABLEDOMLIB
 
 #include "OSGConfig.h"
 
-#include "OSGTextFileType.h"
-#include "OSGTextFileHandler.h"
+#include "OSGTableFileType.h"
+#include "OSGTableFileHandler.h"
 #include "OSGLog.h"
 
 #ifndef OSG_EMBEDDED
-#include "OSGTextFileHandler.h"
+#include "OSGTableFileHandler.h"
 #endif
 #include "OSGBaseInitFunctions.h"
 
@@ -59,8 +59,8 @@ OSG_BEGIN_NAMESPACE
  *                            Description                                  *
 \***************************************************************************/
 
-/*! \class osg::TextFileType
-A TextFileType. 
+/*! \class osg::TableFileType
+A TableFileType. 
 */
 
 /***************************************************************************\
@@ -75,15 +75,15 @@ A TextFileType.
  *                           Instance methods                              *
 \***************************************************************************/
 
- DocumentTransitPtr TextFileType::read(std::istream &is,
+ TableTransitPtr TableFileType::read(std::istream &is,
 	                     const std::string& fileNameOrExtension)
 {
 	FWARNING (("STREAM INTERFACE NOT IMPLEMENTED!\n"));
 
-	return DocumentTransitPtr(NULL);
+	return TableTransitPtr(NULL);
 }
 
-bool TextFileType::write(Document* const Doc, std::ostream &os,
+bool TableFileType::write(Table* const Doc, std::ostream &os,
         const std::string& fileNameOrExtension)
 {
     FWARNING (("STREAM INTERFACE NOT IMPLEMENTED!\n"));
@@ -92,7 +92,7 @@ bool TextFileType::write(Document* const Doc, std::ostream &os,
 }
 
 /*! Print supported suffixes to osgLog. */
-void TextFileType::print(void)
+void TableFileType::print(void)
 {
     std::vector<std::string>::iterator sI;
 
@@ -114,14 +114,14 @@ void TextFileType::print(void)
 
 //---------------------------------------------------------
 /*
-bool TextFileType::doOverride(void)
+bool TableFileType::doOverride(void)
 {
     return _override;
 }
 
 //---------------------------------------------------------
 
-UInt32 TextFileType::getOverridePriority(void)
+UInt32 TableFileType::getOverridePriority(void)
 {
     return _overridePriority;
 }
@@ -133,7 +133,7 @@ UInt32 TextFileType::getOverridePriority(void)
 /*----------------------- constructors & destructors ----------------------*/
 
 /**
- * Constructor for TextFileType.
+ * Constructor for TableFileType.
  *
  * \param suffixArray     Raw char buffer of supported suffix values.
  * \param suffixByteCount Length of suffix strings to extract.
@@ -142,7 +142,7 @@ UInt32 TextFileType::getOverridePriority(void)
  * \param flags    Combination of OSG_READ_SUPPORTED and OSG_WRITE_SUPPORTED to say what
  *                 this handler supports.
  */
-TextFileType::TextFileType(const ExtensionVector&  suffixArray,
+TableFileType::TableFileType(const ExtensionVector&  suffixArray,
                         //bool    override,
                         //UInt32  overridePriority,
                         UInt32  flags)
@@ -154,25 +154,25 @@ TextFileType::TextFileType(const ExtensionVector&  suffixArray,
     SINFO << "Init " <<  _suffixList[0] << "Text File Type " << std::endl;
 
 #ifndef OSG_EMBEDDED
-	TextFileHandler::the()->addTextFileType(TextFileTypeP(this));
+	TableFileHandler::the()->addTableFileType(TableFileTypeP(this));
 #endif
 }
 
-TextFileType::TextFileType(const TextFileType &obj)
+TableFileType::TableFileType(const TableFileType &obj)
     : Inherited        (obj           )
 {
-	SWARNING << "In TextFileType copy constructor" << std::endl;
+	SWARNING << "In TableFileType copy constructor" << std::endl;
 }
 
-TextFileType::~TextFileType(void)
+TableFileType::~TableFileType(void)
 {
 #ifndef OSG_EMBEDDED
     if(GlobalSystemState < OSG::Shutdown)
-        TextFileHandler::the()->subTextFileType(TextFileTypeP(this));
+        TableFileHandler::the()->subTableFileType(TableFileTypeP(this));
 #endif
 }
 
-void TextFileType::terminate(void)
+void TableFileType::terminate(void)
 {
 }
 

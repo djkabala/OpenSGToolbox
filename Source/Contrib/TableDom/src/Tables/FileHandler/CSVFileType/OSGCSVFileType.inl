@@ -29,9 +29,9 @@
 OSG_BEGIN_NAMESPACE
 
 inline 
-void PlainTextFileType::operator =(const PlainTextFileType& source)
+void CSVFileType::operator =(const CSVFileType& source)
 {
-	SWARNING << "In PlainTextFileType operator =" << std::endl;
+	SWARNING << "In CSVFileType operator =" << std::endl;
 }
 
 OSG_END_NAMESPACE

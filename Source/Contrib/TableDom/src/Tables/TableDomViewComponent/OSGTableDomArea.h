@@ -58,6 +58,7 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomArea : public TableDomAreaBase
 
   public:
 
+
     typedef TableDomAreaBase Inherited;
     typedef TableDomArea     Self;
 
@@ -76,6 +77,9 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomArea : public TableDomAreaBase
 
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
+
+
+	void drawInternal(OSG::Graphics *const ,OSG::Real32) const;
 
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/

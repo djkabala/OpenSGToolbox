@@ -44,7 +44,7 @@
 
 #include "OSGConfig.h"
 
-#include "OSGTextFileHandler.h"
+#include "OSGTableFileHandler.h"
 #include <fstream>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -58,23 +58,23 @@ OSG_BEGIN_NAMESPACE
  *                            Description                                  *
 \***************************************************************************/
 
-/*! \class osg::TextFileHandlerBase
-A TextFileHandlerBase. 
+/*! \class osg::TableFileHandlerBase
+A TableFileHandlerBase. 
 */
 
 /***************************************************************************\
  *                           Class variables                               *
 \***************************************************************************/
 
-OSG_SINGLETON_INST(TextFileHandlerBase, addPostFactoryExitFunction)
+OSG_SINGLETON_INST(TableFileHandlerBase, addPostFactoryExitFunction)
 
-template class SingletonHolder<TextFileHandlerBase>;
+template class SingletonHolder<TableFileHandlerBase>;
 
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/
 
-bool TextFileHandlerBase::addTextFileType(TextFileTypeP FileType)
+bool TableFileHandlerBase::addTableFileType(TableFileTypeP FileType)
 {
     bool retCode = false;
 
@@ -90,11 +90,11 @@ bool TextFileHandlerBase::addTextFileType(TextFileTypeP FileType)
         Suffix = (*FileSuffixItor);
 		boost::algorithm::to_lower(Suffix);
 
-        FileSuffixMapSearch = TextFileHandler::the()->_SuffixTypeMap.find(Suffix);
+        FileSuffixMapSearch = TableFileHandler::the()->_SuffixTypeMap.find(Suffix);
 
-        if (FileSuffixMapSearch != TextFileHandler::the()->_SuffixTypeMap.end())
+        if (FileSuffixMapSearch != TableFileHandler::the()->_SuffixTypeMap.end())
         {
-            TextFileHandler::the()->_SuffixTypeMap[Suffix].push_back(FileType);
+            TableFileHandler::the()->_SuffixTypeMap[Suffix].push_back(FileType);
 
             SWARNING << "Added an file type with suffix "
                      << Suffix
@@ -107,7 +107,7 @@ bool TextFileHandlerBase::addTextFileType(TextFileTypeP FileType)
 
             pTmpList.push_back(FileType);
 
-            TextFileHandler::the()->_SuffixTypeMap[Suffix] = pTmpList;
+            TableFileHandler::the()->_SuffixTypeMap[Suffix] = pTmpList;
 
             retCode = true;
         }
@@ -116,7 +116,7 @@ bool TextFileHandlerBase::addTextFileType(TextFileTypeP FileType)
     return retCode;
 }
 
-bool TextFileHandlerBase::subTextFileType(TextFileTypeP FileType)
+bool TableFileHandlerBase::subTableFileType(TableFileTypeP FileType)
 {
     bool retCode = false;
 
@@ -132,10 +132,10 @@ bool TextFileHandlerBase::subTextFileType(TextFileTypeP FileType)
         Suffix = (*FileSuffixItor);
 		boost::algorithm::to_lower(Suffix);
 
-        FileSuffixMapSearch = TextFileHandler::the()->_SuffixTypeMap.find(Suffix);
-        if (FileSuffixMapSearch != TextFileHandler::the()->_SuffixTypeMap.end())
+        FileSuffixMapSearch = TableFileHandler::the()->_SuffixTypeMap.find(Suffix);
+        if (FileSuffixMapSearch != TableFileHandler::the()->_SuffixTypeMap.end())
         {
-            TextFileHandler::the()->_SuffixTypeMap.erase(FileSuffixMapSearch);
+            TableFileHandler::the()->_SuffixTypeMap.erase(FileSuffixMapSearch);
             retCode = true;
         }
     }
@@ -145,7 +145,7 @@ bool TextFileHandlerBase::subTextFileType(TextFileTypeP FileType)
  *                           Instance methods                              *
 \***************************************************************************/
 
-TextFileTypeP TextFileHandlerBase::getFileType(const std::string& FileExtension, UInt32 Flags)
+TableFileTypeP TableFileHandlerBase::getFileType(const std::string& FileExtension, UInt32 Flags)
 {
 	FileTypeMap::const_iterator SearchItor(_SuffixTypeMap.find(FileExtension));
 
@@ -166,7 +166,7 @@ TextFileTypeP TextFileHandlerBase::getFileType(const std::string& FileExtension,
 	}
 }
 
-std::vector<std::string> TextFileHandlerBase::getSuffixList(UInt32 flags) const
+std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
 {
 	std::vector<std::string> FileTypesResult;
 
@@ -188,29 +188,29 @@ std::vector<std::string> TextFileHandlerBase::getSuffixList(UInt32 flags) const
 	return FileTypesResult;
 }
 
- void TextFileHandlerBase::setReadProgressCB(progresscbfp fp)
+ void TableFileHandlerBase::setReadProgressCB(progresscbfp fp)
  {
 	 stopReadProgressThread();
      _ReadProgressFP = fp;
  }
 
- TextFileHandlerBase::progresscbfp TextFileHandlerBase::getReadProgressCB(void)
+ TableFileHandlerBase::progresscbfp TableFileHandlerBase::getReadProgressCB(void)
  {
 	 return _ReadProgressFP;
  }
 
 
- DocumentTransitPtr TextFileHandlerBase::read(std::istream &InputStream, const std::string& Extension)
+ TableTransitPtr TableFileHandlerBase::read(std::istream &InputStream, const std::string& Extension)
  {
-	 DocumentRefPtr Result;
+	 TableRefPtr Result;
 	 //Get the FileType for this extension
-	 TextFileTypeP TheFileType(getFileType(Extension, TextFileType::OSG_READ_SUPPORTED));
+	 TableFileTypeP TheFileType(getFileType(Extension, TableFileType::OSG_READ_SUPPORTED));
 
 	 //Is that extension supported for reading
 	 if(TheFileType == NULL)
 	 {
-		SWARNING << "TextFileHandlerBase::read(): Cannot read Field Container stream, because no File types support " << Extension <<  " extension." << std::endl;
-		return DocumentTransitPtr(NULL);
+		SWARNING << "TableFileHandlerBase::read(): Cannot read Field Container stream, because no File types support " << Extension <<  " extension." << std::endl;
+		return TableTransitPtr(NULL);
 	 }
 	 else
 	 {
@@ -219,17 +219,17 @@ std::vector<std::string> TextFileHandlerBase::getSuffixList(UInt32 flags) const
 		 Result = TheFileType->read(InputStream, Extension);
 		 stopReadProgressThread();
 	 }
-	 return DocumentTransitPtr(Result);
+	 return TableTransitPtr(Result);
  }
 
- DocumentTransitPtr TextFileHandlerBase::read(const BoostPath& FilePath)
+ TableTransitPtr TableFileHandlerBase::read(const BoostPath& FilePath)
  {
-	 DocumentRefPtr Result;
+	 TableRefPtr Result;
 	 //Determine if the file exists
 	 if(!boost::filesystem::exists(FilePath))
 	 {
-		SWARNING << "TextFileHandlerBase::read(): " << FilePath.string() << " does not exists." << std::endl;
-		return DocumentTransitPtr(NULL);
+		SWARNING << "TableFileHandlerBase::read(): " << FilePath.string() << " does not exists." << std::endl;
+		return TableTransitPtr(NULL);
 	 }
 
 	 //Determine the file extension
@@ -241,13 +241,13 @@ std::vector<std::string> TextFileHandlerBase::getSuffixList(UInt32 flags) const
      _RootFilePath.remove_leaf();
 
 	 //Get the FileType for this extension
-	 TextFileTypeP TheFileType(getFileType(Extension, TextFileType::OSG_READ_SUPPORTED));
+	 TableFileTypeP TheFileType(getFileType(Extension, TableFileType::OSG_READ_SUPPORTED));
 
 	 //Is that extension supported for reading
 	 if(TheFileType == NULL)
 	 {
-		SWARNING << "TextFileHandlerBase::read(): Cannot read Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
-		return DocumentTransitPtr(NULL);
+		SWARNING << "TableFileHandlerBase::read(): Cannot read Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
+		return TableTransitPtr(NULL);
 	 }
 	 else
 	 {
@@ -256,8 +256,8 @@ std::vector<std::string> TextFileHandlerBase::getSuffixList(UInt32 flags) const
 
 		 if(!InputStream)
 		 {
-			SWARNING << "TextFileHandlerBase::read(): Couldn't open input stream for file " << FilePath.string() << std::endl;
-			return DocumentTransitPtr(NULL);
+			SWARNING << "TableFileHandlerBase::read(): Couldn't open input stream for file " << FilePath.string() << std::endl;
+			return TableTransitPtr(NULL);
 		 }
 		 else
 		 {
@@ -270,18 +270,18 @@ std::vector<std::string> TextFileHandlerBase::getSuffixList(UInt32 flags) const
 		 }
 	 }
 
-	 return DocumentTransitPtr(Result);
+	 return TableTransitPtr(Result);
  }
 
  
- DocumentTransitPtr TextFileHandlerBase::forceRead(const BoostPath& FilePath)
+ TableTransitPtr TableFileHandlerBase::forceRead(const BoostPath& FilePath)
  {
-	 DocumentRefPtr Result;
+	 TableRefPtr Result;
 	 //Determine if the file exists
 	 if(!boost::filesystem::exists(FilePath))
 	 {
-		SWARNING << "TextFileHandlerBase::read(): " << FilePath.string() << " does not exists." << std::endl;
-		return DocumentTransitPtr(NULL);
+		SWARNING << "TableFileHandlerBase::read(): " << FilePath.string() << " does not exists." << std::endl;
+		return TableTransitPtr(NULL);
 	 }
 
 	 //Determine the file extension
@@ -293,13 +293,13 @@ std::vector<std::string> TextFileHandlerBase::getSuffixList(UInt32 flags) const
      _RootFilePath.remove_leaf();
 
 	 //Get the FileType of a "txt" file (Forcing the document to be opened as a txt file)
-	 TextFileTypeP TheFileType(getFileType("txt", TextFileType::OSG_READ_SUPPORTED));
+	 TableFileTypeP TheFileType(getFileType("csv", TableFileType::OSG_READ_SUPPORTED));
 
 	 //Is that extension supported for reading
 	 if(TheFileType == NULL)
 	 {
-		SWARNING << "TextFileHandlerBase::read(): Cannot read Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
-		return DocumentTransitPtr(NULL);
+		SWARNING << "TableFileHandlerBase::read(): Cannot read Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
+		return TableTransitPtr(NULL);
 	 }
 	 else
 	 {
@@ -308,8 +308,8 @@ std::vector<std::string> TextFileHandlerBase::getSuffixList(UInt32 flags) const
 
 		 if(!InputStream)
 		 {
-			SWARNING << "TextFileHandlerBase::read(): Couldn't open input stream for file " << FilePath.string() << std::endl;
-			return DocumentTransitPtr(NULL);
+			SWARNING << "TableFileHandlerBase::read(): Couldn't open input stream for file " << FilePath.string() << std::endl;
+			return TableTransitPtr(NULL);
 		 }
 		 else
 		 {
@@ -322,18 +322,18 @@ std::vector<std::string> TextFileHandlerBase::getSuffixList(UInt32 flags) const
 		 }
 	 }
 
-	return DocumentTransitPtr(Result);
+	return TableTransitPtr(Result);
  }
 
-bool TextFileHandlerBase::write(Document* const Doc, std::ostream &OutputStream, const std::string& Extension,bool Compress)
+bool TableFileHandlerBase::write(Table* const Doc, std::ostream &OutputStream, const std::string& Extension,bool Compress)
 {
 	 //Get the FileType for this extension
-	 TextFileTypeP TheFileType(getFileType(Extension, TextFileType::OSG_WRITE_SUPPORTED));
+	 TableFileTypeP TheFileType(getFileType(Extension, TableFileType::OSG_WRITE_SUPPORTED));
 
 	 //Is that extension supported for reading
 	 if(TheFileType == NULL)
 	 {
-		SWARNING << "TextFileHandlerBase::write(): Cannot write Field Container outstream, because no File types support " << Extension <<  " extension." << std::endl;
+		SWARNING << "TableFileHandlerBase::write(): Cannot write Field Container outstream, because no File types support " << Extension <<  " extension." << std::endl;
 		return false;
 	 }
 	 else
@@ -348,7 +348,7 @@ bool TextFileHandlerBase::write(Document* const Doc, std::ostream &OutputStream,
 	 }
 }
 
-bool TextFileHandlerBase::write(Document* const Doc, const BoostPath& FilePath, bool Compress)
+bool TableFileHandlerBase::write(Table* const Doc, const BoostPath& FilePath, bool Compress)
 {
 	 //Determine the file extension
 	 std::string Extension(boost::filesystem::extension(FilePath));
@@ -358,12 +358,12 @@ bool TextFileHandlerBase::write(Document* const Doc, const BoostPath& FilePath, 
      _RootFilePath.remove_filename();
 
 	 //Get the FileType for this extension
-	 TextFileTypeP TheFileType(getFileType(Extension, TextFileType::OSG_WRITE_SUPPORTED));
+	 TableFileTypeP TheFileType(getFileType(Extension, TableFileType::OSG_WRITE_SUPPORTED));
 
 	 //Is that extension supported for reading
 	 if(TheFileType == NULL)
 	 {
-		SWARNING << "TextFileHandlerBase::write(): Cannot write Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
+		SWARNING << "TableFileHandlerBase::write(): Cannot write Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
 		return false;
 	 }
 	 else
@@ -373,7 +373,7 @@ bool TextFileHandlerBase::write(Document* const Doc, const BoostPath& FilePath, 
 
 		 if(!OutputStream)
 		 {
-			SWARNING << "TextFileHandlerBase::write(): Couldn't open output stream for file " << FilePath.string() << std::endl;
+			SWARNING << "TableFileHandlerBase::write(): Couldn't open output stream for file " << FilePath.string() << std::endl;
 			return false;
 		 }
 		 else
@@ -387,7 +387,7 @@ bool TextFileHandlerBase::write(Document* const Doc, const BoostPath& FilePath, 
 }
 
 
-bool TextFileHandlerBase::forceWrite(Document* const Doc, const BoostPath& FilePath, bool Compress)
+bool TableFileHandlerBase::forceWrite(Table* const Doc, const BoostPath& FilePath, bool Compress)
 {
 	 //Determine the file extension
 	 std::string Extension(boost::filesystem::extension(FilePath));
@@ -397,12 +397,12 @@ bool TextFileHandlerBase::forceWrite(Document* const Doc, const BoostPath& FileP
      _RootFilePath.remove_filename();
 
 	 //Get the FileType for this extension
-	 TextFileTypeP TheFileType(getFileType("txt", TextFileType::OSG_WRITE_SUPPORTED));
+	 TableFileTypeP TheFileType(getFileType("csv", TableFileType::OSG_WRITE_SUPPORTED));
 
 	 //Is that extension supported for reading
 	 if(TheFileType == NULL)
 	 {
-		SWARNING << "TextFileHandlerBase::write(): Cannot write Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
+		SWARNING << "TableFileHandlerBase::write(): Cannot write Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
 		return false;
 	 }
 	 else
@@ -412,13 +412,13 @@ bool TextFileHandlerBase::forceWrite(Document* const Doc, const BoostPath& FileP
 
 		 if(!OutputStream)
 		 {
-			SWARNING << "TextFileHandlerBase::write(): Couldn't open output stream for file " << FilePath.string() << std::endl;
+			SWARNING << "TableFileHandlerBase::write(): Couldn't open output stream for file " << FilePath.string() << std::endl;
 			return false;
 		 }
 		 else
 		 {
 			 bool Result;
-			 Result = write(Doc, OutputStream, "txt", Compress);
+			 Result = write(Doc, OutputStream, "csv", Compress);
 			 OutputStream.close();
 			 return Result;
 		 }
@@ -429,7 +429,7 @@ bool TextFileHandlerBase::forceWrite(Document* const Doc, const BoostPath& FileP
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
 
-void TextFileHandlerBase::startReadProgressThread(std::istream &is)
+void TableFileHandlerBase::startReadProgressThread(std::istream &is)
 {
     if(_ReadProgressFP == NULL)
         return;
@@ -454,7 +454,7 @@ void TextFileHandlerBase::startReadProgressThread(std::istream &is)
         SWARNING << "Couldn't create read progress thread!" << std::endl;
 }
 
-void TextFileHandlerBase::stopReadProgressThread(void)
+void TableFileHandlerBase::stopReadProgressThread(void)
 {
     if(_ReadProgressFP == NULL)
         return;
@@ -470,16 +470,16 @@ void TextFileHandlerBase::stopReadProgressThread(void)
     }
 }
 
-void TextFileHandlerBase::readProgress(void *data)
+void TableFileHandlerBase::readProgress(void *data)
 {
     UInt32 p = 0;
-    while(p < 100 && !TextFileHandler::the()->_ReadReady)
+    while(p < 100 && !TableFileHandler::the()->_ReadReady)
     {
-        if(!TextFileHandler::the()->_ProgressData.is->eof() &&
-           !TextFileHandler::the()->_ProgressData.is->bad())
+        if(!TableFileHandler::the()->_ProgressData.is->eof() &&
+           !TableFileHandler::the()->_ProgressData.is->bad())
         {
-            UInt64 pos = TextFileHandler::the()->_ProgressData.is->tellg();
-            p = UInt32((pos * 100) / TextFileHandler::the()->_ProgressData.length);
+            UInt64 pos = TableFileHandler::the()->_ProgressData.is->tellg();
+            p = UInt32((pos * 100) / TableFileHandler::the()->_ProgressData.length);
             if(p > 100)
                 p = 100;
         }
@@ -488,28 +488,28 @@ void TextFileHandlerBase::readProgress(void *data)
             p = 100;
         }
 
-        TextFileHandler::the()->_ReadProgressFP(p);
+        TableFileHandler::the()->_ReadProgressFP(p);
         osgSleep(100);
     }
     if(p < 100)
-        TextFileHandler::the()->_ReadProgressFP(100);
+        TableFileHandler::the()->_ReadProgressFP(100);
 }
 
 /*----------------------- constructors & destructors ----------------------*/
 
-TextFileHandlerBase::TextFileHandlerBase(void) :
+TableFileHandlerBase::TableFileHandlerBase(void) :
     _ReadProgressFP(NULL),
     _ProgressData(),
     _ReadReady(false)
 {
 }
 
-TextFileHandlerBase::TextFileHandlerBase(const TextFileHandlerBase &obj)
+TableFileHandlerBase::TableFileHandlerBase(const TableFileHandlerBase &obj)
 {
-	SWARNING << "In TextFileHandlerBase copy constructor" << std::endl;
+	SWARNING << "In TableFileHandlerBase copy constructor" << std::endl;
 }
 
-TextFileHandlerBase::~TextFileHandlerBase(void)
+TableFileHandlerBase::~TableFileHandlerBase(void)
 {
 }
 

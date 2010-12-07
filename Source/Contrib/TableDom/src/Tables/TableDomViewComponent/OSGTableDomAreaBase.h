@@ -65,8 +65,8 @@
 
 #include "OSGComponent.h" // Parent
 
-#include "OSGTableFields.h"             // TableModel type
-#include "OSGTableDomLayoutManagerFields.h" // LayoutManager type
+#include "OSGTable.h"             // TableModel type
+#include "OSGTableDomLayoutManager.h" // LayoutManager type
 #include "OSGUIFontFields.h"            // Font type
 #include "OSGSysFields.h"               // Editable type
 

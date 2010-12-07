@@ -27,14 +27,14 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGTEXTFILETYPE_H_
-#define _OSGTEXTFILETYPE_H_
+#ifndef _OSGTABLEFILETYPE_H_
+#define _OSGTABLEFILETYPE_H_
 #ifdef __sgi
 #pragma once
 #endif
 
 #include "OSGConfig.h"
-#include "OSGContribTextDomDef.h"
+#include "OSGContribTableDomDef.h"
 
 #include <vector>
 #include <set>
@@ -44,16 +44,16 @@
 #include "OSGIOFileTypeBase.h"
 #include "OSGFieldContainer.h"
 
-#include "OSGDocument.h"
+#include "OSGTable.h"
 
 OSG_BEGIN_NAMESPACE
 
-class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileType : public IOFileTypeBase
+class OSG_CONTRIBTABLEDOM_DLLMAPPING TableFileType : public IOFileTypeBase
 {
      /*==========================  PUBLIC  =================================*/
    public:
     typedef IOFileTypeBase Inherited;
-    typedef TextFileType  Self;
+    typedef TableFileType  Self;
  
 	 typedef std::vector<std::string> ExtensionVector;
 
@@ -63,7 +63,7 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileType : public IOFileTypeBase
      /*---------------------------------------------------------------------*/
      
      /*---------------------------------------------------------------------*/
-     virtual ~TextFileType(void);
+     virtual ~TableFileType(void);
  
      /*---------------------------------------------------------------------*/
      //void setOptions(const Char8 *options);
@@ -76,11 +76,11 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileType : public IOFileTypeBase
           //  UInt32                  getOverridePriority(void);
      
      /*---------------------------------------------------------------------*/
-     virtual DocumentTransitPtr read(std::istream &is,
+     virtual TableTransitPtr read(std::istream &is,
 		                     const std::string& fileNameOrExtension);
  
      /*---------------------------------------------------------------------*/
-     virtual bool write(Document* const Doc, std::ostream &os,
+     virtual bool write(Table* const Doc, std::ostream &os,
                         const std::string& fileNameOrExtension);
  
      virtual void print(void);
@@ -96,26 +96,26 @@ class OSG_CONTRIBTEXTDOM_DLLMAPPING TextFileType : public IOFileTypeBase
     //UInt32                 _overridePriority; 
    
      /*---------------------------------------------------------------------*/
-     TextFileType(const ExtensionVector&  suffixArray,
+     TableFileType(const ExtensionVector&  suffixArray,
                        // bool    override,
                        // UInt32  overridePriority,
                         UInt32  flags = OSG_READ_SUPPORTED);
  
-     TextFileType(const TextFileType &obj);
+     TableFileType(const TableFileType &obj);
  
     virtual void terminate(void);
      /*==========================  PRIVATE  ================================*/
    private:
  
-     void operator =(const TextFileType &source);
+     void operator =(const TableFileType &source);
 };
 
-typedef TextFileType* TextFileTypeP;
+typedef TableFileType* TableFileTypeP;
 
 OSG_END_NAMESPACE
 
-#include "OSGTextFileType.inl"
+#include "OSGTableFileType.inl"
 
-#endif /* _OSGTEXTFILETYPE_H_ */
+#endif /* _OSGTABLEFILETYPE_H_ */
 
 

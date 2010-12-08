@@ -60,7 +60,7 @@
 
 #include "OSGConfig.h"
 #include "OSGContribTableDomDef.h"
-
+#include "OSGCell.h"
 //#include "OSGBaseTypes.h"
 
 #include "OSGAbstractBranchCell.h" // Parent

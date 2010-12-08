@@ -44,7 +44,7 @@
 #include "OSGIOFileTypeBase.h"
 #include "OSGFieldContainer.h"
 
-#include "OSGTable.h"
+#include "OSGTableDOM.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -76,11 +76,11 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableFileType : public IOFileTypeBase
           //  UInt32                  getOverridePriority(void);
      
      /*---------------------------------------------------------------------*/
-     virtual TableTransitPtr read(std::istream &is,
+     virtual TableDOMTransitPtr read(std::istream &is,
 		                     const std::string& fileNameOrExtension);
  
      /*---------------------------------------------------------------------*/
-     virtual bool write(Table* const Doc, std::ostream &os,
+     virtual bool write(TableDOM* const Doc, std::ostream &os,
                         const std::string& fileNameOrExtension);
  
      virtual void print(void);

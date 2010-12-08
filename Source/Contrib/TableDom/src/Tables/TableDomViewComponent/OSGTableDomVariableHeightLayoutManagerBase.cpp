@@ -54,9 +54,14 @@
 #include <cstdio>
 #include <boost/assign/list_of.hpp>
 
-#include "OpenSG/OSGConfig.h"
+#include "OSGConfig.h"
 
 
+#include "OSGCell.h"
+#include "OSGTableDomLayoutManager.h"
+#include "OSGCellView.h"
+#include "OSGTableDomArea.h"
+#include "OSGUIFont.h"
 
 
 #include "OSGTableDomVariableHeightLayoutManagerBase.h"

@@ -75,15 +75,15 @@ A TableFileType.
  *                           Instance methods                              *
 \***************************************************************************/
 
- TableTransitPtr TableFileType::read(std::istream &is,
+ TableDOMTransitPtr TableFileType::read(std::istream &is,
 	                     const std::string& fileNameOrExtension)
 {
 	FWARNING (("STREAM INTERFACE NOT IMPLEMENTED!\n"));
 
-	return TableTransitPtr(NULL);
+	return TableDOMTransitPtr(NULL);
 }
 
-bool TableFileType::write(Table* const Doc, std::ostream &os,
+bool TableFileType::write(TableDOM* const Doc, std::ostream &os,
         const std::string& fileNameOrExtension)
 {
     FWARNING (("STREAM INTERFACE NOT IMPLEMENTED!\n"));

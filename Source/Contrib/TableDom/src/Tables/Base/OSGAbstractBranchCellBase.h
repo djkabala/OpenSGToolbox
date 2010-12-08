@@ -66,7 +66,7 @@
 #include "OSGAbstractCell.h" // Parent
 
 #include "OSGCellFields.h"              // ChildCells type
-
+#include "OSGTableFields.h"
 #include "OSGAbstractBranchCellFields.h"
 
 OSG_BEGIN_NAMESPACE

@@ -63,7 +63,7 @@
 
 #include "OSGTableDomLayoutManagerBase.h"
 #include "OSGTableDomLayoutManager.h"
-#include "OSGElement.h"
+#include "OSGCell.h"
 #include <boost/bind.hpp>
 
 #ifdef WIN32 // turn off 'this' : used in base member initializer list warning

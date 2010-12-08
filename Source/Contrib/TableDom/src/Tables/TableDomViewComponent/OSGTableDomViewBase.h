@@ -65,7 +65,7 @@
 
 #include "OSGFieldContainer.h" // Parent
 
-#include "OSGElement.h"
+#include "OSGCell.h"
 #include "OSGUIFont.h"
 
 #include "OSGVecFields.h"        // StartingPosition type
@@ -99,8 +99,8 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
 
     enum
     {
-        ElementFieldId = Inherited::NextFieldId,
-        StartingPositionFieldId = ElementFieldId + 1,
+        CellFieldId = Inherited::NextFieldId,
+        StartingPositionFieldId = CellFieldId + 1,
         FontFieldId = StartingPositionFieldId + 1,
         SelectionBoxColorFieldId = FontFieldId + 1,
         SelectionTextColorFieldId = SelectionBoxColorFieldId + 1,
@@ -112,8 +112,8 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
         NextFieldId = TextColorFieldId + 1
     };
 
-    static const OSG::BitVector ElementFieldMask =
-        (TypeTraits<BitVector>::One << ElementFieldId);
+    static const OSG::BitVector CellFieldMask =
+        (TypeTraits<BitVector>::One << CellFieldId);
     static const OSG::BitVector StartingPositionFieldMask =
         (TypeTraits<BitVector>::One << StartingPositionFieldId);
     static const OSG::BitVector FontFieldMask =
@@ -135,7 +135,7 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     static const OSG::BitVector NextFieldMask =
         (TypeTraits<BitVector>::One << NextFieldId);
         
-    typedef SFUnrecElementPtr SFElementType;
+    typedef SFUnrecCellPtr SFCellType;
     typedef SFVec2f           SFStartingPositionType;
     typedef SFUnrecUIFontPtr  SFFontType;
     typedef SFColor4f         SFSelectionBoxColorType;
@@ -190,7 +190,7 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     /*! \name                      Fields                                  */
     /*! \{                                                                 */
 
-    SFUnrecElementPtr _sfElement;
+    SFUnrecCellPtr _sfCell;
     SFVec2f           _sfStartingPosition;
     SFUnrecUIFontPtr  _sfFont;
     SFColor4f         _sfSelectionBoxColor;
@@ -228,8 +228,8 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     /*! \name                    Generic Field Access                      */
     /*! \{                                                                 */
 
-    GetFieldHandlePtr  getHandleElement         (void) const;
-    EditFieldHandlePtr editHandleElement        (void);
+    GetFieldHandlePtr  getHandleCell         (void) const;
+    EditFieldHandlePtr editHandleCell        (void);
     GetFieldHandlePtr  getHandleStartingPosition (void) const;
     EditFieldHandlePtr editHandleStartingPosition(void);
     GetFieldHandlePtr  getHandleFont            (void) const;
@@ -254,8 +254,8 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     /*! \name                    Field Get                                 */
     /*! \{                                                                 */
 
-            const SFUnrecElementPtr   *getSFElement         (void) const;
-                  SFUnrecElementPtr   *editSFElement        (void);
+            const SFUnrecCellPtr   *getSFCell         (void) const;
+                  SFUnrecCellPtr   *editSFCell        (void);
 
                   SFVec2f             *editSFStartingPosition(void);
             const SFVec2f             *getSFStartingPosition (void) const;
@@ -284,7 +284,7 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
             const SFColor4f           *getSFTextColor       (void) const;
 
 
-                  Element * getElement        (void) const;
+                  Cell * getCell        (void) const;
 
                   Vec2f               &editStartingPosition(void);
             const Vec2f               &getStartingPosition (void) const;
@@ -317,7 +317,7 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     /*! \name                    Field Set                                 */
     /*! \{                                                                 */
 
-            void setElement        (Element * const value);
+            void setCell        (Cell * const value);
             void setStartingPosition(const Vec2f &value);
             void setFont           (UIFont * const value);
             void setSelectionBoxColor(const Color4f &value);

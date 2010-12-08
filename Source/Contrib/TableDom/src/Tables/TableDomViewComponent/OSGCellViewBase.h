@@ -66,7 +66,7 @@
 #include "OSGTableDomView.h" // Parent
 
 
-#include "OSGElement.h"
+#include "OSGCell.h"
 #include "OSGUIFont.h"
 
 

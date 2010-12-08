@@ -57,7 +57,6 @@
 #include "OSGConfig.h"
 
 
-
 #include "OSGTableDOM.h"                // TableDOM Class
 
 #include "OSGTableDOMEventDetailsBase.h"

@@ -57,7 +57,7 @@
 #include "OSGConfig.h"
 
 
-
+#include "OSGTableDOM.h"
 
 #include "OSGPlainTableDOMBase.h"
 #include "OSGPlainTableDOM.h"

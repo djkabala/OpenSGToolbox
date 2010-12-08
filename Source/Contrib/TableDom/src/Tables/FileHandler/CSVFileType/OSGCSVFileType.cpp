@@ -104,10 +104,10 @@ void CSVFileType::removeSlashRandSlashN(std::string &word)
 }
 */
 
-TableTransitPtr CSVFileType::read(std::istream &InputStream,
+TableDOMTransitPtr CSVFileType::read(std::istream &InputStream,
 	                     const std::string& FileNameOrExtension)
 {
-	PlainTableRefPtr Result = PlainTable::create();
+	PlainTableDOMRefPtr Result = PlainTableDOM::create();
 
 	std::string text;
 	while(std::getline(InputStream,text))
@@ -142,10 +142,10 @@ TableTransitPtr CSVFileType::read(std::istream &InputStream,
 		if(FirstTime)FirstTime=!FirstTime;
 	}*/
 
-	return TableTransitPtr(Result);
+	return TableDOMTransitPtr(Result);
 }
 
-bool CSVFileType::write(Table* const Doc, std::ostream &OutputStream,
+bool CSVFileType::write(TableDOM* const Doc, std::ostream &OutputStream,
                     const std::string& FileNameOrExtension)
 {
 	/*PlainTableRefPtr TheTable = dynamic_cast<PlainTable*>(Doc);

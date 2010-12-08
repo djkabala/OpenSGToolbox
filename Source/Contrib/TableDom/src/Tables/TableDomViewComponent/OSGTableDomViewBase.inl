@@ -75,20 +75,20 @@ OSG::UInt16 TableDomViewBase::getClassGroupId(void)
 /*------------------------------ get -----------------------------------*/
 
 
-//! Get the value of the TableDomView::_sfElement field.
+//! Get the value of the TableDomView::_sfCell field.
 inline
-Element * TableDomViewBase::getElement(void) const
+Cell * TableDomViewBase::getCell(void) const
 {
-    return _sfElement.getValue();
+    return _sfCell.getValue();
 }
 
-//! Set the value of the TableDomView::_sfElement field.
+//! Set the value of the TableDomView::_sfCell field.
 inline
-void TableDomViewBase::setElement(Element * const value)
+void TableDomViewBase::setCell(Cell * const value)
 {
-    editSField(ElementFieldMask);
+    editSField(CellFieldMask);
 
-    _sfElement.setValue(value);
+    _sfCell.setValue(value);
 }
 //! Get the value of the TableDomView::_sfStartingPosition field.
 
@@ -318,8 +318,8 @@ void TableDomViewBase::execSync (      TableDomViewBase *pFrom,
 {
     Inherited::execSync(pFrom, whichField, oOffsets, syncMode, uiSyncInfo);
 
-    if(FieldBits::NoField != (ElementFieldMask & whichField))
-        _sfElement.syncWith(pFrom->_sfElement);
+    if(FieldBits::NoField != (CellFieldMask & whichField))
+        _sfCell.syncWith(pFrom->_sfCell);
 
     if(FieldBits::NoField != (StartingPositionFieldMask & whichField))
         _sfStartingPosition.syncWith(pFrom->_sfStartingPosition);

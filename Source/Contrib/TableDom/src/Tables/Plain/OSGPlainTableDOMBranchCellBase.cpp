@@ -57,7 +57,7 @@
 #include "OSGConfig.h"
 
 
-
+#include "OSGCell.h"
 
 #include "OSGPlainTableDOMBranchCellBase.h"
 #include "OSGPlainTableDOMBranchCell.h"

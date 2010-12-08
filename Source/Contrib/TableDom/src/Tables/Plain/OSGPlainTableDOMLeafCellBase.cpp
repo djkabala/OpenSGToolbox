@@ -57,7 +57,7 @@
 #include "OSGConfig.h"
 
 
-
+#include "OSGCell.h"
 
 #include "OSGPlainTableDOMLeafCellBase.h"
 #include "OSGPlainTableDOMLeafCell.h"

@@ -65,7 +65,7 @@
 
 #include "OSGEventDetails.h" // Parent
 
-#include "OSGTableDOMFields.h"          // TableDOM type
+#include "OSGTableDOM.h"          // TableDOM type
 #include "OSGSysFields.h"               // Row type
 
 #include "OSGTableDOMEventDetailsFields.h"

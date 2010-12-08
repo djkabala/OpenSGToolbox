@@ -57,7 +57,7 @@
 #include "OSGConfig.h"
 
 
-#include "OSGElement.h"
+#include "OSGCell.h"
 #include "OSGUIFont.h"
 
 #include "OSGCellViewBase.h"

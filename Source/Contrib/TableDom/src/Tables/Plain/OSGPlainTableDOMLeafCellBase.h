@@ -64,7 +64,7 @@
 //#include "OSGBaseTypes.h"
 
 #include "OSGAbstractLeafCell.h" // Parent
-
+#include "OSGCell.h"
 
 #include "OSGPlainTableDOMLeafCellFields.h"
 

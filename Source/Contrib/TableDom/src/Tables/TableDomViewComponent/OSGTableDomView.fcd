@@ -15,8 +15,8 @@
 >
 A UI TableDomView
 	<Field
-		name="Element"
-		type="Element"
+		name="Cell"
+		type="Cell"
 		category="pointer"
 		cardinality="single"
 		visibility="external"

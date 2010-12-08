@@ -42,9 +42,9 @@
 #include "OSGContainerIdMapper.h"
 #include "OSGFieldContainer.h"
 
-#include "OSGPlainTable.h"
-#include "OSGPlainTableBranchElement.h"
-#include "OSGPlainTableLeafElement.h"
+#include "OSGPlainTableDOM.h"
+#include "OSGPlainTableDOMBranchCell.h"
+#include "OSGPlainTableDOMLeafCell.h"
 
 #include "string"
 
@@ -66,11 +66,11 @@ public:
     virtual ~CSVFileType(void);
 
     /*---------------------------------------------------------------------*/
-     virtual TableTransitPtr read(std::istream &is,
+     virtual TableDOMTransitPtr read(std::istream &is,
 		                     const std::string& FileNameOrExtension);
 
     /*---------------------------------------------------------------------*/
-     virtual bool write(Table* const Doc, std::ostream &os,
+     virtual bool write(TableDOM* const Doc, std::ostream &os,
                         const std::string& FileNameOrExtension);
 
     

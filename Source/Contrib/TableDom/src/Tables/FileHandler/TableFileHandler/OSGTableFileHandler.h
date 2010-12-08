@@ -71,18 +71,18 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableFileHandlerBase
      progresscbfp getReadProgressCB(void);
  
      /*---------------------------------------------------------------------*/
-     virtual TableTransitPtr		read(std::istream &InputStream, const std::string& Extension);
+     virtual TableDOMTransitPtr		read(std::istream &InputStream, const std::string& Extension);
   
-	 virtual TableTransitPtr		read(const  BoostPath& FilePath);
+	 virtual TableDOMTransitPtr		read(const  BoostPath& FilePath);
 	
-	 virtual TableTransitPtr		forceRead(const  BoostPath& FilePath);
+	 virtual TableDOMTransitPtr		forceRead(const  BoostPath& FilePath);
 	 
 
   
      /*---------------------------------------------------------------------*/
-	 virtual bool write(Table* const Doc, std::ostream &OutputStream, const std::string& Extension,bool Compress = false);
-     virtual bool write(Table* const Doc, const BoostPath& FilePath, bool Compress = false);
-	 virtual bool forceWrite(Table* const Doc, const BoostPath& FilePath, bool Compress = false);
+	 virtual bool write(TableDOM* const Doc, std::ostream &OutputStream, const std::string& Extension,bool Compress = false);
+     virtual bool write(TableDOM* const Doc, const BoostPath& FilePath, bool Compress = false);
+	 virtual bool forceWrite(TableDOM* const Doc, const BoostPath& FilePath, bool Compress = false);
  
      /*---------------------------------------------------------------------*/
      //virtual bool               setOptions(const Char8 *suffix, const Char8 *options);

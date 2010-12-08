@@ -44,7 +44,7 @@
 #include <cstdio>
 
 #include <OSGConfig.h>
-
+#include "OSGTableDOM.h"
 #include "OSGTableDOMEventDetails.h"
 
 OSG_BEGIN_NAMESPACE

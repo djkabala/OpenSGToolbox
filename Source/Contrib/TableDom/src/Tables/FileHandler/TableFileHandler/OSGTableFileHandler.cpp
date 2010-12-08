@@ -200,9 +200,9 @@ std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
  }
 
 
- TableTransitPtr TableFileHandlerBase::read(std::istream &InputStream, const std::string& Extension)
+ TableDOMTransitPtr TableFileHandlerBase::read(std::istream &InputStream, const std::string& Extension)
  {
-	 TableRefPtr Result;
+	 TableDOMRefPtr Result;
 	 //Get the FileType for this extension
 	 TableFileTypeP TheFileType(getFileType(Extension, TableFileType::OSG_READ_SUPPORTED));
 
@@ -210,7 +210,7 @@ std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
 	 if(TheFileType == NULL)
 	 {
 		SWARNING << "TableFileHandlerBase::read(): Cannot read Field Container stream, because no File types support " << Extension <<  " extension." << std::endl;
-		return TableTransitPtr(NULL);
+		return TableDOMTransitPtr(NULL);
 	 }
 	 else
 	 {
@@ -219,17 +219,17 @@ std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
 		 Result = TheFileType->read(InputStream, Extension);
 		 stopReadProgressThread();
 	 }
-	 return TableTransitPtr(Result);
+	 return TableDOMTransitPtr(Result);
  }
 
- TableTransitPtr TableFileHandlerBase::read(const BoostPath& FilePath)
+ TableDOMTransitPtr TableFileHandlerBase::read(const BoostPath& FilePath)
  {
-	 TableRefPtr Result;
+	 TableDOMRefPtr Result;
 	 //Determine if the file exists
 	 if(!boost::filesystem::exists(FilePath))
 	 {
 		SWARNING << "TableFileHandlerBase::read(): " << FilePath.string() << " does not exists." << std::endl;
-		return TableTransitPtr(NULL);
+		return TableDOMTransitPtr(NULL);
 	 }
 
 	 //Determine the file extension
@@ -247,7 +247,7 @@ std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
 	 if(TheFileType == NULL)
 	 {
 		SWARNING << "TableFileHandlerBase::read(): Cannot read Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
-		return TableTransitPtr(NULL);
+		return TableDOMTransitPtr(NULL);
 	 }
 	 else
 	 {
@@ -257,7 +257,7 @@ std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
 		 if(!InputStream)
 		 {
 			SWARNING << "TableFileHandlerBase::read(): Couldn't open input stream for file " << FilePath.string() << std::endl;
-			return TableTransitPtr(NULL);
+			return TableDOMTransitPtr(NULL);
 		 }
 		 else
 		 {
@@ -270,18 +270,18 @@ std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
 		 }
 	 }
 
-	 return TableTransitPtr(Result);
+	 return TableDOMTransitPtr(Result);
  }
 
  
- TableTransitPtr TableFileHandlerBase::forceRead(const BoostPath& FilePath)
+ TableDOMTransitPtr TableFileHandlerBase::forceRead(const BoostPath& FilePath)
  {
-	 TableRefPtr Result;
+	 TableDOMRefPtr Result;
 	 //Determine if the file exists
 	 if(!boost::filesystem::exists(FilePath))
 	 {
 		SWARNING << "TableFileHandlerBase::read(): " << FilePath.string() << " does not exists." << std::endl;
-		return TableTransitPtr(NULL);
+		return TableDOMTransitPtr(NULL);
 	 }
 
 	 //Determine the file extension
@@ -299,7 +299,7 @@ std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
 	 if(TheFileType == NULL)
 	 {
 		SWARNING << "TableFileHandlerBase::read(): Cannot read Field Container file: " << FilePath.string() << ", because no File types support " << Extension <<  " extension." << std::endl;
-		return TableTransitPtr(NULL);
+		return TableDOMTransitPtr(NULL);
 	 }
 	 else
 	 {
@@ -309,7 +309,7 @@ std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
 		 if(!InputStream)
 		 {
 			SWARNING << "TableFileHandlerBase::read(): Couldn't open input stream for file " << FilePath.string() << std::endl;
-			return TableTransitPtr(NULL);
+			return TableDOMTransitPtr(NULL);
 		 }
 		 else
 		 {
@@ -322,10 +322,10 @@ std::vector<std::string> TableFileHandlerBase::getSuffixList(UInt32 flags) const
 		 }
 	 }
 
-	return TableTransitPtr(Result);
+	return TableDOMTransitPtr(Result);
  }
 
-bool TableFileHandlerBase::write(Table* const Doc, std::ostream &OutputStream, const std::string& Extension,bool Compress)
+bool TableFileHandlerBase::write(TableDOM* const Doc, std::ostream &OutputStream, const std::string& Extension,bool Compress)
 {
 	 //Get the FileType for this extension
 	 TableFileTypeP TheFileType(getFileType(Extension, TableFileType::OSG_WRITE_SUPPORTED));
@@ -348,7 +348,7 @@ bool TableFileHandlerBase::write(Table* const Doc, std::ostream &OutputStream, c
 	 }
 }
 
-bool TableFileHandlerBase::write(Table* const Doc, const BoostPath& FilePath, bool Compress)
+bool TableFileHandlerBase::write(TableDOM* const Doc, const BoostPath& FilePath, bool Compress)
 {
 	 //Determine the file extension
 	 std::string Extension(boost::filesystem::extension(FilePath));
@@ -387,7 +387,7 @@ bool TableFileHandlerBase::write(Table* const Doc, const BoostPath& FilePath, bo
 }
 
 
-bool TableFileHandlerBase::forceWrite(Table* const Doc, const BoostPath& FilePath, bool Compress)
+bool TableFileHandlerBase::forceWrite(TableDOM* const Doc, const BoostPath& FilePath, bool Compress)
 {
 	 //Determine the file extension
 	 std::string Extension(boost::filesystem::extension(FilePath));

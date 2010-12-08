@@ -65,7 +65,7 @@
 
 #include "OSGCell.h" // Parent
 
-#include "OSGTableDOMFields.h"          // ParentTableDOM type
+#include "OSGTableDOM.h"          // ParentTableDOM type
 
 #include "OSGAbstractCellFields.h"
 

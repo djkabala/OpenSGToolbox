@@ -58,10 +58,14 @@
 #endif
 
 
-#include "OpenSG/OSGConfig.h"
+#include "OSGConfig.h"
 #include "OSGContribTableDomDef.h"
 
-//#include "OpenSG/OSGBaseTypes.h"
+#include "OSGCell.h"
+#include "OSGCellView.h" 
+#include "OSGTableDomArea.h"
+#include "OSGUIFont.h"
+//#include "OSGBaseTypes.h"
 
 #include "OSGTableDomLayoutManager.h" // Parent
 

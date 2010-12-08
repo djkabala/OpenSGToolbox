@@ -58,7 +58,7 @@
 
 
 
-#include "OSGElement.h"          // Element Class
+#include "OSGCell.h"          // Cell Class
 #include "OSGUIFont.h"           // Font Class
 
 #include "OSGTableDomViewBase.h"
@@ -86,7 +86,7 @@ OSG_BEGIN_NAMESPACE
  *                        Field Documentation                              *
 \***************************************************************************/
 
-/*! \var Element *       TableDomViewBase::_sfElement
+/*! \var Cell *       TableDomViewBase::_sfCell
     
 */
 
@@ -154,15 +154,15 @@ void TableDomViewBase::classDescInserter(TypeObject &oType)
     FieldDescriptionBase *pDesc = NULL;
 
 
-    pDesc = new SFUnrecElementPtr::Description(
-        SFUnrecElementPtr::getClassType(),
-        "Element",
+    pDesc = new SFUnrecCellPtr::Description(
+        SFUnrecCellPtr::getClassType(),
+        "Cell",
         "",
-        ElementFieldId, ElementFieldMask,
+        CellFieldId, CellFieldMask,
         false,
         (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&TableDomView::editHandleElement),
-        static_cast<FieldGetMethodSig >(&TableDomView::getHandleElement));
+        static_cast<FieldEditMethodSig>(&TableDomView::editHandleCell),
+        static_cast<FieldGetMethodSig >(&TableDomView::getHandleCell));
 
     oType.addInitialDesc(pDesc);
 
@@ -304,8 +304,8 @@ TableDomViewBase::TypeObject TableDomViewBase::_type(
     ">\n"
     "A UI TableDomView\n"
     "\t<Field\n"
-    "\t\tname=\"Element\"\n"
-    "\t\ttype=\"Element\"\n"
+    "\t\tname=\"Cell\"\n"
+    "\t\ttype=\"Cell\"\n"
     "\t\tcategory=\"pointer\"\n"
     "\t\tcardinality=\"single\"\n"
     "\t\tvisibility=\"external\"\n"
@@ -432,17 +432,17 @@ UInt32 TableDomViewBase::getContainerSize(void) const
 /*------------------------- decorator get ------------------------------*/
 
 
-//! Get the TableDomView::_sfElement field.
-const SFUnrecElementPtr *TableDomViewBase::getSFElement(void) const
+//! Get the TableDomView::_sfCell field.
+const SFUnrecCellPtr *TableDomViewBase::getSFCell(void) const
 {
-    return &_sfElement;
+    return &_sfCell;
 }
 
-SFUnrecElementPtr   *TableDomViewBase::editSFElement        (void)
+SFUnrecCellPtr   *TableDomViewBase::editSFCell        (void)
 {
-    editSField(ElementFieldMask);
+    editSField(CellFieldMask);
 
-    return &_sfElement;
+    return &_sfCell;
 }
 
 SFVec2f *TableDomViewBase::editSFStartingPosition(void)
@@ -572,9 +572,9 @@ UInt32 TableDomViewBase::getBinSize(ConstFieldMaskArg whichField)
 {
     UInt32 returnValue = Inherited::getBinSize(whichField);
 
-    if(FieldBits::NoField != (ElementFieldMask & whichField))
+    if(FieldBits::NoField != (CellFieldMask & whichField))
     {
-        returnValue += _sfElement.getBinSize();
+        returnValue += _sfCell.getBinSize();
     }
     if(FieldBits::NoField != (StartingPositionFieldMask & whichField))
     {
@@ -621,9 +621,9 @@ void TableDomViewBase::copyToBin(BinaryDataHandler &pMem,
 {
     Inherited::copyToBin(pMem, whichField);
 
-    if(FieldBits::NoField != (ElementFieldMask & whichField))
+    if(FieldBits::NoField != (CellFieldMask & whichField))
     {
-        _sfElement.copyToBin(pMem);
+        _sfCell.copyToBin(pMem);
     }
     if(FieldBits::NoField != (StartingPositionFieldMask & whichField))
     {
@@ -668,9 +668,9 @@ void TableDomViewBase::copyFromBin(BinaryDataHandler &pMem,
 {
     Inherited::copyFromBin(pMem, whichField);
 
-    if(FieldBits::NoField != (ElementFieldMask & whichField))
+    if(FieldBits::NoField != (CellFieldMask & whichField))
     {
-        _sfElement.copyFromBin(pMem);
+        _sfCell.copyFromBin(pMem);
     }
     if(FieldBits::NoField != (StartingPositionFieldMask & whichField))
     {
@@ -716,7 +716,7 @@ void TableDomViewBase::copyFromBin(BinaryDataHandler &pMem,
 
 TableDomViewBase::TableDomViewBase(void) :
     Inherited(),
-    _sfElement                (NULL),
+    _sfCell                (NULL),
     _sfStartingPosition       (Vec2f(0.0,0.0)),
     _sfFont                   (NULL),
     _sfSelectionBoxColor      (Color4f(0.0,0.0,1.0,1.0)),
@@ -731,7 +731,7 @@ TableDomViewBase::TableDomViewBase(void) :
 
 TableDomViewBase::TableDomViewBase(const TableDomViewBase &source) :
     Inherited(source),
-    _sfElement                (NULL),
+    _sfCell                (NULL),
     _sfStartingPosition       (source._sfStartingPosition       ),
     _sfFont                   (NULL),
     _sfSelectionBoxColor      (source._sfSelectionBoxColor      ),
@@ -759,36 +759,36 @@ void TableDomViewBase::onCreate(const TableDomView *source)
     {
         TableDomView *pThis = static_cast<TableDomView *>(this);
 
-        pThis->setElement(source->getElement());
+        pThis->setCell(source->getCell());
 
         pThis->setFont(source->getFont());
     }
 }
 
-GetFieldHandlePtr TableDomViewBase::getHandleElement         (void) const
+GetFieldHandlePtr TableDomViewBase::getHandleCell         (void) const
 {
-    SFUnrecElementPtr::GetHandlePtr returnValue(
-        new  SFUnrecElementPtr::GetHandle(
-             &_sfElement,
-             this->getType().getFieldDesc(ElementFieldId),
+    SFUnrecCellPtr::GetHandlePtr returnValue(
+        new  SFUnrecCellPtr::GetHandle(
+             &_sfCell,
+             this->getType().getFieldDesc(CellFieldId),
              const_cast<TableDomViewBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr TableDomViewBase::editHandleElement        (void)
+EditFieldHandlePtr TableDomViewBase::editHandleCell        (void)
 {
-    SFUnrecElementPtr::EditHandlePtr returnValue(
-        new  SFUnrecElementPtr::EditHandle(
-             &_sfElement,
-             this->getType().getFieldDesc(ElementFieldId),
+    SFUnrecCellPtr::EditHandlePtr returnValue(
+        new  SFUnrecCellPtr::EditHandle(
+             &_sfCell,
+             this->getType().getFieldDesc(CellFieldId),
              this));
 
     returnValue->setSetMethod(
-        boost::bind(&TableDomView::setElement,
+        boost::bind(&TableDomView::setCell,
                     static_cast<TableDomView *>(this), _1));
 
-    editSField(ElementFieldMask);
+    editSField(CellFieldMask);
 
     return returnValue;
 }
@@ -1046,7 +1046,7 @@ void TableDomViewBase::resolveLinks(void)
 {
     Inherited::resolveLinks();
 
-    static_cast<TableDomView *>(this)->setElement(NULL);
+    static_cast<TableDomView *>(this)->setCell(NULL);
 
     static_cast<TableDomView *>(this)->setFont(NULL);
 

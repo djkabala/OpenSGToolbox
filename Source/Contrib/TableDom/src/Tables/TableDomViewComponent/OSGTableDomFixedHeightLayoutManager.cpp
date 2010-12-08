@@ -45,7 +45,7 @@
 
 #define OSG_COMPILECONTRIBTABLEDOMLIB
 
-#include <OpenSG/OSGConfig.h>
+#include <OSGConfig.h>
 
 #include "OSGTableDomFixedHeightLayoutManager.h"
 

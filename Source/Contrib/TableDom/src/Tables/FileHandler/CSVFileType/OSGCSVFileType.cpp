@@ -109,14 +109,12 @@ TableDOMTransitPtr CSVFileType::read(std::istream &InputStream,
 	UInt32 rowCount = 0;
 	while(std::getline(InputStream,text))
 	{
-		std::cout<<text<<std::endl<<":";
    	   std::string token="";
 	   UInt32 columnCount = 0;
 	   for(UInt32 i=0;i<text.size();i++)
 	   {
 		   if(text[i]==',')
 		   {
-			std::cout<<"token "<<columnCount<<":"<<token<<"."<<std::endl;
 			Result->insertValue(rowCount,columnCount,boost::any(token));
 			columnCount++;
 			token="";
@@ -127,13 +125,10 @@ TableDOMTransitPtr CSVFileType::read(std::istream &InputStream,
 		   }
 	   }
 	   removeSlashRandSlashN(token);
-	   std::cout<<"token "<<columnCount<<":"<<token<<"."<<std::endl;
 	   Result->insertValue(rowCount,columnCount,boost::any(token));
 
 	   rowCount++;
 	}
-
-	Result->print();
 
 	return TableDOMTransitPtr(Result);
 }
@@ -141,26 +136,40 @@ TableDOMTransitPtr CSVFileType::read(std::istream &InputStream,
 bool CSVFileType::write(TableDOM* const Doc, std::ostream &OutputStream,
                     const std::string& FileNameOrExtension)
 {
-	/*PlainTableRefPtr TheTable = dynamic_cast<PlainTable*>(Doc);
-	std::vector<Element*> GenericRoots;
-	GenericRoots = TheTable->getRootElements();
-	for(UInt32 i=0;i<GenericRoots.size();i++)
+	PlainTableDOMRefPtr TheTable = dynamic_cast<PlainTableDOM*>(Doc);
+	
+	PlainTableDOMBranchCellRefPtr RootCell;
+	RootCell = dynamic_cast<PlainTableDOMBranchCell*>(TheTable->getRootCell());	
+	
+	
+	if(!RootCell) 
 	{
-		PlainTableBranchElementRefPtr RootElement;
-		RootElement = dynamic_cast<PlainTableBranchElement*>(GenericRoots[i]);	
+		return false;
+	}
+	else
+	{
+		std::string rowInString="";
+		std::map<UInt32,CellRefPtr> theChildrenMap = RootCell->getChildrenMap();
 		
-		for(UInt32 j=0;j<RootElement->getElementCount()-1;j++)
-		{	
-			PlainTableLeafElementRefPtr LeafElement;
-			LeafElement = dynamic_cast<PlainTableLeafElement*>(RootElement->getElement(j));
-			OutputStream<<LeafElement->getTable();
-		}
-		PlainTableLeafElementRefPtr LeafElement;
-		LeafElement = dynamic_cast<PlainTableLeafElement*>(RootElement->getElement(RootElement->getElementCount()-1));
-		OutputStream<<LeafElement->getTable().substr(0,LeafElement->getTableLength()-2);
+		for(std::map<UInt32,CellRefPtr>::const_iterator Itr(theChildrenMap.begin()) ; Itr!=theChildrenMap.end(); Itr++)
+		{
+			Cell* temp1 = Itr->second;
+			PlainTableDOMBranchCellRefPtr theRow = dynamic_cast<PlainTableDOMBranchCell*>(temp1);
 
-	}*/
-	return false;
+			std::map<UInt32,CellRefPtr> theChildrenMapofRow = theRow->getChildrenMap();
+			rowInString="";
+			for(std::map<UInt32,CellRefPtr>::const_iterator Itr2(theChildrenMapofRow.begin()) ; Itr2!=theChildrenMapofRow.end(); Itr2++)
+			{
+				Cell* temp2= Itr2->second;
+				PlainTableDOMLeafCellRefPtr theCol = dynamic_cast<PlainTableDOMLeafCell*>(temp2);
+				rowInString += boost::any_cast<std::string>(theCol->getValue()) + ",";
+			}
+			rowInString = rowInString.substr(0,rowInString.size()-1);
+			OutputStream<<rowInString<<std::endl;
+		}
+		
+		return true;
+	}
 }
 
 /*-------------------------------------------------------------------------*\

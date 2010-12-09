@@ -85,6 +85,7 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractBranchCell : public AbstractBranchC
 	virtual Cell* createRow(UInt32 value) = 0;
 	virtual Cell* createColumn(UInt32 value) = 0;
 	virtual void print(void) const;
+	virtual std::map<UInt32,CellRefPtr>& getChildrenMap(void);
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 

@@ -20,7 +20,7 @@ UI AbstractTableDOM.
 		category="pointer"
 		cardinality="single"
 		visibility="external"
-		access="protected"
+		access="public"
 	>
 	</Field>
 </FieldContainer>

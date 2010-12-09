@@ -104,6 +104,11 @@ void AbstractBranchCell::print(void) const
 	}
 }
 
+std::map<UInt32,CellRefPtr>& AbstractBranchCell::getChildrenMap(void)
+{
+	return childrenMap;
+}
+
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/

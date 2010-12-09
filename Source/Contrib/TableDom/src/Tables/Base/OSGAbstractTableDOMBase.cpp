@@ -162,7 +162,7 @@ AbstractTableDOMBase::TypeObject AbstractTableDOMBase::_type(
     "\t\tcategory=\"pointer\"\n"
     "\t\tcardinality=\"single\"\n"
     "\t\tvisibility=\"external\"\n"
-    "\t\taccess=\"protected\"\n"
+    "\t\taccess=\"public\"\n"
     "\t>\n"
     "\t</Field>\n"
     "</FieldContainer>\n",

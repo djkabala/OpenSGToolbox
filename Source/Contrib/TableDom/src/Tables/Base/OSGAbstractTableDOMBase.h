@@ -126,6 +126,34 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractTableDOMBase : public TableDOM
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
+    /*! \name                    Field Get                                 */
+    /*! \{                                                                 */
+
+            const SFUnrecCellPtr      *getSFRootCell       (void) const;
+                  SFUnrecCellPtr      *editSFRootCell       (void);
+
+
+                  Cell * getRootCell       (void) const;
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                    Field Set                                 */
+    /*! \{                                                                 */
+
+            void setRootCell       (Cell * const value);
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr Field Set                                 */
+    /*! \{                                                                 */
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr MField Set                                */
+    /*! \{                                                                 */
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
     /*! \name                   Binary Access                              */
     /*! \{                                                                 */
 
@@ -181,29 +209,6 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractTableDOMBase : public TableDOM
 
     GetFieldHandlePtr  getHandleRootCell        (void) const;
     EditFieldHandlePtr editHandleRootCell       (void);
-
-    /*! \}                                                                 */
-    /*---------------------------------------------------------------------*/
-    /*! \name                    Field Get                                 */
-    /*! \{                                                                 */
-
-            const SFUnrecCellPtr      *getSFRootCell        (void) const;
-                  SFUnrecCellPtr      *editSFRootCell       (void);
-
-
-                  Cell * getRootCell       (void) const;
-
-    /*! \}                                                                 */
-    /*---------------------------------------------------------------------*/
-    /*! \name                    Field Set                                 */
-    /*! \{                                                                 */
-
-            void setRootCell       (Cell * const value);
-
-    /*! \}                                                                 */
-    /*---------------------------------------------------------------------*/
-    /*! \name                Ptr MField Set                                */
-    /*! \{                                                                 */
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/

@@ -46,6 +46,7 @@
 #include <OSGConfig.h>
 
 #include "OSGPlainTableDOMBranchCell.h"
+#include "OSGPlainTableDOMLeafCell.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -71,10 +72,24 @@ void PlainTableDOMBranchCell::initMethod(InitPhase ePhase)
     }
 }
 
-
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
+
+
+Cell* PlainTableDOMBranchCell::createRow(UInt32 row)
+{
+	PlainTableDOMBranchCellRefPtr theRow = PlainTableDOMBranchCell::create();
+	childrenMap[row] = theRow;
+	return theRow;
+}
+
+Cell* PlainTableDOMBranchCell::createColumn(UInt32 column)
+{
+	PlainTableDOMLeafCellRefPtr theColumn = PlainTableDOMLeafCell::create();
+	childrenMap[column] = theColumn;
+	return theColumn;
+}
 
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -

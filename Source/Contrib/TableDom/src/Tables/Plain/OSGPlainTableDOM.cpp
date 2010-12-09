@@ -46,6 +46,10 @@
 #include <OSGConfig.h>
 
 #include "OSGPlainTableDOM.h"
+#include "OSGPlainTableDOMBranchCell.h"
+#include "OSGPlainTableDOMLeafCell.h"
+
+#include <boost/any.hpp>
 
 OSG_BEGIN_NAMESPACE
 
@@ -75,6 +79,57 @@ void PlainTableDOM::initMethod(InitPhase ePhase)
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
+
+void PlainTableDOM::insertValue(UInt32 row,UInt32 column,const boost::any value)
+{
+	PlainTableDOMBranchCellRefPtr rootCell;
+
+	if(getRootCell())
+	{
+		rootCell=dynamic_cast<PlainTableDOMBranchCell*>(getRootCell());
+	}
+	else
+	{
+		rootCell = PlainTableDOMBranchCell::create();	
+		setRootCell(rootCell);
+	}
+
+	PlainTableDOMBranchCellRefPtr rowCell;
+
+	rowCell = dynamic_cast<PlainTableDOMBranchCell*>(rootCell->getCell(row));
+
+	if(!rowCell)
+	{
+		rowCell = dynamic_cast<PlainTableDOMBranchCell*>(rootCell->createRow(row));
+	}
+
+	PlainTableDOMLeafCellRefPtr columnCell;
+
+	columnCell = dynamic_cast<PlainTableDOMLeafCell*>(rowCell->getCell(column));
+
+	if(!columnCell)
+	{
+		columnCell = dynamic_cast<PlainTableDOMLeafCell*>(rowCell->createColumn(column));
+	}
+
+	columnCell->setValue(value);
+
+}
+
+void PlainTableDOM::print(void) const
+{
+	 //boost::any_cast<std::string>();
+
+	if(getRootCell())
+	{
+		getRootCell()->print();
+	}
+	else
+	{
+		SWARNING<<"void PlainTableDOM::print(void) const -> Root is NULL\n";
+	}
+
+}
 
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -

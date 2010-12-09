@@ -77,7 +77,7 @@ public:
     /*=========================  PROTECTED  ===============================*/
 protected:
 
-	//void removeSlashRandSlashN(std::string& word);
+	void removeSlashRandSlashN(std::string& word);
 
     typedef TableFileType Inherited;
     static       CSVFileType*  _the;

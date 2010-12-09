@@ -85,24 +85,20 @@ std::string CSVFileType::getName(void) const
 	return std::string("CSVFileType");	// unnecessary function . Can be removed . There for convenience
 }
 
-/*
+
 void CSVFileType::removeSlashRandSlashN(std::string &word)
 {
 	std::string Temp="";
 	for(UInt32 i=0;i<word.length();i++)
 	{
-		if(word[i]!='\r' && word[i]!='\n' && word[i]!='\t')
+		if(word[i]!='\r' && word[i]!='\n')
 		{
 			Temp+=word[i];
-		}
-		else if(word[i]=='\t')
-		{
-			Temp+="    ";
 		}
 	}
 	word = Temp;
 }
-*/
+
 
 TableDOMTransitPtr CSVFileType::read(std::istream &InputStream,
 	                     const std::string& FileNameOrExtension)
@@ -110,17 +106,19 @@ TableDOMTransitPtr CSVFileType::read(std::istream &InputStream,
 	PlainTableDOMRefPtr Result = PlainTableDOM::create();
 
 	std::string text;
+	UInt32 rowCount = 0;
 	while(std::getline(InputStream,text))
 	{
 		std::cout<<text<<std::endl<<":";
    	   std::string token="";
-	   int count = 0;
-	   for(int i=0;i<text.size();i++)
+	   UInt32 columnCount = 0;
+	   for(UInt32 i=0;i<text.size();i++)
 	   {
 		   if(text[i]==',')
 		   {
-			std::cout<<"token "<<count<<":"<<token<<"."<<std::endl;
-			count++;
+			std::cout<<"token "<<columnCount<<":"<<token<<"."<<std::endl;
+			Result->insertValue(rowCount,columnCount,boost::any(token));
+			columnCount++;
 			token="";
 		   }
 		   else
@@ -128,19 +126,14 @@ TableDOMTransitPtr CSVFileType::read(std::istream &InputStream,
 			token+=text[i];
 		   }
 	   }
-	   std::cout<<"token "<<count<<":"<<token<<"."<<std::endl;
+	   removeSlashRandSlashN(token);
+	   std::cout<<"token "<<columnCount<<":"<<token<<"."<<std::endl;
+	   Result->insertValue(rowCount,columnCount,boost::any(token));
+
+	   rowCount++;
 	}
 
-	/*TableElementAttribute Props;
-	std::string Word;
-	bool FirstTime = true;
-	
-	while(std::getline(InputStream,Word))
-	{
-		removeSlashRandSlashN(Word);
-		Result->addTableAsNewElementToTable(Word+"\r\n",Props,FirstTime);
-		if(FirstTime)FirstTime=!FirstTime;
-	}*/
+	Result->print();
 
 	return TableDOMTransitPtr(Result);
 }

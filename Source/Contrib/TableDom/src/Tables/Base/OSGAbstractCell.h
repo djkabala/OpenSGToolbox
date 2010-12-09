@@ -77,6 +77,7 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractCell : public AbstractCellBase
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
 
+	//virtual void print(void) const = 0;
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 

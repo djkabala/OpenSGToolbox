@@ -47,6 +47,8 @@
 
 #include "OSGAbstractLeafCell.h"
 
+#include <boost/any.hpp>
+
 OSG_BEGIN_NAMESPACE
 
 // Documentation for this class is emitted in the
@@ -75,6 +77,21 @@ void AbstractLeafCell::initMethod(InitPhase ePhase)
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
+
+void AbstractLeafCell::print(void) const
+{
+	std::cout<<"Value:"<<boost::any_cast<std::string>(getValue())<<std::endl;
+}
+
+void AbstractLeafCell::setValue(const boost::any theValue)
+{
+	value = theValue;
+}
+
+boost::any AbstractLeafCell::getValue(void) const
+{
+	return value;
+}
 
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -

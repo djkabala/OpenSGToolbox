@@ -43,6 +43,7 @@
 #endif
 
 #include "OSGPlainTableDOMBase.h"
+#include <boost/any.hpp>
 
 OSG_BEGIN_NAMESPACE
 
@@ -76,6 +77,11 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING PlainTableDOM : public PlainTableDOMBase
 
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
+
+
+	virtual void insertValue(UInt32 row,UInt32 column,const boost::any value);
+
+	virtual void print(void) const;
 
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/

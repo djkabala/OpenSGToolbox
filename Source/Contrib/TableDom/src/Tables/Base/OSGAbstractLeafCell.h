@@ -43,7 +43,7 @@
 #endif
 
 #include "OSGAbstractLeafCellBase.h"
-
+#include <boost/any.hpp>
 OSG_BEGIN_NAMESPACE
 
 /*! \brief AbstractLeafCell class. See \ref
@@ -55,6 +55,8 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractLeafCell : public AbstractLeafCellB
   protected:
 
     /*==========================  PUBLIC  =================================*/
+
+	  boost::any value;
 
   public:
 
@@ -77,8 +79,14 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractLeafCell : public AbstractLeafCellB
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
 
+
+	virtual void print(void) const;
+	void setValue(const boost::any theValue);
+	boost::any getValue(void) const;
+
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
+	
 
   protected:
 

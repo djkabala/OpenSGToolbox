@@ -42,6 +42,7 @@
 #pragma once
 #endif
 
+#include <map>
 #include "OSGAbstractBranchCellBase.h"
 
 OSG_BEGIN_NAMESPACE
@@ -54,6 +55,8 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractBranchCell : public AbstractBranchC
 {
   protected:
 
+	  std::map<UInt32,CellRefPtr> childrenMap;
+	  
     /*==========================  PUBLIC  =================================*/
 
   public:
@@ -77,6 +80,11 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractBranchCell : public AbstractBranchC
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
 
+
+	virtual Cell* getCell(UInt32 value) const;
+	virtual Cell* createRow(UInt32 value) = 0;
+	virtual Cell* createColumn(UInt32 value) = 0;
+	virtual void print(void) const;
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 

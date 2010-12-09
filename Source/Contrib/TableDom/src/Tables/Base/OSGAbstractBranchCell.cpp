@@ -47,6 +47,8 @@
 
 #include "OSGAbstractBranchCell.h"
 
+#include <map>
+
 OSG_BEGIN_NAMESPACE
 
 // Documentation for this class is emitted in the
@@ -75,6 +77,32 @@ void AbstractBranchCell::initMethod(InitPhase ePhase)
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
+
+
+Cell* AbstractBranchCell::getCell(UInt32 value) const
+{
+	std::map<UInt32,CellRefPtr>::const_iterator FindItor(childrenMap.find(value));
+    if(FindItor != childrenMap.end())
+    {
+        return (*FindItor).second;
+    }
+    else
+    {
+        //SWARNING << "Cell* PlainTableDOMBranchCell::getCell(UInt32 value) const -> No Such Cell Exists: " << std::endl;
+        return NULL;
+    }
+}
+
+
+void AbstractBranchCell::print(void) const
+{
+	for(std::map<UInt32,CellRefPtr>::const_iterator Itr(childrenMap.begin()) ; Itr!=childrenMap.end() ; Itr++)
+	{
+		std::cout <<"Index:"<<Itr->first<<std::endl;
+		std::cout <<"________________________________________________\n";
+		Itr->second->print();
+	}
+}
 
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -

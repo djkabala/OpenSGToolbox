@@ -114,6 +114,9 @@ void PlainTableDOM::insertValue(UInt32 row,UInt32 column,const boost::any value)
 
 	columnCell->setValue(value);
 
+	TableDOMEventDetailsUnrecPtr TableEventDetails(TableDOMEventDetails::create(this, getTimeStamp(), this, 0 , 0));
+	this->produceInsert(TableEventDetails);
+
 }
 
 void PlainTableDOM::print(void) const

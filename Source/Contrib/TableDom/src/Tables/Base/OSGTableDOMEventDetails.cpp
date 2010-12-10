@@ -71,7 +71,22 @@ void TableDOMEventDetails::initMethod(InitPhase ePhase)
     }
 }
 
+TableDOMEventDetailsTransitPtr TableDOMEventDetails::create(FieldContainer* const Source,
+                                                  Time TimeStamp,
+                                                  TableDOM* const TheTableDOM,
+                                                  UInt32 Row,
+                                                  UInt32 Column)
+{
+    TableDOMEventDetails* TheEventDetails = TableDOMEventDetails::createUnregistered();
 
+    TheEventDetails->setSource(Source);
+    TheEventDetails->setTimeStamp(TimeStamp);
+    TheEventDetails->setTableDOM(TheTableDOM);
+    TheEventDetails->setRow(Row);
+    TheEventDetails->setColumn(Column);
+
+    return TableDOMEventDetailsTransitPtr(TheEventDetails);
+}
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/

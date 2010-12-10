@@ -74,6 +74,28 @@ void TableDomVariableHeightLayoutManager::initMethod(InitPhase ePhase)
 }
 
 
+void TableDomVariableHeightLayoutManager::initializeRootCell() 
+{
+	return;
+}
+
+void TableDomVariableHeightLayoutManager::calculatePreferredSize(void)
+{
+	return;
+}
+
+Vec2f  TableDomVariableHeightLayoutManager::getContentRequestedSize(void) const
+{
+	return Vec2f(0.0,0.0);
+}
+
+
+void TableDomVariableHeightLayoutManager::updateViews(void)
+{
+	return;
+}
+
+
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/

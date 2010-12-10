@@ -46,6 +46,7 @@
 #include <OSGConfig.h>
 
 #include "OSGTableDomLayoutManager.h"
+#include "OSGTableDomArea.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -75,6 +76,12 @@ void TableDomLayoutManager::initMethod(InitPhase ePhase)
 /***************************************************************************\
  *                           Instance methods                              *
 \***************************************************************************/
+
+
+TableDomArea* TableDomLayoutManager::getParentTableDomArea(void) const
+{
+    return dynamic_cast<TableDomArea*>(_sfParentTableDomArea.getValue());
+}
 
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -

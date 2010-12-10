@@ -65,6 +65,7 @@
 
 #include "OSGAttachmentContainer.h" // Parent
 
+#include "OSGCellFields.h"              // RootCell type
 
 #include "OSGTableDOMFields.h"
 
@@ -109,6 +110,18 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDOMBase : public AttachmentContainer
 
   public:
 
+    enum
+    {
+        RootCellFieldId = Inherited::NextFieldId,
+        NextFieldId = RootCellFieldId + 1
+    };
+
+    static const OSG::BitVector RootCellFieldMask =
+        (TypeTraits<BitVector>::One << RootCellFieldId);
+    static const OSG::BitVector NextFieldMask =
+        (TypeTraits<BitVector>::One << NextFieldId);
+        
+    typedef SFUnrecCellPtr    SFRootCellType;
 
     enum
     {
@@ -138,6 +151,34 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDOMBase : public AttachmentContainer
     virtual const FieldContainerType &getType         (void) const;
 
     virtual       UInt32              getContainerSize(void) const;
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                    Field Get                                 */
+    /*! \{                                                                 */
+
+            const SFUnrecCellPtr      *getSFRootCell       (void) const;
+                  SFUnrecCellPtr      *editSFRootCell       (void);
+
+
+                  Cell * getRootCell       (void) const;
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                    Field Set                                 */
+    /*! \{                                                                 */
+
+            void setRootCell       (Cell * const value);
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr Field Set                                 */
+    /*! \{                                                                 */
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr MField Set                                */
+    /*! \{                                                                 */
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -247,6 +288,13 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDOMBase : public AttachmentContainer
     static const Char8 *getClassname     (void             );
 
     /*---------------------------------------------------------------------*/
+    /*! \name                      Fields                                  */
+    /*! \{                                                                 */
+
+    SFUnrecCellPtr    _sfRootCell;
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
     /*! \name                   Constructors                               */
     /*! \{                                                                 */
 
@@ -265,12 +313,15 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDOMBase : public AttachmentContainer
     /*! \name                     onCreate                                */
     /*! \{                                                                 */
 
+    void onCreate(const TableDOM *source = NULL);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                    Generic Field Access                      */
     /*! \{                                                                 */
 
+    GetFieldHandlePtr  getHandleRootCell        (void) const;
+    EditFieldHandlePtr editHandleRootCell       (void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/

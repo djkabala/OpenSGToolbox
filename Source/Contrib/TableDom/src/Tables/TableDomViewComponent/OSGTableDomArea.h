@@ -43,6 +43,7 @@
 #endif
 
 #include "OSGTableDomAreaBase.h"
+#include "OSGColorLayerFields.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -53,6 +54,11 @@ OSG_BEGIN_NAMESPACE
 class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomArea : public TableDomAreaBase
 {
   protected:
+
+
+	  void createDefaultFont(void);
+	  void createDefaultLayer(void);
+	  
 
     /*==========================  PUBLIC  =================================*/
 
@@ -78,13 +84,82 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomArea : public TableDomAreaBase
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
 
+	/*! \}                                                                 */
+    /*! \name                       Sync                                   */
+    /*! \{                                                                 */
 
-	void drawInternal(OSG::Graphics *const ,OSG::Real32) const;
+    virtual void resolveLinks(void);
+
+
+	virtual void drawInternal(Graphics * const TheGraphics, Real32 Opacity = 1.0f) const;
+
+	void loadFile(const BoostPath& pathOfFile);
+	void saveFile(const BoostPath& pathOfFile);
+	
+
+
+	virtual void focusGained(FocusEventDetails* const details);
+	virtual void focusLost(FocusEventDetails* const details);
+	virtual void mouseReleased(MouseEventDetails* const details);
+    void mouseDragged(MouseEventDetails* const details);
+	void mouseDraggedAfterArming(MouseEventDetails* const details);
+	void keyTyped(KeyEventDetails* const details);
+	virtual void mouseClicked(MouseEventDetails* const details);
+	virtual void mousePressed(MouseEventDetails* const details);
+
+	void updatePreferredSize(void);
+	virtual Vec2f getContentRequestedSize(void) const;
+
+	virtual Vec2f getPreferredScrollableViewportSize(void);
+    virtual Int32 getScrollableUnitIncrement(const Pnt2f& VisibleRectTopLeft,
+                                             const Pnt2f& VisibleRectBottomRight, 
+                                             const UInt32& orientation, 
+                                             const Int32& direction);
+
+  	virtual Int32 getScrollableBlockIncrement(const Pnt2f& VisibleRectTopLeft, 
+                                              const Pnt2f& VisibleRectBottomRight, 
+                                              const UInt32& orientation, 
+                                              const Int32& direction);
+    //Return true if a viewport should always force the height of this Scrollable to match the height of the viewport.
+    virtual bool getScrollableTracksViewportHeight(void);
+
+    //Return true if a viewport should always force the width of this Scrollable to match the width of the viewport.
+    virtual bool getScrollableTracksViewportWidth(void);
+
+    //Return true if a viewport should always force the height of this Scrollable to be at at least the height of the viewport.
+    virtual bool getScrollableHeightMinTracksViewport(void);
+
+    //Return true if a viewport should always force the width of this Scrollable to be at at least the width of the viewport.
+    virtual bool getScrollableWidthMinTracksViewport(void);
+
+	UInt32 getTopmostVisibleLineNumber(void);
+	UInt32 getLinesToBeDisplayed(void);
+	Real32 getHeightOfLine(void);
+	
+	
 
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 
   protected:
+
+	
+	
+	void handleTableModelChanged();
+
+	//Gives notification that an attribute or set of attributes changed.
+    void handleTableChanged(TableDOMEventDetails* const details);
+
+	//Gives notification that there was an insert of something into the document.
+	void handleTableInsert(TableDOMEventDetails* const details);
+
+	//Gives notification when something has been removed
+	void handleTableRemove(TableDOMEventDetails* const details);
+
+
+    boost::signals2::connection _TableChangedConnection,
+                                _TableInsertConnection,
+                                _TableRemoveConnection;
 
     // Variables should all be in TableDomAreaBase.
 

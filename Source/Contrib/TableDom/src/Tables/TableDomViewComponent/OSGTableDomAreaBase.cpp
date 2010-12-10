@@ -58,7 +58,7 @@
 
 
 
-#include "OSGTable.h"                   // TableModel Class
+#include "OSGTableDOM.h"                // TableDOMModel Class
 #include "OSGTableDomLayoutManager.h"   // LayoutManager Class
 #include "OSGUIFont.h"                  // Font Class
 
@@ -85,7 +85,7 @@ OSG_BEGIN_NAMESPACE
  *                        Field Documentation                              *
 \***************************************************************************/
 
-/*! \var Table *         TableDomAreaBase::_sfTableModel
+/*! \var TableDOM *      TableDomAreaBase::_sfTableDOMModel
     
 */
 
@@ -98,6 +98,10 @@ OSG_BEGIN_NAMESPACE
 */
 
 /*! \var bool            TableDomAreaBase::_sfEditable
+    
+*/
+
+/*! \var Color4f         TableDomAreaBase::_sfBackgroundColor
     
 */
 
@@ -129,15 +133,15 @@ void TableDomAreaBase::classDescInserter(TypeObject &oType)
     FieldDescriptionBase *pDesc = NULL;
 
 
-    pDesc = new SFUnrecTablePtr::Description(
-        SFUnrecTablePtr::getClassType(),
-        "TableModel",
+    pDesc = new SFUnrecTableDOMPtr::Description(
+        SFUnrecTableDOMPtr::getClassType(),
+        "TableDOMModel",
         "",
-        TableModelFieldId, TableModelFieldMask,
+        TableDOMModelFieldId, TableDOMModelFieldMask,
         false,
         (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&TableDomArea::editHandleTableModel),
-        static_cast<FieldGetMethodSig >(&TableDomArea::getHandleTableModel));
+        static_cast<FieldEditMethodSig>(&TableDomArea::editHandleTableDOMModel),
+        static_cast<FieldGetMethodSig >(&TableDomArea::getHandleTableDOMModel));
 
     oType.addInitialDesc(pDesc);
 
@@ -176,6 +180,18 @@ void TableDomAreaBase::classDescInserter(TypeObject &oType)
         static_cast<FieldGetMethodSig >(&TableDomArea::getHandleEditable));
 
     oType.addInitialDesc(pDesc);
+
+    pDesc = new SFColor4f::Description(
+        SFColor4f::getClassType(),
+        "BackgroundColor",
+        "",
+        BackgroundColorFieldId, BackgroundColorFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&TableDomArea::editHandleBackgroundColor),
+        static_cast<FieldGetMethodSig >(&TableDomArea::getHandleBackgroundColor));
+
+    oType.addInitialDesc(pDesc);
 }
 
 
@@ -209,8 +225,8 @@ TableDomAreaBase::TypeObject TableDomAreaBase::_type(
     "A UI TableDomArea\n"
     "\n"
     "\t<Field\n"
-    "\t\tname=\"TableModel\"\n"
-    "\t\ttype=\"Table\"\n"
+    "\t\tname=\"TableDOMModel\"\n"
+    "\t\ttype=\"TableDOM\"\n"
     "\t\tcategory=\"pointer\"\n"
     "\t\tcardinality=\"single\"\n"
     "\t\tvisibility=\"external\"\n"
@@ -254,6 +270,18 @@ TableDomAreaBase::TypeObject TableDomAreaBase::_type(
     "    >\n"
     "\t</Field>\n"
     "\t\n"
+    "\t<Field\n"
+    "\t\tname=\"BackgroundColor\"\n"
+    "\t\ttype=\"Color4f\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "        category=\"data\"\n"
+    "        visibility=\"external\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t\tdefaultValue=\"1.0,1.0,1.0,1.0\"\n"
+    "    >\n"
+    "\t</Field>\n"
+    "\t\n"
+    "\t\n"
     "</FieldContainer>\n",
     "A UI TableDomArea\n"
     );
@@ -278,17 +306,17 @@ UInt32 TableDomAreaBase::getContainerSize(void) const
 /*------------------------- decorator get ------------------------------*/
 
 
-//! Get the TableDomArea::_sfTableModel field.
-const SFUnrecTablePtr *TableDomAreaBase::getSFTableModel(void) const
+//! Get the TableDomArea::_sfTableDOMModel field.
+const SFUnrecTableDOMPtr *TableDomAreaBase::getSFTableDOMModel(void) const
 {
-    return &_sfTableModel;
+    return &_sfTableDOMModel;
 }
 
-SFUnrecTablePtr     *TableDomAreaBase::editSFTableModel     (void)
+SFUnrecTableDOMPtr  *TableDomAreaBase::editSFTableDOMModel  (void)
 {
-    editSField(TableModelFieldMask);
+    editSField(TableDOMModelFieldMask);
 
-    return &_sfTableModel;
+    return &_sfTableDOMModel;
 }
 
 //! Get the TableDomArea::_sfLayoutManager field.
@@ -330,6 +358,19 @@ const SFBool *TableDomAreaBase::getSFEditable(void) const
 }
 
 
+SFColor4f *TableDomAreaBase::editSFBackgroundColor(void)
+{
+    editSField(BackgroundColorFieldMask);
+
+    return &_sfBackgroundColor;
+}
+
+const SFColor4f *TableDomAreaBase::getSFBackgroundColor(void) const
+{
+    return &_sfBackgroundColor;
+}
+
+
 
 
 
@@ -340,9 +381,9 @@ UInt32 TableDomAreaBase::getBinSize(ConstFieldMaskArg whichField)
 {
     UInt32 returnValue = Inherited::getBinSize(whichField);
 
-    if(FieldBits::NoField != (TableModelFieldMask & whichField))
+    if(FieldBits::NoField != (TableDOMModelFieldMask & whichField))
     {
-        returnValue += _sfTableModel.getBinSize();
+        returnValue += _sfTableDOMModel.getBinSize();
     }
     if(FieldBits::NoField != (LayoutManagerFieldMask & whichField))
     {
@@ -356,6 +397,10 @@ UInt32 TableDomAreaBase::getBinSize(ConstFieldMaskArg whichField)
     {
         returnValue += _sfEditable.getBinSize();
     }
+    if(FieldBits::NoField != (BackgroundColorFieldMask & whichField))
+    {
+        returnValue += _sfBackgroundColor.getBinSize();
+    }
 
     return returnValue;
 }
@@ -365,9 +410,9 @@ void TableDomAreaBase::copyToBin(BinaryDataHandler &pMem,
 {
     Inherited::copyToBin(pMem, whichField);
 
-    if(FieldBits::NoField != (TableModelFieldMask & whichField))
+    if(FieldBits::NoField != (TableDOMModelFieldMask & whichField))
     {
-        _sfTableModel.copyToBin(pMem);
+        _sfTableDOMModel.copyToBin(pMem);
     }
     if(FieldBits::NoField != (LayoutManagerFieldMask & whichField))
     {
@@ -381,6 +426,10 @@ void TableDomAreaBase::copyToBin(BinaryDataHandler &pMem,
     {
         _sfEditable.copyToBin(pMem);
     }
+    if(FieldBits::NoField != (BackgroundColorFieldMask & whichField))
+    {
+        _sfBackgroundColor.copyToBin(pMem);
+    }
 }
 
 void TableDomAreaBase::copyFromBin(BinaryDataHandler &pMem,
@@ -388,9 +437,9 @@ void TableDomAreaBase::copyFromBin(BinaryDataHandler &pMem,
 {
     Inherited::copyFromBin(pMem, whichField);
 
-    if(FieldBits::NoField != (TableModelFieldMask & whichField))
+    if(FieldBits::NoField != (TableDOMModelFieldMask & whichField))
     {
-        _sfTableModel.copyFromBin(pMem);
+        _sfTableDOMModel.copyFromBin(pMem);
     }
     if(FieldBits::NoField != (LayoutManagerFieldMask & whichField))
     {
@@ -403,6 +452,10 @@ void TableDomAreaBase::copyFromBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (EditableFieldMask & whichField))
     {
         _sfEditable.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (BackgroundColorFieldMask & whichField))
+    {
+        _sfBackgroundColor.copyFromBin(pMem);
     }
 }
 
@@ -527,23 +580,25 @@ FieldContainerTransitPtr TableDomAreaBase::shallowCopy(void) const
 
 TableDomAreaBase::TableDomAreaBase(void) :
     Inherited(),
-    _sfTableModel             (NULL),
+    _sfTableDOMModel          (NULL),
     _sfLayoutManager          (this,
                           LayoutManagerFieldId,
                           TableDomLayoutManager::ParentTableDomAreaFieldId),
     _sfFont                   (NULL),
-    _sfEditable               (bool(false))
+    _sfEditable               (bool(false)),
+    _sfBackgroundColor        (Color4f(1.0,1.0,1.0,1.0))
 {
 }
 
 TableDomAreaBase::TableDomAreaBase(const TableDomAreaBase &source) :
     Inherited(source),
-    _sfTableModel             (NULL),
+    _sfTableDOMModel          (NULL),
     _sfLayoutManager          (this,
                           LayoutManagerFieldId,
                           TableDomLayoutManager::ParentTableDomAreaFieldId),
     _sfFont                   (NULL),
-    _sfEditable               (source._sfEditable               )
+    _sfEditable               (source._sfEditable               ),
+    _sfBackgroundColor        (source._sfBackgroundColor        )
 {
 }
 
@@ -598,7 +653,7 @@ void TableDomAreaBase::onCreate(const TableDomArea *source)
     {
         TableDomArea *pThis = static_cast<TableDomArea *>(this);
 
-        pThis->setTableModel(source->getTableModel());
+        pThis->setTableDOMModel(source->getTableDOMModel());
 
         pThis->setLayoutManager(source->getLayoutManager());
 
@@ -606,30 +661,30 @@ void TableDomAreaBase::onCreate(const TableDomArea *source)
     }
 }
 
-GetFieldHandlePtr TableDomAreaBase::getHandleTableModel      (void) const
+GetFieldHandlePtr TableDomAreaBase::getHandleTableDOMModel   (void) const
 {
-    SFUnrecTablePtr::GetHandlePtr returnValue(
-        new  SFUnrecTablePtr::GetHandle(
-             &_sfTableModel,
-             this->getType().getFieldDesc(TableModelFieldId),
+    SFUnrecTableDOMPtr::GetHandlePtr returnValue(
+        new  SFUnrecTableDOMPtr::GetHandle(
+             &_sfTableDOMModel,
+             this->getType().getFieldDesc(TableDOMModelFieldId),
              const_cast<TableDomAreaBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr TableDomAreaBase::editHandleTableModel     (void)
+EditFieldHandlePtr TableDomAreaBase::editHandleTableDOMModel  (void)
 {
-    SFUnrecTablePtr::EditHandlePtr returnValue(
-        new  SFUnrecTablePtr::EditHandle(
-             &_sfTableModel,
-             this->getType().getFieldDesc(TableModelFieldId),
+    SFUnrecTableDOMPtr::EditHandlePtr returnValue(
+        new  SFUnrecTableDOMPtr::EditHandle(
+             &_sfTableDOMModel,
+             this->getType().getFieldDesc(TableDOMModelFieldId),
              this));
 
     returnValue->setSetMethod(
-        boost::bind(&TableDomArea::setTableModel,
+        boost::bind(&TableDomArea::setTableDOMModel,
                     static_cast<TableDomArea *>(this), _1));
 
-    editSField(TableModelFieldMask);
+    editSField(TableDOMModelFieldMask);
 
     return returnValue;
 }
@@ -715,6 +770,31 @@ EditFieldHandlePtr TableDomAreaBase::editHandleEditable       (void)
     return returnValue;
 }
 
+GetFieldHandlePtr TableDomAreaBase::getHandleBackgroundColor (void) const
+{
+    SFColor4f::GetHandlePtr returnValue(
+        new  SFColor4f::GetHandle(
+             &_sfBackgroundColor,
+             this->getType().getFieldDesc(BackgroundColorFieldId),
+             const_cast<TableDomAreaBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr TableDomAreaBase::editHandleBackgroundColor(void)
+{
+    SFColor4f::EditHandlePtr returnValue(
+        new  SFColor4f::EditHandle(
+             &_sfBackgroundColor,
+             this->getType().getFieldDesc(BackgroundColorFieldId),
+             this));
+
+
+    editSField(BackgroundColorFieldMask);
+
+    return returnValue;
+}
+
 
 
 #ifdef OSG_MT_CPTR_ASPECT
@@ -753,7 +833,7 @@ void TableDomAreaBase::resolveLinks(void)
 {
     Inherited::resolveLinks();
 
-    static_cast<TableDomArea *>(this)->setTableModel(NULL);
+    static_cast<TableDomArea *>(this)->setTableDOMModel(NULL);
 
     static_cast<TableDomArea *>(this)->setLayoutManager(NULL);
 

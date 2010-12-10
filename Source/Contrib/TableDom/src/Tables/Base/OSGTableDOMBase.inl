@@ -90,6 +90,22 @@ OSG::UInt16 TableDOMBase::getClassGroupId(void)
 /*------------------------------ get -----------------------------------*/
 
 
+//! Get the value of the TableDOM::_sfRootCell field.
+inline
+Cell * TableDOMBase::getRootCell(void) const
+{
+    return _sfRootCell.getValue();
+}
+
+//! Set the value of the TableDOM::_sfRootCell field.
+inline
+void TableDOMBase::setRootCell(Cell * const value)
+{
+    editSField(RootCellFieldMask);
+
+    _sfRootCell.setValue(value);
+}
+
 
 #ifdef OSG_MT_CPTR_ASPECT
 inline
@@ -100,6 +116,9 @@ void TableDOMBase::execSync (      TableDOMBase *pFrom,
                                   const UInt32             uiSyncInfo)
 {
     Inherited::execSync(pFrom, whichField, oOffsets, syncMode, uiSyncInfo);
+
+    if(FieldBits::NoField != (RootCellFieldMask & whichField))
+        _sfRootCell.syncWith(pFrom->_sfRootCell);
 }
 #endif
 

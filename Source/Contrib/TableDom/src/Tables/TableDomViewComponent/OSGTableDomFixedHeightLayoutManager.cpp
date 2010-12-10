@@ -78,6 +78,129 @@ void TableDomFixedHeightLayoutManager::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
+
+void TableDomFixedHeightLayoutManager::initializeRootCell() 
+{
+	if(getParentTableDomArea())
+	{
+		if(getParentTableDomArea()->getTableDOMModel())
+		{
+			rootCell = getParentTableDomArea()->getTableDOMModel()->getRootCell();
+			//rootCell = dynamic_cast<PlainTableDOMBranchElement*>(defaultRoot);
+		}
+	}
+}
+
+void TableDomFixedHeightLayoutManager::calculatePreferredSize(void)
+{
+	if(getParentTableDomArea()->getTableDOMModel())
+	{
+		CellRefPtr rootCell=getParentTableDomArea()->getTableDOMModel()->getRootCell();
+
+		_preferredWidth = osgMax(getParentTableDomArea()->getSize().x(),rootCell->getMaximumColumn() * widthOfColumn);
+		_preferredHeight =  osgMax(getParentTableDomArea()->getSize().y(),rootCell->getMaximumRow() * heightOfRow);
+	}
+	else 
+	{
+		_preferredWidth = getParentTableDomArea()->getSize().x();
+		_preferredHeight =  getParentTableDomArea()->getSize().y();
+	}
+}
+
+Vec2f  TableDomFixedHeightLayoutManager::getContentRequestedSize(void) const
+{
+	return Vec2f(_preferredWidth,_preferredHeight);
+}
+
+
+void TableDomFixedHeightLayoutManager::updateViews(void)
+{
+	if(rootCell)
+	{
+		Pnt2f init = getParentTableDomArea()->getPosition();
+
+		UInt32 rowNumber = getTopmostVisibleRowNumber();
+		UInt32 rowsToBeDisplayed = getRowsToBeDisplayed();
+
+		UInt32 colNumber = getLeftmostVisibleColNumber();
+		UInt32 colsToBeDisplayed = getColsToBeDisplayed();
+
+		clearVisibleViews();
+					
+		for(UInt32 i=0;i<rowsToBeDisplayed;i++)
+		{
+			for(UInt32 j=0;j<colsToBeDisplayed;j++)
+			{
+				CellViewRefPtr view = CellView::create();
+				view->setFont(getParentTableDomArea()->getFont());
+				view->setCellPosition(Pnt2f(colNumber*widthOfColumn,rowNumber*heightOfRow));
+				view->setCellWidth(widthOfColumn);
+				view->setCellHeight(heightOfRow);
+				CellRefPtr theRow = rootCell->getCell(rowNumber+i);
+				view->setCell(NULL);
+				if(theRow)
+				{	
+					CellRefPtr theCell = theRow->getCell(colNumber+j);
+					if(theCell)
+					{
+						view->setCell(theCell);
+					}
+				}
+				
+				pushToVisibleViews(view);
+			}
+		}
+	}
+}
+
+
+UInt32 TableDomFixedHeightLayoutManager::getLeftmostVisibleColNumber() const
+{
+	Pnt2f topLeft,bottomRight;
+	getParentTableDomArea()->getClipBounds(topLeft,bottomRight);
+	UInt32 leftmostVisibleColNumber = UInt32(floor((topLeft.x()) / widthOfColumn));
+	return leftmostVisibleColNumber; 
+}
+
+UInt32 TableDomFixedHeightLayoutManager::getColsToBeDisplayed() const
+{
+	Pnt2f topLeft,bottomRight;
+	getParentTableDomArea()->getClipBounds(topLeft,bottomRight);
+	
+	UInt32 colsToBeDisplayed = 0;
+	if(bottomRight.x() == 0 && bottomRight.y() == 0 )
+		colsToBeDisplayed = (UInt32(ceil(getParentTableDomArea()->getPreferredSize().x()/ widthOfColumn)));
+	else
+		colsToBeDisplayed = (UInt32(ceil((bottomRight.x() - topLeft.x())/widthOfColumn)));
+
+	return colsToBeDisplayed;
+}
+
+
+UInt32 TableDomFixedHeightLayoutManager::getTopmostVisibleRowNumber() const
+{
+	Pnt2f topLeft,bottomRight;
+	getParentTableDomArea()->getClipBounds(topLeft,bottomRight);
+	UInt32 topmostVisibleRowNumber = UInt32(floor((topLeft.y()) / heightOfRow));
+	return topmostVisibleRowNumber; 
+}
+
+
+UInt32 TableDomFixedHeightLayoutManager::getRowsToBeDisplayed() const
+{
+	Pnt2f topLeft,bottomRight;
+	getParentTableDomArea()->getClipBounds(topLeft,bottomRight);
+	
+	UInt32 rowsToBeDisplayed = 0;
+	if(bottomRight.x() == 0 && bottomRight.y() == 0 )
+		rowsToBeDisplayed = (UInt32(ceil(getParentTableDomArea()->getPreferredSize().y()/ heightOfRow)));
+	else
+		rowsToBeDisplayed = (UInt32(ceil((bottomRight.y() - topLeft.y())/heightOfRow)));
+
+	return rowsToBeDisplayed;
+}
+
+
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/

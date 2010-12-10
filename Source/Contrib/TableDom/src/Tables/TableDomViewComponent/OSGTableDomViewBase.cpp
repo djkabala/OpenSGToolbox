@@ -58,13 +58,11 @@
 
 
 
-#include "OSGCell.h"          // Cell Class
+#include "OSGCell.h"             // Cell Class
 #include "OSGUIFont.h"           // Font Class
 
 #include "OSGTableDomViewBase.h"
 #include "OSGTableDomView.h"
-
-#include "OSGCellView.h"
 
 #include <boost/bind.hpp>
 
@@ -86,11 +84,23 @@ OSG_BEGIN_NAMESPACE
  *                        Field Documentation                              *
 \***************************************************************************/
 
-/*! \var Cell *       TableDomViewBase::_sfCell
+/*! \var Cell *          TableDomViewBase::_sfCell
     
 */
 
-/*! \var Vec2f           TableDomViewBase::_sfStartingPosition
+/*! \var Pnt2f           TableDomViewBase::_sfCellPosition
+    
+*/
+
+/*! \var Real32          TableDomViewBase::_sfCellWidth
+    
+*/
+
+/*! \var Real32          TableDomViewBase::_sfCellHeight
+    
+*/
+
+/*! \var bool            TableDomViewBase::_sfIsSelected
     
 */
 
@@ -166,15 +176,51 @@ void TableDomViewBase::classDescInserter(TypeObject &oType)
 
     oType.addInitialDesc(pDesc);
 
-    pDesc = new SFVec2f::Description(
-        SFVec2f::getClassType(),
-        "StartingPosition",
+    pDesc = new SFPnt2f::Description(
+        SFPnt2f::getClassType(),
+        "CellPosition",
         "",
-        StartingPositionFieldId, StartingPositionFieldMask,
+        CellPositionFieldId, CellPositionFieldMask,
         false,
         (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&TableDomView::editHandleStartingPosition),
-        static_cast<FieldGetMethodSig >(&TableDomView::getHandleStartingPosition));
+        static_cast<FieldEditMethodSig>(&TableDomView::editHandleCellPosition),
+        static_cast<FieldGetMethodSig >(&TableDomView::getHandleCellPosition));
+
+    oType.addInitialDesc(pDesc);
+
+    pDesc = new SFReal32::Description(
+        SFReal32::getClassType(),
+        "CellWidth",
+        "",
+        CellWidthFieldId, CellWidthFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&TableDomView::editHandleCellWidth),
+        static_cast<FieldGetMethodSig >(&TableDomView::getHandleCellWidth));
+
+    oType.addInitialDesc(pDesc);
+
+    pDesc = new SFReal32::Description(
+        SFReal32::getClassType(),
+        "CellHeight",
+        "",
+        CellHeightFieldId, CellHeightFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&TableDomView::editHandleCellHeight),
+        static_cast<FieldGetMethodSig >(&TableDomView::getHandleCellHeight));
+
+    oType.addInitialDesc(pDesc);
+
+    pDesc = new SFBool::Description(
+        SFBool::getClassType(),
+        "isSelected",
+        "",
+        IsSelectedFieldId, IsSelectedFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&TableDomView::editHandleIsSelected),
+        static_cast<FieldGetMethodSig >(&TableDomView::getHandleIsSelected));
 
     oType.addInitialDesc(pDesc);
 
@@ -300,8 +346,9 @@ TableDomViewBase::TypeObject TableDomViewBase::_type(
     "\tdecoratable=\"false\"\n"
     "\tuseLocalIncludes=\"true\"\n"
     "\tisNodeCore=\"false\"\n"
-    "    \tauthors=\"David Kabala (djkabala@gmail.com)\"\n"
+    "    authors=\"David Kabala (djkabala@gmail.com)\"\n"
     ">\n"
+    "\n"
     "A UI TableDomView\n"
     "\t<Field\n"
     "\t\tname=\"Cell\"\n"
@@ -310,21 +357,54 @@ TableDomViewBase::TypeObject TableDomViewBase::_type(
     "\t\tcardinality=\"single\"\n"
     "\t\tvisibility=\"external\"\n"
     "\t\tdefaultValue=\"NULL\"\n"
-    "\t\taccess=\"protected\"\n"
+    "\t\taccess=\"public\"\n"
     "\t>\n"
     "\t</Field>\n"
     "\n"
     "\t<Field\n"
-    "\t\tname=\"StartingPosition\"\n"
-    "\t\ttype=\"Vec2f\"\n"
+    "\t\tname=\"CellPosition\"\n"
+    "\t\ttype=\"Pnt2f\"\n"
     "\t\tcategory=\"data\"\n"
     "\t\tcardinality=\"single\"\n"
     "\t\tvisibility=\"external\"\n"
     "\t\tdefaultValue=\"0.0,0.0\"\n"
-    "\t\taccess=\"protected\"\n"
+    "\t\taccess=\"public\"\n"
     "\t>\n"
     "\t</Field>\n"
-    "\n"
+    "\t\n"
+    "\t<Field\n"
+    "\t\tname=\"CellWidth\"\n"
+    "\t\ttype=\"Real32\"\n"
+    "\t\tcategory=\"data\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "\t\tvisibility=\"external\"\n"
+    "\t\tdefaultValue=\"60.0f\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t>\n"
+    "\t</Field>\n"
+    "\t\n"
+    "\t<Field\n"
+    "\t\tname=\"CellHeight\"\n"
+    "\t\ttype=\"Real32\"\n"
+    "\t\tcategory=\"data\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "\t\tvisibility=\"external\"\n"
+    "\t\tdefaultValue=\"20.0f\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t>\n"
+    "\t</Field>\n"
+    "\t\n"
+    "\t<Field\n"
+    "\t\tname=\"isSelected\"\n"
+    "\t\ttype=\"bool\"\n"
+    "\t\tcategory=\"data\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "\t\tvisibility=\"external\"\n"
+    "\t\tdefaultValue=\"false\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t>\n"
+    "\t</Field>\n"
+    "\t\n"
     "\t<Field\n"
     "\t\tname=\"Font\"\n"
     "\t\ttype=\"UIFont\"\n"
@@ -332,7 +412,7 @@ TableDomViewBase::TypeObject TableDomViewBase::_type(
     "\t\tcardinality=\"single\"\n"
     "\t\tvisibility=\"external\"\n"
     "\t\tdefaultValue=\"NULL\"\n"
-    "\t\taccess=\"protected\"\n"
+    "\t\taccess=\"public\"\n"
     "\t>\n"
     "\t</Field>\n"
     "\t\n"
@@ -438,23 +518,62 @@ const SFUnrecCellPtr *TableDomViewBase::getSFCell(void) const
     return &_sfCell;
 }
 
-SFUnrecCellPtr   *TableDomViewBase::editSFCell        (void)
+SFUnrecCellPtr      *TableDomViewBase::editSFCell           (void)
 {
     editSField(CellFieldMask);
 
     return &_sfCell;
 }
 
-SFVec2f *TableDomViewBase::editSFStartingPosition(void)
+SFPnt2f *TableDomViewBase::editSFCellPosition(void)
 {
-    editSField(StartingPositionFieldMask);
+    editSField(CellPositionFieldMask);
 
-    return &_sfStartingPosition;
+    return &_sfCellPosition;
 }
 
-const SFVec2f *TableDomViewBase::getSFStartingPosition(void) const
+const SFPnt2f *TableDomViewBase::getSFCellPosition(void) const
 {
-    return &_sfStartingPosition;
+    return &_sfCellPosition;
+}
+
+
+SFReal32 *TableDomViewBase::editSFCellWidth(void)
+{
+    editSField(CellWidthFieldMask);
+
+    return &_sfCellWidth;
+}
+
+const SFReal32 *TableDomViewBase::getSFCellWidth(void) const
+{
+    return &_sfCellWidth;
+}
+
+
+SFReal32 *TableDomViewBase::editSFCellHeight(void)
+{
+    editSField(CellHeightFieldMask);
+
+    return &_sfCellHeight;
+}
+
+const SFReal32 *TableDomViewBase::getSFCellHeight(void) const
+{
+    return &_sfCellHeight;
+}
+
+
+SFBool *TableDomViewBase::editSFIsSelected(void)
+{
+    editSField(IsSelectedFieldMask);
+
+    return &_sfIsSelected;
+}
+
+const SFBool *TableDomViewBase::getSFIsSelected(void) const
+{
+    return &_sfIsSelected;
 }
 
 
@@ -576,9 +695,21 @@ UInt32 TableDomViewBase::getBinSize(ConstFieldMaskArg whichField)
     {
         returnValue += _sfCell.getBinSize();
     }
-    if(FieldBits::NoField != (StartingPositionFieldMask & whichField))
+    if(FieldBits::NoField != (CellPositionFieldMask & whichField))
     {
-        returnValue += _sfStartingPosition.getBinSize();
+        returnValue += _sfCellPosition.getBinSize();
+    }
+    if(FieldBits::NoField != (CellWidthFieldMask & whichField))
+    {
+        returnValue += _sfCellWidth.getBinSize();
+    }
+    if(FieldBits::NoField != (CellHeightFieldMask & whichField))
+    {
+        returnValue += _sfCellHeight.getBinSize();
+    }
+    if(FieldBits::NoField != (IsSelectedFieldMask & whichField))
+    {
+        returnValue += _sfIsSelected.getBinSize();
     }
     if(FieldBits::NoField != (FontFieldMask & whichField))
     {
@@ -625,9 +756,21 @@ void TableDomViewBase::copyToBin(BinaryDataHandler &pMem,
     {
         _sfCell.copyToBin(pMem);
     }
-    if(FieldBits::NoField != (StartingPositionFieldMask & whichField))
+    if(FieldBits::NoField != (CellPositionFieldMask & whichField))
     {
-        _sfStartingPosition.copyToBin(pMem);
+        _sfCellPosition.copyToBin(pMem);
+    }
+    if(FieldBits::NoField != (CellWidthFieldMask & whichField))
+    {
+        _sfCellWidth.copyToBin(pMem);
+    }
+    if(FieldBits::NoField != (CellHeightFieldMask & whichField))
+    {
+        _sfCellHeight.copyToBin(pMem);
+    }
+    if(FieldBits::NoField != (IsSelectedFieldMask & whichField))
+    {
+        _sfIsSelected.copyToBin(pMem);
     }
     if(FieldBits::NoField != (FontFieldMask & whichField))
     {
@@ -672,9 +815,21 @@ void TableDomViewBase::copyFromBin(BinaryDataHandler &pMem,
     {
         _sfCell.copyFromBin(pMem);
     }
-    if(FieldBits::NoField != (StartingPositionFieldMask & whichField))
+    if(FieldBits::NoField != (CellPositionFieldMask & whichField))
     {
-        _sfStartingPosition.copyFromBin(pMem);
+        _sfCellPosition.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (CellWidthFieldMask & whichField))
+    {
+        _sfCellWidth.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (CellHeightFieldMask & whichField))
+    {
+        _sfCellHeight.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (IsSelectedFieldMask & whichField))
+    {
+        _sfIsSelected.copyFromBin(pMem);
     }
     if(FieldBits::NoField != (FontFieldMask & whichField))
     {
@@ -716,8 +871,11 @@ void TableDomViewBase::copyFromBin(BinaryDataHandler &pMem,
 
 TableDomViewBase::TableDomViewBase(void) :
     Inherited(),
-    _sfCell                (NULL),
-    _sfStartingPosition       (Vec2f(0.0,0.0)),
+    _sfCell                   (NULL),
+    _sfCellPosition           (Pnt2f(0.0,0.0)),
+    _sfCellWidth              (Real32(60.0f)),
+    _sfCellHeight             (Real32(20.0f)),
+    _sfIsSelected             (bool(false)),
     _sfFont                   (NULL),
     _sfSelectionBoxColor      (Color4f(0.0,0.0,1.0,1.0)),
     _sfSelectionTextColor     (Color4f(1.0,1.0,1.0,1.0)),
@@ -731,8 +889,11 @@ TableDomViewBase::TableDomViewBase(void) :
 
 TableDomViewBase::TableDomViewBase(const TableDomViewBase &source) :
     Inherited(source),
-    _sfCell                (NULL),
-    _sfStartingPosition       (source._sfStartingPosition       ),
+    _sfCell                   (NULL),
+    _sfCellPosition           (source._sfCellPosition           ),
+    _sfCellWidth              (source._sfCellWidth              ),
+    _sfCellHeight             (source._sfCellHeight             ),
+    _sfIsSelected             (source._sfIsSelected             ),
     _sfFont                   (NULL),
     _sfSelectionBoxColor      (source._sfSelectionBoxColor      ),
     _sfSelectionTextColor     (source._sfSelectionTextColor     ),
@@ -765,7 +926,7 @@ void TableDomViewBase::onCreate(const TableDomView *source)
     }
 }
 
-GetFieldHandlePtr TableDomViewBase::getHandleCell         (void) const
+GetFieldHandlePtr TableDomViewBase::getHandleCell            (void) const
 {
     SFUnrecCellPtr::GetHandlePtr returnValue(
         new  SFUnrecCellPtr::GetHandle(
@@ -776,7 +937,7 @@ GetFieldHandlePtr TableDomViewBase::getHandleCell         (void) const
     return returnValue;
 }
 
-EditFieldHandlePtr TableDomViewBase::editHandleCell        (void)
+EditFieldHandlePtr TableDomViewBase::editHandleCell           (void)
 {
     SFUnrecCellPtr::EditHandlePtr returnValue(
         new  SFUnrecCellPtr::EditHandle(
@@ -793,27 +954,102 @@ EditFieldHandlePtr TableDomViewBase::editHandleCell        (void)
     return returnValue;
 }
 
-GetFieldHandlePtr TableDomViewBase::getHandleStartingPosition (void) const
+GetFieldHandlePtr TableDomViewBase::getHandleCellPosition    (void) const
 {
-    SFVec2f::GetHandlePtr returnValue(
-        new  SFVec2f::GetHandle(
-             &_sfStartingPosition,
-             this->getType().getFieldDesc(StartingPositionFieldId),
+    SFPnt2f::GetHandlePtr returnValue(
+        new  SFPnt2f::GetHandle(
+             &_sfCellPosition,
+             this->getType().getFieldDesc(CellPositionFieldId),
              const_cast<TableDomViewBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr TableDomViewBase::editHandleStartingPosition(void)
+EditFieldHandlePtr TableDomViewBase::editHandleCellPosition   (void)
 {
-    SFVec2f::EditHandlePtr returnValue(
-        new  SFVec2f::EditHandle(
-             &_sfStartingPosition,
-             this->getType().getFieldDesc(StartingPositionFieldId),
+    SFPnt2f::EditHandlePtr returnValue(
+        new  SFPnt2f::EditHandle(
+             &_sfCellPosition,
+             this->getType().getFieldDesc(CellPositionFieldId),
              this));
 
 
-    editSField(StartingPositionFieldMask);
+    editSField(CellPositionFieldMask);
+
+    return returnValue;
+}
+
+GetFieldHandlePtr TableDomViewBase::getHandleCellWidth       (void) const
+{
+    SFReal32::GetHandlePtr returnValue(
+        new  SFReal32::GetHandle(
+             &_sfCellWidth,
+             this->getType().getFieldDesc(CellWidthFieldId),
+             const_cast<TableDomViewBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr TableDomViewBase::editHandleCellWidth      (void)
+{
+    SFReal32::EditHandlePtr returnValue(
+        new  SFReal32::EditHandle(
+             &_sfCellWidth,
+             this->getType().getFieldDesc(CellWidthFieldId),
+             this));
+
+
+    editSField(CellWidthFieldMask);
+
+    return returnValue;
+}
+
+GetFieldHandlePtr TableDomViewBase::getHandleCellHeight      (void) const
+{
+    SFReal32::GetHandlePtr returnValue(
+        new  SFReal32::GetHandle(
+             &_sfCellHeight,
+             this->getType().getFieldDesc(CellHeightFieldId),
+             const_cast<TableDomViewBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr TableDomViewBase::editHandleCellHeight     (void)
+{
+    SFReal32::EditHandlePtr returnValue(
+        new  SFReal32::EditHandle(
+             &_sfCellHeight,
+             this->getType().getFieldDesc(CellHeightFieldId),
+             this));
+
+
+    editSField(CellHeightFieldMask);
+
+    return returnValue;
+}
+
+GetFieldHandlePtr TableDomViewBase::getHandleIsSelected      (void) const
+{
+    SFBool::GetHandlePtr returnValue(
+        new  SFBool::GetHandle(
+             &_sfIsSelected,
+             this->getType().getFieldDesc(IsSelectedFieldId),
+             const_cast<TableDomViewBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr TableDomViewBase::editHandleIsSelected     (void)
+{
+    SFBool::EditHandlePtr returnValue(
+        new  SFBool::EditHandle(
+             &_sfIsSelected,
+             this->getType().getFieldDesc(IsSelectedFieldId),
+             this));
+
+
+    editSField(IsSelectedFieldMask);
 
     return returnValue;
 }

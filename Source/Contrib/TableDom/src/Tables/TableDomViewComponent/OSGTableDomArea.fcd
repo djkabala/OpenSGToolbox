@@ -17,7 +17,7 @@
 A UI TableDomArea
 
 	<Field
-		name="TableModel"
+		name="TableDOMModel"
 		type="TableDOM"
 		category="pointer"
 		cardinality="single"
@@ -61,5 +61,17 @@ A UI TableDomArea
 		defaultValue="false"
     >
 	</Field>
+	
+	<Field
+		name="BackgroundColor"
+		type="Color4f"
+		cardinality="single"
+        category="data"
+        visibility="external"
+		access="public"
+		defaultValue="1.0,1.0,1.0,1.0"
+    >
+	</Field>
+	
 	
 </FieldContainer>

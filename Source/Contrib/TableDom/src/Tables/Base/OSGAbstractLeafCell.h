@@ -80,10 +80,17 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractLeafCell : public AbstractLeafCellB
                       const BitVector  bvFlags  = 0) const;
 
 
+	virtual void setValue(const boost::any theValue);
+	virtual boost::any getValue(void) const;
+	virtual Cell* getCell(UInt32 value) const;
+	virtual Cell* createRow(UInt32 value);
+	virtual Cell* createColumn(UInt32 value);
 	virtual void print(void) const;
-	void setValue(const boost::any theValue);
-	boost::any getValue(void) const;
-
+	virtual UInt32 getMaximumColumn(void) const;
+	virtual UInt32 getMaximumRow(void) const;
+	virtual void setMaximumColumn(UInt32 value);
+	virtual void setMaximumRow(UInt32 value); 
+	
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 	

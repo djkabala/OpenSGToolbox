@@ -46,6 +46,10 @@
 #include <OSGConfig.h>
 
 #include "OSGTableDomArea.h"
+#include "OSGTableFileHandler.h"
+#include "OSGTableDOM.h"
+#include "OSGColorLayer.h"
+#include "OSGTableDomFixedHeightLayoutManager.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -76,10 +80,230 @@ void TableDomArea::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void TableDomArea::drawInternal(OSG::Graphics *const Graphics,OSG::Real32 Opacity) const
+///////////////////// DocumentChange Handling Stuff //////////////////////
+
+void TableDomArea::handleTableChanged(TableDOMEventDetails* const details)
 {
+	getLayoutManager()->updateViews();
+	getLayoutManager()->calculatePreferredSize();
+	updatePreferredSize();
+}
+
+void TableDomArea::handleTableInsert(TableDOMEventDetails* const details)
+{
+	getLayoutManager()->updateViews();
+	getLayoutManager()->calculatePreferredSize();
+	updatePreferredSize();
+}
+
+void TableDomArea::handleTableRemove(TableDOMEventDetails* const details)
+{
+	getLayoutManager()->updateViews();
+	getLayoutManager()->calculatePreferredSize();
+	updatePreferredSize();
+}
+
+void TableDomArea::handleTableModelChanged(void)
+{
+	setPosition(Pnt2f(0,0));
+	getLayoutManager()->initializeRootCell();
+	getLayoutManager()->calculatePreferredSize();
+
+    _TableChangedConnection.disconnect();
+    _TableInsertConnection.disconnect();
+    _TableRemoveConnection.disconnect();
+	
+    _TableChangedConnection = getTableDOMModel()->connectChanged(boost::bind(&TableDomArea::handleTableChanged, this, _1));
+    _TableInsertConnection = getTableDOMModel()->connectInsert(boost::bind(&TableDomArea::handleTableInsert, this, _1));
+    _TableRemoveConnection = getTableDOMModel()->connectRemove(boost::bind(&TableDomArea::handleTableRemove, this, _1));
+	
+	updatePreferredSize();
+	getLayoutManager()->updateViews();
+}
+
+
+///////////////////// Input Handling Stuff //////////////////////
+
+void TableDomArea::focusGained(FocusEventDetails* const details)
+{
+    Inherited::focusGained(details);
+}
+
+void TableDomArea::focusLost(FocusEventDetails* const details)
+{
+	Inherited::focusLost(details);
+}
+
+void TableDomArea::mouseDragged(MouseEventDetails* const details)
+{
+}
+
+void TableDomArea::keyTyped(KeyEventDetails* const details)
+{
+}
+
+void TableDomArea::mouseClicked(MouseEventDetails* const details)
+{
+	Inherited::mouseClicked(details);
+}
+
+void TableDomArea::mouseReleased(MouseEventDetails* const details)
+{
+	Inherited::mouseReleased(details);
+}
+
+void TableDomArea::mousePressed(MouseEventDetails* const details)
+{
+	Inherited::mousePressed(details);
+}
+
+///////////////////// Size Handling Stuff //////////////////////
+
+void TableDomArea::updatePreferredSize(void)
+{
+	setPreferredSize(getRequestedSize());
+}
+
+Vec2f TableDomArea::getContentRequestedSize(void) const
+{
+
+	if(getLayoutManager())
+	{
+		return getLayoutManager()->getContentRequestedSize();
+	}
+	else
+	{
+		return getSize();
+	}
+}
+
+///////////////////// Scroll Handling Stuff //////////////////////
+
+Vec2f TableDomArea::getPreferredScrollableViewportSize(void)
+{
+	if(getLayoutManager())
+	{
+		return getLayoutManager()->getContentRequestedSize();
+	}
+	else
+	{
+		return Vec2f(0.0,0.0);
+	}
+}
+
+Int32 TableDomArea::getScrollableBlockIncrement(const Pnt2f& VisibleRectTopLeft, const Pnt2f& VisibleRectBottomRight, const UInt32& orientation, const Int32& direction)
+{
+	return 1;
+}
+
+bool TableDomArea::getScrollableTracksViewportHeight(void)
+{
+    return false;
+}
+
+bool TableDomArea::getScrollableTracksViewportWidth(void)
+{
+    return true;
+}
+
+
+bool TableDomArea::getScrollableHeightMinTracksViewport(void)
+{
+    return true;
+}
+
+bool TableDomArea::getScrollableWidthMinTracksViewport(void)
+{
+    return false;
+}
+
+Int32 TableDomArea::getScrollableUnitIncrement(const Pnt2f& VisibleRectTopLeft, const Pnt2f& VisibleRectBottomRight, const UInt32& orientation, const Int32& direction)
+{
+    return Inherited::getScrollableUnitIncrement(VisibleRectTopLeft, VisibleRectBottomRight, orientation, direction);
+}
+
+///////////////////// File Handling Stuff //////////////////////
+
+void TableDomArea::loadFile(const BoostPath& pathOfFile)
+{
+	TableDOMRefPtr theTableModel=TableFileHandler::the()->read(pathOfFile);
+	if(theTableModel)
+	{
+		setTableDOMModel(theTableModel);
+		if(!getLayoutManager())
+		{
+			// create the appropriate type of LayoutManager based on the type of file loaded here.As of now, its just FixedHeightLayoutManager.
+			TableDomFixedHeightLayoutManagerRefPtr Manager= TableDomFixedHeightLayoutManager::create();
+			setLayoutManager(Manager);
+		}
+		handleTableModelChanged();
+	}
+}
+
+void TableDomArea::saveFile(const BoostPath& pathOfFile)
+{
+	TableFileHandler::the()->write(getTableDOMModel(),pathOfFile);
+}
+
+///////////////////// Default Creation Stuff //////////////////////
+
+void TableDomArea::createDefaultFont(void)
+{
+	UIFontRefPtr _Font = UIFont::create();
+    _Font->setFamily("SANS");
+    _Font->setGap(3);
+    _Font->setGlyphPixelSize(46);
+    _Font->setSize(12);
+    _Font->setTextureWidth(0);
+    _Font->setStyle(TextFace::STYLE_PLAIN);
+
+	this->setFont(_Font);
+}
+
+void TableDomArea::createDefaultLayer(void)
+{
+	ColorLayerRefPtr theBackground = ColorLayer::create();
+	setBackgrounds(theBackground);
+	if(getEditable() && getEnabled())
+	{
+		theBackground->setColor(Color4f(1.0, 1.0, 1.0, 1.0));
+		setBackgroundColor(Color4f(1.0, 1.0, 1.0, 1.0));	// should change it to BackgroundColor
+	}
+	else
+	{
+		theBackground->setColor(Color4f(0.5, 0.5, 0.5, 1.0));
+		setBackgroundColor(Color4f(0.5, 0.5, 0.5, 1.0));
+	}
 	
 }
+
+///////////////////// Drawing Stuff //////////////////////
+
+void TableDomArea::drawInternal(Graphics * const TheGraphics, Real32 Opacity) const
+{
+	
+	if(getLayoutManager() && getLayoutManager()->getMFVisibleViews()->size()>0)	// draw the view by calling the view's draw function
+	{
+		
+		for(UInt32 i=0;i<getLayoutManager()->getMFVisibleViews()->size();i++)
+		{
+			getLayoutManager()->getVisibleViews(i)->drawView(TheGraphics,Opacity);
+		}
+	}
+	
+}
+
+
+void TableDomArea::resolveLinks(void)
+{
+    Inherited::resolveLinks();
+
+    _TableChangedConnection.disconnect();
+    _TableInsertConnection.disconnect();
+    _TableRemoveConnection.disconnect();
+  
+}
+
 
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
@@ -90,6 +314,8 @@ void TableDomArea::drawInternal(OSG::Graphics *const Graphics,OSG::Real32 Opacit
 TableDomArea::TableDomArea(void) :
     Inherited()
 {
+	createDefaultFont();
+	createDefaultLayer();
 }
 
 TableDomArea::TableDomArea(const TableDomArea &source) :
@@ -108,6 +334,40 @@ void TableDomArea::changed(ConstFieldMaskArg whichField,
                             BitVector         details)
 {
     Inherited::changed(whichField, origin, details);
+
+	if(whichField & TableDomArea::ClipBoundsFieldMask)
+	{
+		if(getLayoutManager())getLayoutManager()->updateViews();
+	}
+
+	if(whichField & TableDomArea::FontFieldMask)
+	{
+		if(getLayoutManager())
+		{
+			getLayoutManager()->updateViews();
+			updatePreferredSize();
+		}
+	}
+
+	if(whichField & TableDomArea::EditableFieldMask)
+	{
+		if(getEditable() && getEnabled())
+		{
+			setBackgroundColor(Color4f(1.0, 1.0, 1.0, 1.0));	// should change it to BackgroundColor
+		}
+		else
+		{
+			setBackgroundColor(Color4f(0.5, 0.5, 0.5, 1.0));
+		}	
+	}
+
+	if(whichField & TableDomArea::BackgroundColorFieldMask)
+	{
+		ColorLayerRefPtr theBackground = ColorLayer::create();
+		theBackground->setColor(getBackgroundColor());
+		setBackgrounds(theBackground);
+	}
+
 }
 
 void TableDomArea::dump(      UInt32    ,

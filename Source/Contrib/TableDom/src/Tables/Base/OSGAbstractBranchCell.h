@@ -44,6 +44,7 @@
 
 #include <map>
 #include "OSGAbstractBranchCellBase.h"
+#include "boost/any.hpp"
 
 OSG_BEGIN_NAMESPACE
 
@@ -56,6 +57,9 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractBranchCell : public AbstractBranchC
   protected:
 
 	  std::map<UInt32,CellRefPtr> childrenMap;
+	  UInt32 maxRow;
+	  UInt32 maxCol;
+
 	  
     /*==========================  PUBLIC  =================================*/
 
@@ -80,12 +84,18 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING AbstractBranchCell : public AbstractBranchC
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
 
-
+	virtual void setValue(const boost::any theValue);
+	virtual boost::any getValue(void) const;
 	virtual Cell* getCell(UInt32 value) const;
 	virtual Cell* createRow(UInt32 value) = 0;
 	virtual Cell* createColumn(UInt32 value) = 0;
 	virtual void print(void) const;
 	virtual std::map<UInt32,CellRefPtr>& getChildrenMap(void);
+	virtual UInt32 getMaximumColumn(void) const;
+	virtual UInt32 getMaximumRow(void) const;
+	virtual void setMaximumColumn(UInt32 value);
+	virtual void setMaximumRow(UInt32 value); 
+
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 

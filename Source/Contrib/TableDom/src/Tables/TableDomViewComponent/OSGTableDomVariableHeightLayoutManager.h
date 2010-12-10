@@ -77,6 +77,13 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomVariableHeightLayoutManager : publi
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
 
+	
+	virtual void initializeRootCell();
+	virtual Vec2f getContentRequestedSize(void) const;
+	virtual void updateViews(void);
+	virtual void calculatePreferredSize(void);
+	
+
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 

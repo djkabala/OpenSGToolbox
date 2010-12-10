@@ -48,6 +48,8 @@
 #include "OSGConfig.h"
 
 #include "OSGTableDomView.h"
+#include "OSGCell.h"   
+#include "OSGUIFont.h"   
 
 OSG_BEGIN_NAMESPACE
 

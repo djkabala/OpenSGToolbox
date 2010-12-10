@@ -77,6 +77,13 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDOMEventDetails : public TableDOMEvent
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
 
+	 
+	static  TableDOMEventDetailsTransitPtr create(FieldContainer* const Source,
+                                                  Time TimeStamp,
+                                                  TableDOM* const TheTableDOM,
+                                                  UInt32 Row,
+                                                  UInt32 Column); 
+
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 

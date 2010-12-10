@@ -75,20 +75,20 @@ OSG::UInt16 TableDomAreaBase::getClassGroupId(void)
 /*------------------------------ get -----------------------------------*/
 
 
-//! Get the value of the TableDomArea::_sfTableModel field.
+//! Get the value of the TableDomArea::_sfTableDOMModel field.
 inline
-Table * TableDomAreaBase::getTableModel(void) const
+TableDOM * TableDomAreaBase::getTableDOMModel(void) const
 {
-    return _sfTableModel.getValue();
+    return _sfTableDOMModel.getValue();
 }
 
-//! Set the value of the TableDomArea::_sfTableModel field.
+//! Set the value of the TableDomArea::_sfTableDOMModel field.
 inline
-void TableDomAreaBase::setTableModel(Table * const value)
+void TableDomAreaBase::setTableDOMModel(TableDOM * const value)
 {
-    editSField(TableModelFieldMask);
+    editSField(TableDOMModelFieldMask);
 
-    _sfTableModel.setValue(value);
+    _sfTableDOMModel.setValue(value);
 }
 
 //! Get the value of the TableDomArea::_sfLayoutManager field.
@@ -147,6 +147,31 @@ void TableDomAreaBase::setEditable(const bool value)
 
     _sfEditable.setValue(value);
 }
+//! Get the value of the TableDomArea::_sfBackgroundColor field.
+
+inline
+Color4f &TableDomAreaBase::editBackgroundColor(void)
+{
+    editSField(BackgroundColorFieldMask);
+
+    return _sfBackgroundColor.getValue();
+}
+
+//! Get the value of the TableDomArea::_sfBackgroundColor field.
+inline
+const Color4f &TableDomAreaBase::getBackgroundColor(void) const
+{
+    return _sfBackgroundColor.getValue();
+}
+
+//! Set the value of the TableDomArea::_sfBackgroundColor field.
+inline
+void TableDomAreaBase::setBackgroundColor(const Color4f &value)
+{
+    editSField(BackgroundColorFieldMask);
+
+    _sfBackgroundColor.setValue(value);
+}
 
 
 #ifdef OSG_MT_CPTR_ASPECT
@@ -159,8 +184,8 @@ void TableDomAreaBase::execSync (      TableDomAreaBase *pFrom,
 {
     Inherited::execSync(pFrom, whichField, oOffsets, syncMode, uiSyncInfo);
 
-    if(FieldBits::NoField != (TableModelFieldMask & whichField))
-        _sfTableModel.syncWith(pFrom->_sfTableModel);
+    if(FieldBits::NoField != (TableDOMModelFieldMask & whichField))
+        _sfTableDOMModel.syncWith(pFrom->_sfTableDOMModel);
 
     if(FieldBits::NoField != (LayoutManagerFieldMask & whichField))
         _sfLayoutManager.syncWith(pFrom->_sfLayoutManager);
@@ -170,6 +195,9 @@ void TableDomAreaBase::execSync (      TableDomAreaBase *pFrom,
 
     if(FieldBits::NoField != (EditableFieldMask & whichField))
         _sfEditable.syncWith(pFrom->_sfEditable);
+
+    if(FieldBits::NoField != (BackgroundColorFieldMask & whichField))
+        _sfBackgroundColor.syncWith(pFrom->_sfBackgroundColor);
 }
 #endif
 

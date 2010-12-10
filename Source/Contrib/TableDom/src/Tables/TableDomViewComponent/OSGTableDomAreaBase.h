@@ -65,10 +65,11 @@
 
 #include "OSGComponent.h" // Parent
 
-#include "OSGTable.h"             // TableModel type
+#include "OSGTableDOM.h"          // TableDOMModel type
 #include "OSGTableDomLayoutManager.h" // LayoutManager type
 #include "OSGUIFontFields.h"            // Font type
 #include "OSGSysFields.h"               // Editable type
+#include "OSGBaseFields.h"              // BackgroundColor type
 
 #include "OSGTableDomAreaFields.h"
 
@@ -98,28 +99,32 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomAreaBase : public Component
 
     enum
     {
-        TableModelFieldId = Inherited::NextFieldId,
-        LayoutManagerFieldId = TableModelFieldId + 1,
+        TableDOMModelFieldId = Inherited::NextFieldId,
+        LayoutManagerFieldId = TableDOMModelFieldId + 1,
         FontFieldId = LayoutManagerFieldId + 1,
         EditableFieldId = FontFieldId + 1,
-        NextFieldId = EditableFieldId + 1
+        BackgroundColorFieldId = EditableFieldId + 1,
+        NextFieldId = BackgroundColorFieldId + 1
     };
 
-    static const OSG::BitVector TableModelFieldMask =
-        (TypeTraits<BitVector>::One << TableModelFieldId);
+    static const OSG::BitVector TableDOMModelFieldMask =
+        (TypeTraits<BitVector>::One << TableDOMModelFieldId);
     static const OSG::BitVector LayoutManagerFieldMask =
         (TypeTraits<BitVector>::One << LayoutManagerFieldId);
     static const OSG::BitVector FontFieldMask =
         (TypeTraits<BitVector>::One << FontFieldId);
     static const OSG::BitVector EditableFieldMask =
         (TypeTraits<BitVector>::One << EditableFieldId);
+    static const OSG::BitVector BackgroundColorFieldMask =
+        (TypeTraits<BitVector>::One << BackgroundColorFieldId);
     static const OSG::BitVector NextFieldMask =
         (TypeTraits<BitVector>::One << NextFieldId);
         
-    typedef SFUnrecTablePtr   SFTableModelType;
+    typedef SFUnrecTableDOMPtr SFTableDOMModelType;
     typedef SFUnrecChildTableDomLayoutManagerPtr SFLayoutManagerType;
     typedef SFUnrecUIFontPtr  SFFontType;
     typedef SFBool            SFEditableType;
+    typedef SFColor4f         SFBackgroundColorType;
 
     /*---------------------------------------------------------------------*/
     /*! \name                    Class Get                                 */
@@ -144,8 +149,8 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomAreaBase : public Component
     /*! \name                    Field Get                                 */
     /*! \{                                                                 */
 
-            const SFUnrecTablePtr     *getSFTableModel     (void) const;
-                  SFUnrecTablePtr     *editSFTableModel     (void);
+            const SFUnrecTableDOMPtr  *getSFTableDOMModel  (void) const;
+                  SFUnrecTableDOMPtr  *editSFTableDOMModel  (void);
             const SFUnrecChildTableDomLayoutManagerPtr *getSFLayoutManager  (void) const;
                   SFUnrecChildTableDomLayoutManagerPtr *editSFLayoutManager  (void);
             const SFUnrecUIFontPtr    *getSFFont           (void) const;
@@ -154,8 +159,11 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomAreaBase : public Component
                   SFBool              *editSFEditable       (void);
             const SFBool              *getSFEditable        (void) const;
 
+                  SFColor4f           *editSFBackgroundColor(void);
+            const SFColor4f           *getSFBackgroundColor (void) const;
 
-                  Table * getTableModel     (void) const;
+
+                  TableDOM * getTableDOMModel  (void) const;
 
                   TableDomLayoutManager * getLayoutManager  (void) const;
 
@@ -164,15 +172,19 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomAreaBase : public Component
                   bool                &editEditable       (void);
                   bool                 getEditable        (void) const;
 
+                  Color4f             &editBackgroundColor(void);
+            const Color4f             &getBackgroundColor (void) const;
+
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                    Field Set                                 */
     /*! \{                                                                 */
 
-            void setTableModel     (Table * const value);
+            void setTableDOMModel  (TableDOM * const value);
             void setLayoutManager  (TableDomLayoutManager * const value);
             void setFont           (UIFont * const value);
             void setEditable       (const bool value);
+            void setBackgroundColor(const Color4f &value);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -237,10 +249,11 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomAreaBase : public Component
     /*! \name                      Fields                                  */
     /*! \{                                                                 */
 
-    SFUnrecTablePtr   _sfTableModel;
+    SFUnrecTableDOMPtr _sfTableDOMModel;
     SFUnrecChildTableDomLayoutManagerPtr _sfLayoutManager;
     SFUnrecUIFontPtr  _sfFont;
     SFBool            _sfEditable;
+    SFColor4f         _sfBackgroundColor;
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -277,14 +290,16 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomAreaBase : public Component
     /*! \name                    Generic Field Access                      */
     /*! \{                                                                 */
 
-    GetFieldHandlePtr  getHandleTableModel      (void) const;
-    EditFieldHandlePtr editHandleTableModel     (void);
+    GetFieldHandlePtr  getHandleTableDOMModel   (void) const;
+    EditFieldHandlePtr editHandleTableDOMModel  (void);
     GetFieldHandlePtr  getHandleLayoutManager   (void) const;
     EditFieldHandlePtr editHandleLayoutManager  (void);
     GetFieldHandlePtr  getHandleFont            (void) const;
     EditFieldHandlePtr editHandleFont           (void);
     GetFieldHandlePtr  getHandleEditable        (void) const;
     EditFieldHandlePtr editHandleEditable       (void);
+    GetFieldHandlePtr  getHandleBackgroundColor (void) const;
+    EditFieldHandlePtr editHandleBackgroundColor(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/

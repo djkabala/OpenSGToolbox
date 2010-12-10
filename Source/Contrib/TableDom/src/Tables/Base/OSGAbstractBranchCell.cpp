@@ -46,7 +46,7 @@
 #include <OSGConfig.h>
 
 #include "OSGAbstractBranchCell.h"
-
+#include "boost/any.hpp"
 #include <map>
 
 OSG_BEGIN_NAMESPACE
@@ -78,6 +78,15 @@ void AbstractBranchCell::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
+void AbstractBranchCell::setValue(const boost::any theValue)
+{
+}
+
+boost::any AbstractBranchCell::getValue(void) const
+{
+	return 0;
+}
+
 
 Cell* AbstractBranchCell::getCell(UInt32 value) const
 {
@@ -104,9 +113,31 @@ void AbstractBranchCell::print(void) const
 	}
 }
 
+
 std::map<UInt32,CellRefPtr>& AbstractBranchCell::getChildrenMap(void)
 {
 	return childrenMap;
+}
+
+
+UInt32 AbstractBranchCell::getMaximumColumn(void) const
+{
+	return maxCol;
+}
+
+UInt32 AbstractBranchCell::getMaximumRow(void) const
+{
+	return maxRow;
+}
+
+void AbstractBranchCell::setMaximumColumn(UInt32 value)
+{
+	maxCol = value;
+}
+
+void AbstractBranchCell::setMaximumRow(UInt32 value) 
+{
+	maxRow = value;
 }
 
 /*-------------------------------------------------------------------------*\

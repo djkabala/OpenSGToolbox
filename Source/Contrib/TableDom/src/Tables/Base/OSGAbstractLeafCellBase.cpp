@@ -137,6 +137,9 @@ AbstractLeafCellBase::TypeObject AbstractLeafCellBase::_type(
     "    authors=\"David Kabala (djkabala@gmail.com)                             \"\n"
     ">\n"
     "Table Cell\n"
+    "\t\n"
+    "\t\n"
+    "\t\n"
     "</FieldContainer>\n",
     "Table Cell\n"
     );

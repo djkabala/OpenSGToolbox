@@ -75,22 +75,6 @@ OSG::UInt16 AbstractTableDOMBase::getClassGroupId(void)
 /*------------------------------ get -----------------------------------*/
 
 
-//! Get the value of the AbstractTableDOM::_sfRootCell field.
-inline
-Cell * AbstractTableDOMBase::getRootCell(void) const
-{
-    return _sfRootCell.getValue();
-}
-
-//! Set the value of the AbstractTableDOM::_sfRootCell field.
-inline
-void AbstractTableDOMBase::setRootCell(Cell * const value)
-{
-    editSField(RootCellFieldMask);
-
-    _sfRootCell.setValue(value);
-}
-
 
 #ifdef OSG_MT_CPTR_ASPECT
 inline
@@ -101,9 +85,6 @@ void AbstractTableDOMBase::execSync (      AbstractTableDOMBase *pFrom,
                                   const UInt32             uiSyncInfo)
 {
     Inherited::execSync(pFrom, whichField, oOffsets, syncMode, uiSyncInfo);
-
-    if(FieldBits::NoField != (RootCellFieldMask & whichField))
-        _sfRootCell.syncWith(pFrom->_sfRootCell);
 }
 #endif
 

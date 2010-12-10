@@ -43,6 +43,7 @@
 #endif
 
 #include "OSGTableDomLayoutManagerBase.h"
+#include "OSGTableDomAreaFields.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -61,6 +62,12 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomLayoutManager : public TableDomLayo
     typedef TableDomLayoutManagerBase Inherited;
     typedef TableDomLayoutManager     Self;
 
+
+	virtual void initializeRootCell() = 0;
+	virtual Vec2f getContentRequestedSize(void) const = 0;
+	virtual void updateViews(void) = 0;
+	virtual void calculatePreferredSize(void) = 0;
+
     /*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
     /*! \{                                                                 */
@@ -77,6 +84,7 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomLayoutManager : public TableDomLayo
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
 
+	TableDomArea* getParentTableDomArea(void) const;
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 

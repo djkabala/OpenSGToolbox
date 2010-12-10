@@ -14,13 +14,5 @@
     authors="David Kabala (djkabala@gmail.com)                             "
 >
 UI AbstractTableDOM.
-	<Field
-		name="RootCell"
-		type="Cell"
-		category="pointer"
-		cardinality="single"
-		visibility="external"
-		access="public"
-	>
-	</Field>
+	
 </FieldContainer>

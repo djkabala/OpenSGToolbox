@@ -81,6 +81,10 @@ Cell* PlainTableDOMBranchCell::createRow(UInt32 row)
 {
 	PlainTableDOMBranchCellRefPtr theRow = PlainTableDOMBranchCell::create();
 	childrenMap[row] = theRow;
+	if(getMaximumRow() < row)
+	{
+			setMaximumRow(row);
+	}
 	return theRow;
 }
 
@@ -88,6 +92,10 @@ Cell* PlainTableDOMBranchCell::createColumn(UInt32 column)
 {
 	PlainTableDOMLeafCellRefPtr theColumn = PlainTableDOMLeafCell::create();
 	childrenMap[column] = theColumn;
+	if(getMaximumColumn() < column)
+	{
+			setMaximumColumn(column);
+	}
 	return theColumn;
 }
 

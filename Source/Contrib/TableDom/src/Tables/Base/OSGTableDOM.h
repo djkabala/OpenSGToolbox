@@ -43,6 +43,7 @@
 #endif
 
 #include "OSGTableDOMBase.h"
+#include "OSGCell.h"   
 
 OSG_BEGIN_NAMESPACE
 

@@ -78,10 +78,6 @@ void AbstractLeafCell::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
-void AbstractLeafCell::print(void) const
-{
-	std::cout<<"Value:"<<boost::any_cast<std::string>(getValue())<<std::endl;
-}
 
 void AbstractLeafCell::setValue(const boost::any theValue)
 {
@@ -92,6 +88,48 @@ boost::any AbstractLeafCell::getValue(void) const
 {
 	return value;
 }
+
+Cell* AbstractLeafCell::getCell(UInt32 value) const
+{
+	return NULL;
+}
+
+
+Cell* AbstractLeafCell::createRow(UInt32 row)
+{
+	return NULL;
+}
+
+Cell* AbstractLeafCell::createColumn(UInt32 column)
+{
+	return NULL;
+}
+
+void AbstractLeafCell::print(void) const
+{
+	std::cout<<"Value:"<<boost::any_cast<std::string>(getValue())<<std::endl;
+}
+
+UInt32 AbstractLeafCell::getMaximumColumn(void) const
+{
+	return 0;
+}
+
+UInt32 AbstractLeafCell::getMaximumRow(void) const
+{
+	return 0;
+}
+
+void AbstractLeafCell::setMaximumColumn(UInt32 value)
+{
+	return;
+}
+
+void AbstractLeafCell::setMaximumRow(UInt32 value) 
+{
+	return;
+}
+
 
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -

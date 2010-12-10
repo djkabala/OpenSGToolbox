@@ -58,7 +58,6 @@
 
 
 
-#include "OSGCell.h"                    // RootCell Class
 
 #include "OSGAbstractTableDOMBase.h"
 #include "OSGAbstractTableDOM.h"
@@ -82,10 +81,6 @@ OSG_BEGIN_NAMESPACE
 /***************************************************************************\
  *                        Field Documentation                              *
 \***************************************************************************/
-
-/*! \var Cell *          AbstractTableDOMBase::_sfRootCell
-    
-*/
 
 
 /***************************************************************************\
@@ -112,20 +107,6 @@ OSG_EXPORT_PTR_MFIELD_FULL(PointerMField,
 
 void AbstractTableDOMBase::classDescInserter(TypeObject &oType)
 {
-    FieldDescriptionBase *pDesc = NULL;
-
-
-    pDesc = new SFUnrecCellPtr::Description(
-        SFUnrecCellPtr::getClassType(),
-        "RootCell",
-        "",
-        RootCellFieldId, RootCellFieldMask,
-        false,
-        (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&AbstractTableDOM::editHandleRootCell),
-        static_cast<FieldGetMethodSig >(&AbstractTableDOM::getHandleRootCell));
-
-    oType.addInitialDesc(pDesc);
 }
 
 
@@ -156,15 +137,7 @@ AbstractTableDOMBase::TypeObject AbstractTableDOMBase::_type(
     "    authors=\"David Kabala (djkabala@gmail.com)                             \"\n"
     ">\n"
     "UI AbstractTableDOM.\n"
-    "\t<Field\n"
-    "\t\tname=\"RootCell\"\n"
-    "\t\ttype=\"Cell\"\n"
-    "\t\tcategory=\"pointer\"\n"
-    "\t\tcardinality=\"single\"\n"
-    "\t\tvisibility=\"external\"\n"
-    "\t\taccess=\"public\"\n"
-    "\t>\n"
-    "\t</Field>\n"
+    "\t\n"
     "</FieldContainer>\n",
     "UI AbstractTableDOM.\n"
     );
@@ -189,19 +162,6 @@ UInt32 AbstractTableDOMBase::getContainerSize(void) const
 /*------------------------- decorator get ------------------------------*/
 
 
-//! Get the AbstractTableDOM::_sfRootCell field.
-const SFUnrecCellPtr *AbstractTableDOMBase::getSFRootCell(void) const
-{
-    return &_sfRootCell;
-}
-
-SFUnrecCellPtr      *AbstractTableDOMBase::editSFRootCell       (void)
-{
-    editSField(RootCellFieldMask);
-
-    return &_sfRootCell;
-}
-
 
 
 
@@ -212,10 +172,6 @@ UInt32 AbstractTableDOMBase::getBinSize(ConstFieldMaskArg whichField)
 {
     UInt32 returnValue = Inherited::getBinSize(whichField);
 
-    if(FieldBits::NoField != (RootCellFieldMask & whichField))
-    {
-        returnValue += _sfRootCell.getBinSize();
-    }
 
     return returnValue;
 }
@@ -225,10 +181,6 @@ void AbstractTableDOMBase::copyToBin(BinaryDataHandler &pMem,
 {
     Inherited::copyToBin(pMem, whichField);
 
-    if(FieldBits::NoField != (RootCellFieldMask & whichField))
-    {
-        _sfRootCell.copyToBin(pMem);
-    }
 }
 
 void AbstractTableDOMBase::copyFromBin(BinaryDataHandler &pMem,
@@ -236,10 +188,6 @@ void AbstractTableDOMBase::copyFromBin(BinaryDataHandler &pMem,
 {
     Inherited::copyFromBin(pMem, whichField);
 
-    if(FieldBits::NoField != (RootCellFieldMask & whichField))
-    {
-        _sfRootCell.copyFromBin(pMem);
-    }
 }
 
 
@@ -247,14 +195,12 @@ void AbstractTableDOMBase::copyFromBin(BinaryDataHandler &pMem,
 /*------------------------- constructors ----------------------------------*/
 
 AbstractTableDOMBase::AbstractTableDOMBase(void) :
-    Inherited(),
-    _sfRootCell               (NULL)
+    Inherited()
 {
 }
 
 AbstractTableDOMBase::AbstractTableDOMBase(const AbstractTableDOMBase &source) :
-    Inherited(source),
-    _sfRootCell               (NULL)
+    Inherited(source)
 {
 }
 
@@ -265,45 +211,6 @@ AbstractTableDOMBase::~AbstractTableDOMBase(void)
 {
 }
 
-void AbstractTableDOMBase::onCreate(const AbstractTableDOM *source)
-{
-    Inherited::onCreate(source);
-
-    if(source != NULL)
-    {
-        AbstractTableDOM *pThis = static_cast<AbstractTableDOM *>(this);
-
-        pThis->setRootCell(source->getRootCell());
-    }
-}
-
-GetFieldHandlePtr AbstractTableDOMBase::getHandleRootCell        (void) const
-{
-    SFUnrecCellPtr::GetHandlePtr returnValue(
-        new  SFUnrecCellPtr::GetHandle(
-             &_sfRootCell,
-             this->getType().getFieldDesc(RootCellFieldId),
-             const_cast<AbstractTableDOMBase *>(this)));
-
-    return returnValue;
-}
-
-EditFieldHandlePtr AbstractTableDOMBase::editHandleRootCell       (void)
-{
-    SFUnrecCellPtr::EditHandlePtr returnValue(
-        new  SFUnrecCellPtr::EditHandle(
-             &_sfRootCell,
-             this->getType().getFieldDesc(RootCellFieldId),
-             this));
-
-    returnValue->setSetMethod(
-        boost::bind(&AbstractTableDOM::setRootCell,
-                    static_cast<AbstractTableDOM *>(this), _1));
-
-    editSField(RootCellFieldMask);
-
-    return returnValue;
-}
 
 
 
@@ -329,8 +236,6 @@ void AbstractTableDOMBase::execSyncV(      FieldContainer    &oFrom,
 void AbstractTableDOMBase::resolveLinks(void)
 {
     Inherited::resolveLinks();
-
-    static_cast<AbstractTableDOM *>(this)->setRootCell(NULL);
 
 
 }

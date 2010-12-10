@@ -90,30 +90,105 @@ void TableDomViewBase::setCell(Cell * const value)
 
     _sfCell.setValue(value);
 }
-//! Get the value of the TableDomView::_sfStartingPosition field.
+//! Get the value of the TableDomView::_sfCellPosition field.
 
 inline
-Vec2f &TableDomViewBase::editStartingPosition(void)
+Pnt2f &TableDomViewBase::editCellPosition(void)
 {
-    editSField(StartingPositionFieldMask);
+    editSField(CellPositionFieldMask);
 
-    return _sfStartingPosition.getValue();
+    return _sfCellPosition.getValue();
 }
 
-//! Get the value of the TableDomView::_sfStartingPosition field.
+//! Get the value of the TableDomView::_sfCellPosition field.
 inline
-const Vec2f &TableDomViewBase::getStartingPosition(void) const
+const Pnt2f &TableDomViewBase::getCellPosition(void) const
 {
-    return _sfStartingPosition.getValue();
+    return _sfCellPosition.getValue();
 }
 
-//! Set the value of the TableDomView::_sfStartingPosition field.
+//! Set the value of the TableDomView::_sfCellPosition field.
 inline
-void TableDomViewBase::setStartingPosition(const Vec2f &value)
+void TableDomViewBase::setCellPosition(const Pnt2f &value)
 {
-    editSField(StartingPositionFieldMask);
+    editSField(CellPositionFieldMask);
 
-    _sfStartingPosition.setValue(value);
+    _sfCellPosition.setValue(value);
+}
+//! Get the value of the TableDomView::_sfCellWidth field.
+
+inline
+Real32 &TableDomViewBase::editCellWidth(void)
+{
+    editSField(CellWidthFieldMask);
+
+    return _sfCellWidth.getValue();
+}
+
+//! Get the value of the TableDomView::_sfCellWidth field.
+inline
+      Real32  TableDomViewBase::getCellWidth(void) const
+{
+    return _sfCellWidth.getValue();
+}
+
+//! Set the value of the TableDomView::_sfCellWidth field.
+inline
+void TableDomViewBase::setCellWidth(const Real32 value)
+{
+    editSField(CellWidthFieldMask);
+
+    _sfCellWidth.setValue(value);
+}
+//! Get the value of the TableDomView::_sfCellHeight field.
+
+inline
+Real32 &TableDomViewBase::editCellHeight(void)
+{
+    editSField(CellHeightFieldMask);
+
+    return _sfCellHeight.getValue();
+}
+
+//! Get the value of the TableDomView::_sfCellHeight field.
+inline
+      Real32  TableDomViewBase::getCellHeight(void) const
+{
+    return _sfCellHeight.getValue();
+}
+
+//! Set the value of the TableDomView::_sfCellHeight field.
+inline
+void TableDomViewBase::setCellHeight(const Real32 value)
+{
+    editSField(CellHeightFieldMask);
+
+    _sfCellHeight.setValue(value);
+}
+//! Get the value of the TableDomView::_sfIsSelected field.
+
+inline
+bool &TableDomViewBase::editIsSelected(void)
+{
+    editSField(IsSelectedFieldMask);
+
+    return _sfIsSelected.getValue();
+}
+
+//! Get the value of the TableDomView::_sfIsSelected field.
+inline
+      bool  TableDomViewBase::getIsSelected(void) const
+{
+    return _sfIsSelected.getValue();
+}
+
+//! Set the value of the TableDomView::_sfIsSelected field.
+inline
+void TableDomViewBase::setIsSelected(const bool value)
+{
+    editSField(IsSelectedFieldMask);
+
+    _sfIsSelected.setValue(value);
 }
 
 //! Get the value of the TableDomView::_sfFont field.
@@ -321,8 +396,17 @@ void TableDomViewBase::execSync (      TableDomViewBase *pFrom,
     if(FieldBits::NoField != (CellFieldMask & whichField))
         _sfCell.syncWith(pFrom->_sfCell);
 
-    if(FieldBits::NoField != (StartingPositionFieldMask & whichField))
-        _sfStartingPosition.syncWith(pFrom->_sfStartingPosition);
+    if(FieldBits::NoField != (CellPositionFieldMask & whichField))
+        _sfCellPosition.syncWith(pFrom->_sfCellPosition);
+
+    if(FieldBits::NoField != (CellWidthFieldMask & whichField))
+        _sfCellWidth.syncWith(pFrom->_sfCellWidth);
+
+    if(FieldBits::NoField != (CellHeightFieldMask & whichField))
+        _sfCellHeight.syncWith(pFrom->_sfCellHeight);
+
+    if(FieldBits::NoField != (IsSelectedFieldMask & whichField))
+        _sfIsSelected.syncWith(pFrom->_sfIsSelected);
 
     if(FieldBits::NoField != (FontFieldMask & whichField))
         _sfFont.syncWith(pFrom->_sfFont);

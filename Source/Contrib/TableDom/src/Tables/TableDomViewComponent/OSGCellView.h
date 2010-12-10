@@ -43,6 +43,7 @@
 #endif
 
 #include "OSGCellViewBase.h"
+#include "OSGGraphicsFields.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -76,6 +77,8 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING CellView : public CellViewBase
 
     virtual void dump(      UInt32     uiIndent = 0,
                       const BitVector  bvFlags  = 0) const;
+
+	void drawView(Graphics * const TheGraphics, Real32 Opacity) const;
 
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/

@@ -58,6 +58,7 @@
 
 
 
+#include "OSGCell.h"                    // RootCell Class
 
 #include "OSGTableDOMBase.h"
 #include "OSGTableDOM.h"
@@ -84,6 +85,10 @@ OSG_BEGIN_NAMESPACE
  *                        Field Documentation                              *
 \***************************************************************************/
 
+/*! \var Cell *          TableDOMBase::_sfRootCell
+    
+*/
+
 
 /***************************************************************************\
  *                      FieldType/FieldTrait Instantiation                 *
@@ -109,6 +114,20 @@ OSG_EXPORT_PTR_MFIELD_FULL(PointerMField,
 
 void TableDOMBase::classDescInserter(TypeObject &oType)
 {
+    FieldDescriptionBase *pDesc = NULL;
+
+
+    pDesc = new SFUnrecCellPtr::Description(
+        SFUnrecCellPtr::getClassType(),
+        "RootCell",
+        "",
+        RootCellFieldId, RootCellFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&TableDOM::editHandleRootCell),
+        static_cast<FieldGetMethodSig >(&TableDOM::getHandleRootCell));
+
+    oType.addInitialDesc(pDesc);
 }
 
 
@@ -139,6 +158,15 @@ TableDOMBase::TypeObject TableDOMBase::_type(
     "    authors=\"David Kabala (djkabala@gmail.com)                             Achyuthan Vasanth (achvas88@gmail.com)\"\n"
     ">\n"
     "UI Table.\n"
+    "\t<Field\n"
+    "\t\tname=\"RootCell\"\n"
+    "\t\ttype=\"Cell\"\n"
+    "\t\tcategory=\"pointer\"\n"
+    "\t\tcardinality=\"single\"\n"
+    "\t\tvisibility=\"external\"\n"
+    "\t\taccess=\"public\"\n"
+    "\t>\n"
+    "\t</Field>\n"
     "\t<ProducedEvent\n"
     "\t\tname=\"Changed\"\n"
     "\t\tdetailsType=\"TableDOMEventDetails\"\n"
@@ -234,6 +262,19 @@ UInt32 TableDOMBase::getContainerSize(void) const
 /*------------------------- decorator get ------------------------------*/
 
 
+//! Get the TableDOM::_sfRootCell field.
+const SFUnrecCellPtr *TableDOMBase::getSFRootCell(void) const
+{
+    return &_sfRootCell;
+}
+
+SFUnrecCellPtr      *TableDOMBase::editSFRootCell       (void)
+{
+    editSField(RootCellFieldMask);
+
+    return &_sfRootCell;
+}
+
 
 
 
@@ -244,6 +285,10 @@ UInt32 TableDOMBase::getBinSize(ConstFieldMaskArg whichField)
 {
     UInt32 returnValue = Inherited::getBinSize(whichField);
 
+    if(FieldBits::NoField != (RootCellFieldMask & whichField))
+    {
+        returnValue += _sfRootCell.getBinSize();
+    }
 
     return returnValue;
 }
@@ -253,6 +298,10 @@ void TableDOMBase::copyToBin(BinaryDataHandler &pMem,
 {
     Inherited::copyToBin(pMem, whichField);
 
+    if(FieldBits::NoField != (RootCellFieldMask & whichField))
+    {
+        _sfRootCell.copyToBin(pMem);
+    }
 }
 
 void TableDOMBase::copyFromBin(BinaryDataHandler &pMem,
@@ -260,6 +309,10 @@ void TableDOMBase::copyFromBin(BinaryDataHandler &pMem,
 {
     Inherited::copyFromBin(pMem, whichField);
 
+    if(FieldBits::NoField != (RootCellFieldMask & whichField))
+    {
+        _sfRootCell.copyFromBin(pMem);
+    }
 }
 
 
@@ -448,12 +501,14 @@ UInt32  TableDOMBase::numSlotsEvent(UInt32 eventId) const
 /*------------------------- constructors ----------------------------------*/
 
 TableDOMBase::TableDOMBase(void) :
-    Inherited()
+    Inherited(),
+    _sfRootCell               (NULL)
 {
 }
 
 TableDOMBase::TableDOMBase(const TableDOMBase &source) :
-    Inherited(source)
+    Inherited(source),
+    _sfRootCell               (NULL)
 {
 }
 
@@ -464,6 +519,45 @@ TableDOMBase::~TableDOMBase(void)
 {
 }
 
+void TableDOMBase::onCreate(const TableDOM *source)
+{
+    Inherited::onCreate(source);
+
+    if(source != NULL)
+    {
+        TableDOM *pThis = static_cast<TableDOM *>(this);
+
+        pThis->setRootCell(source->getRootCell());
+    }
+}
+
+GetFieldHandlePtr TableDOMBase::getHandleRootCell        (void) const
+{
+    SFUnrecCellPtr::GetHandlePtr returnValue(
+        new  SFUnrecCellPtr::GetHandle(
+             &_sfRootCell,
+             this->getType().getFieldDesc(RootCellFieldId),
+             const_cast<TableDOMBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr TableDOMBase::editHandleRootCell       (void)
+{
+    SFUnrecCellPtr::EditHandlePtr returnValue(
+        new  SFUnrecCellPtr::EditHandle(
+             &_sfRootCell,
+             this->getType().getFieldDesc(RootCellFieldId),
+             this));
+
+    returnValue->setSetMethod(
+        boost::bind(&TableDOM::setRootCell,
+                    static_cast<TableDOM *>(this), _1));
+
+    editSField(RootCellFieldMask);
+
+    return returnValue;
+}
 
 
 GetEventHandlePtr TableDOMBase::getHandleChangedSignal(void) const
@@ -533,6 +627,8 @@ void TableDOMBase::execSyncV(      FieldContainer    &oFrom,
 void TableDOMBase::resolveLinks(void)
 {
     Inherited::resolveLinks();
+
+    static_cast<TableDOM *>(this)->setRootCell(NULL);
 
 
 }

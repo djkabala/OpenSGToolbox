@@ -14,6 +14,15 @@
     authors="David Kabala (djkabala@gmail.com)                             Achyuthan Vasanth (achvas88@gmail.com)"
 >
 UI Table.
+	<Field
+		name="RootCell"
+		type="Cell"
+		category="pointer"
+		cardinality="single"
+		visibility="external"
+		access="public"
+	>
+	</Field>
 	<ProducedEvent
 		name="Changed"
 		detailsType="TableDOMEventDetails"

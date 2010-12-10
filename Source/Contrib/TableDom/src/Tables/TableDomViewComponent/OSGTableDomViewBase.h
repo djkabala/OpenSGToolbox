@@ -65,10 +65,10 @@
 
 #include "OSGFieldContainer.h" // Parent
 
-#include "OSGCell.h"
-#include "OSGUIFont.h"
-
-#include "OSGVecFields.h"        // StartingPosition type
+#include "OSGCellFields.h"       // Cell type
+#include "OSGVecFields.h"        // CellPosition type
+#include "OSGSysFields.h"        // CellWidth type
+#include "OSGUIFontFields.h"     // Font type
 #include "OSGBaseFields.h"       // SelectionBoxColor type
 
 #include "OSGTableDomViewFields.h"
@@ -100,8 +100,11 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     enum
     {
         CellFieldId = Inherited::NextFieldId,
-        StartingPositionFieldId = CellFieldId + 1,
-        FontFieldId = StartingPositionFieldId + 1,
+        CellPositionFieldId = CellFieldId + 1,
+        CellWidthFieldId = CellPositionFieldId + 1,
+        CellHeightFieldId = CellWidthFieldId + 1,
+        IsSelectedFieldId = CellHeightFieldId + 1,
+        FontFieldId = IsSelectedFieldId + 1,
         SelectionBoxColorFieldId = FontFieldId + 1,
         SelectionTextColorFieldId = SelectionBoxColorFieldId + 1,
         ActiveTextColorFieldId = SelectionTextColorFieldId + 1,
@@ -114,8 +117,14 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
 
     static const OSG::BitVector CellFieldMask =
         (TypeTraits<BitVector>::One << CellFieldId);
-    static const OSG::BitVector StartingPositionFieldMask =
-        (TypeTraits<BitVector>::One << StartingPositionFieldId);
+    static const OSG::BitVector CellPositionFieldMask =
+        (TypeTraits<BitVector>::One << CellPositionFieldId);
+    static const OSG::BitVector CellWidthFieldMask =
+        (TypeTraits<BitVector>::One << CellWidthFieldId);
+    static const OSG::BitVector CellHeightFieldMask =
+        (TypeTraits<BitVector>::One << CellHeightFieldId);
+    static const OSG::BitVector IsSelectedFieldMask =
+        (TypeTraits<BitVector>::One << IsSelectedFieldId);
     static const OSG::BitVector FontFieldMask =
         (TypeTraits<BitVector>::One << FontFieldId);
     static const OSG::BitVector SelectionBoxColorFieldMask =
@@ -135,8 +144,11 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     static const OSG::BitVector NextFieldMask =
         (TypeTraits<BitVector>::One << NextFieldId);
         
-    typedef SFUnrecCellPtr SFCellType;
-    typedef SFVec2f           SFStartingPositionType;
+    typedef SFUnrecCellPtr    SFCellType;
+    typedef SFPnt2f           SFCellPositionType;
+    typedef SFReal32          SFCellWidthType;
+    typedef SFReal32          SFCellHeightType;
+    typedef SFBool            SFIsSelectedType;
     typedef SFUnrecUIFontPtr  SFFontType;
     typedef SFColor4f         SFSelectionBoxColorType;
     typedef SFColor4f         SFSelectionTextColorType;
@@ -166,6 +178,67 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
+    /*! \name                    Field Get                                 */
+    /*! \{                                                                 */
+
+            const SFUnrecCellPtr      *getSFCell           (void) const;
+                  SFUnrecCellPtr      *editSFCell           (void);
+
+                  SFPnt2f             *editSFCellPosition   (void);
+            const SFPnt2f             *getSFCellPosition    (void) const;
+
+                  SFReal32            *editSFCellWidth      (void);
+            const SFReal32            *getSFCellWidth       (void) const;
+
+                  SFReal32            *editSFCellHeight     (void);
+            const SFReal32            *getSFCellHeight      (void) const;
+
+                  SFBool              *editSFIsSelected     (void);
+            const SFBool              *getSFIsSelected      (void) const;
+            const SFUnrecUIFontPtr    *getSFFont           (void) const;
+                  SFUnrecUIFontPtr    *editSFFont           (void);
+
+
+                  Cell * getCell           (void) const;
+
+                  Pnt2f               &editCellPosition   (void);
+            const Pnt2f               &getCellPosition    (void) const;
+
+                  Real32              &editCellWidth      (void);
+                  Real32               getCellWidth       (void) const;
+
+                  Real32              &editCellHeight     (void);
+                  Real32               getCellHeight      (void) const;
+
+                  bool                &editIsSelected     (void);
+                  bool                 getIsSelected      (void) const;
+
+                  UIFont * getFont           (void) const;
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                    Field Set                                 */
+    /*! \{                                                                 */
+
+            void setCell           (Cell * const value);
+            void setCellPosition   (const Pnt2f &value);
+            void setCellWidth      (const Real32 value);
+            void setCellHeight     (const Real32 value);
+            void setIsSelected     (const bool value);
+            void setFont           (UIFont * const value);
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr Field Set                                 */
+    /*! \{                                                                 */
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
+    /*! \name                Ptr MField Set                                */
+    /*! \{                                                                 */
+
+    /*! \}                                                                 */
+    /*---------------------------------------------------------------------*/
     /*! \name                   Binary Access                              */
     /*! \{                                                                 */
 
@@ -190,8 +263,11 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     /*! \name                      Fields                                  */
     /*! \{                                                                 */
 
-    SFUnrecCellPtr _sfCell;
-    SFVec2f           _sfStartingPosition;
+    SFUnrecCellPtr    _sfCell;
+    SFPnt2f           _sfCellPosition;
+    SFReal32          _sfCellWidth;
+    SFReal32          _sfCellHeight;
+    SFBool            _sfIsSelected;
     SFUnrecUIFontPtr  _sfFont;
     SFColor4f         _sfSelectionBoxColor;
     SFColor4f         _sfSelectionTextColor;
@@ -228,10 +304,16 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     /*! \name                    Generic Field Access                      */
     /*! \{                                                                 */
 
-    GetFieldHandlePtr  getHandleCell         (void) const;
-    EditFieldHandlePtr editHandleCell        (void);
-    GetFieldHandlePtr  getHandleStartingPosition (void) const;
-    EditFieldHandlePtr editHandleStartingPosition(void);
+    GetFieldHandlePtr  getHandleCell            (void) const;
+    EditFieldHandlePtr editHandleCell           (void);
+    GetFieldHandlePtr  getHandleCellPosition    (void) const;
+    EditFieldHandlePtr editHandleCellPosition   (void);
+    GetFieldHandlePtr  getHandleCellWidth       (void) const;
+    EditFieldHandlePtr editHandleCellWidth      (void);
+    GetFieldHandlePtr  getHandleCellHeight      (void) const;
+    EditFieldHandlePtr editHandleCellHeight     (void);
+    GetFieldHandlePtr  getHandleIsSelected      (void) const;
+    EditFieldHandlePtr editHandleIsSelected     (void);
     GetFieldHandlePtr  getHandleFont            (void) const;
     EditFieldHandlePtr editHandleFont           (void);
     GetFieldHandlePtr  getHandleSelectionBoxColor (void) const;
@@ -254,13 +336,6 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     /*! \name                    Field Get                                 */
     /*! \{                                                                 */
 
-            const SFUnrecCellPtr   *getSFCell         (void) const;
-                  SFUnrecCellPtr   *editSFCell        (void);
-
-                  SFVec2f             *editSFStartingPosition(void);
-            const SFVec2f             *getSFStartingPosition (void) const;
-            const SFUnrecUIFontPtr    *getSFFont            (void) const;
-                  SFUnrecUIFontPtr    *editSFFont           (void);
 
                   SFColor4f           *editSFSelectionBoxColor(void);
             const SFColor4f           *getSFSelectionBoxColor (void) const;
@@ -283,13 +358,6 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
                   SFColor4f           *editSFTextColor      (void);
             const SFColor4f           *getSFTextColor       (void) const;
 
-
-                  Cell * getCell        (void) const;
-
-                  Vec2f               &editStartingPosition(void);
-            const Vec2f               &getStartingPosition (void) const;
-
-                  UIFont * getFont           (void) const;
 
                   Color4f             &editSelectionBoxColor(void);
             const Color4f             &getSelectionBoxColor (void) const;
@@ -317,9 +385,6 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomViewBase : public FieldContainer
     /*! \name                    Field Set                                 */
     /*! \{                                                                 */
 
-            void setCell        (Cell * const value);
-            void setStartingPosition(const Vec2f &value);
-            void setFont           (UIFont * const value);
             void setSelectionBoxColor(const Color4f &value);
             void setSelectionTextColor(const Color4f &value);
             void setActiveTextColor(const Color4f &value);

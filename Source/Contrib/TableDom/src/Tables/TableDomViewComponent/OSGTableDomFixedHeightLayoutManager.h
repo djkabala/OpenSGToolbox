@@ -43,6 +43,7 @@
 #endif
 
 #include "OSGTableDomFixedHeightLayoutManagerBase.h"
+#include "OSGCell.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -54,12 +55,29 @@ class OSG_CONTRIBTABLEDOM_DLLMAPPING TableDomFixedHeightLayoutManager : public T
 {
   protected:
 
+	Cell* rootCell;
+	Real32 _preferredHeight;
+	Real32 _preferredWidth; 
+	Real32 heightOfRow;
+	Real32 widthOfColumn;
+
+	virtual UInt32 getTopmostVisibleRowNumber(void) const;
+	virtual UInt32 getRowsToBeDisplayed(void) const;
+	virtual UInt32 getLeftmostVisibleColNumber(void) const;
+	virtual UInt32 getColsToBeDisplayed(void) const;
+
     /*==========================  PUBLIC  =================================*/
 
   public:
 
     typedef TableDomFixedHeightLayoutManagerBase Inherited;
     typedef TableDomFixedHeightLayoutManager     Self;
+
+	virtual void initializeRootCell();
+	virtual Vec2f getContentRequestedSize(void) const;
+	virtual void updateViews(void);
+	virtual void calculatePreferredSize(void);
+	
 
     /*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */

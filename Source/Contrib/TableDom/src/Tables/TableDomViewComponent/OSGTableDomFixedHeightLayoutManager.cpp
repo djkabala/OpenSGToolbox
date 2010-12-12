@@ -97,8 +97,8 @@ void TableDomFixedHeightLayoutManager::calculatePreferredSize(void)
 	{
 		CellRefPtr rootCell=getParentTableDomArea()->getTableDOMModel()->getRootCell();
 
-		_preferredWidth = osgMax(getParentTableDomArea()->getSize().x(),rootCell->getMaximumColumn() * widthOfColumn);
-		_preferredHeight =  osgMax(getParentTableDomArea()->getSize().y(),rootCell->getMaximumRow() * heightOfRow);
+		_preferredWidth = rootCell->getMaximumColumn() * widthOfColumn;
+		_preferredHeight =  rootCell->getMaximumRow() * heightOfRow;
 	}
 	else 
 	{
@@ -120,10 +120,10 @@ void TableDomFixedHeightLayoutManager::updateViews(void)
 		Pnt2f init = getParentTableDomArea()->getPosition();
 
 		UInt32 rowNumber = getTopmostVisibleRowNumber();
-		UInt32 rowsToBeDisplayed = getRowsToBeDisplayed();
+		UInt32 rowsToBeDisplayed = getRowsToBeDisplayed()+1;
 
 		UInt32 colNumber = getLeftmostVisibleColNumber();
-		UInt32 colsToBeDisplayed = getColsToBeDisplayed();
+		UInt32 colsToBeDisplayed = getColsToBeDisplayed()+1;
 
 		clearVisibleViews();
 					
@@ -133,7 +133,7 @@ void TableDomFixedHeightLayoutManager::updateViews(void)
 			{
 				CellViewRefPtr view = CellView::create();
 				view->setFont(getParentTableDomArea()->getFont());
-				view->setCellPosition(Pnt2f(colNumber*widthOfColumn,rowNumber*heightOfRow));
+				view->setCellPosition(Pnt2f((colNumber+j)*widthOfColumn,(rowNumber+i)*heightOfRow));
 				view->setCellWidth(widthOfColumn);
 				view->setCellHeight(heightOfRow);
 				CellRefPtr theRow = rootCell->getCell(rowNumber+i);
@@ -171,7 +171,7 @@ UInt32 TableDomFixedHeightLayoutManager::getColsToBeDisplayed() const
 	if(bottomRight.x() == 0 && bottomRight.y() == 0 )
 		colsToBeDisplayed = (UInt32(ceil(getParentTableDomArea()->getPreferredSize().x()/ widthOfColumn)));
 	else
-		colsToBeDisplayed = (UInt32(ceil((bottomRight.x() - topLeft.x())/widthOfColumn)));
+		colsToBeDisplayed = (UInt32(ceil(abs(bottomRight.x() - topLeft.x())/widthOfColumn)));
 
 	return colsToBeDisplayed;
 }
@@ -195,7 +195,7 @@ UInt32 TableDomFixedHeightLayoutManager::getRowsToBeDisplayed() const
 	if(bottomRight.x() == 0 && bottomRight.y() == 0 )
 		rowsToBeDisplayed = (UInt32(ceil(getParentTableDomArea()->getPreferredSize().y()/ heightOfRow)));
 	else
-		rowsToBeDisplayed = (UInt32(ceil((bottomRight.y() - topLeft.y())/heightOfRow)));
+		rowsToBeDisplayed = (UInt32(ceil(abs(bottomRight.y() - topLeft.y())/heightOfRow)));
 
 	return rowsToBeDisplayed;
 }
@@ -208,13 +208,23 @@ UInt32 TableDomFixedHeightLayoutManager::getRowsToBeDisplayed() const
 /*----------------------- constructors & destructors ----------------------*/
 
 TableDomFixedHeightLayoutManager::TableDomFixedHeightLayoutManager(void) :
-    Inherited()
+    Inherited(),
+	rootCell(NULL),
+	_preferredHeight(0),
+	_preferredWidth(0), 
+	heightOfRow(20), 
+	widthOfColumn(60)
 {
 }
 
 TableDomFixedHeightLayoutManager::TableDomFixedHeightLayoutManager(const TableDomFixedHeightLayoutManager &source) :
     Inherited(source)
 {
+	rootCell = source.rootCell;
+	_preferredHeight = source._preferredHeight;
+	_preferredWidth =  source._preferredWidth;
+	heightOfRow = source.heightOfRow;
+	widthOfColumn = source.widthOfColumn;
 }
 
 TableDomFixedHeightLayoutManager::~TableDomFixedHeightLayoutManager(void)

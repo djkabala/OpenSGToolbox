@@ -77,11 +77,12 @@ void CellView::initMethod(InitPhase ePhase)
 void CellView::drawView(Graphics * const TheGraphics, Real32 Opacity) const
 {
 	
-	TheGraphics->drawRect(getCellPosition(),Pnt2f(getCellPosition().x()+getCellWidth(),getCellPosition().y()+getCellHeight()),Color4f(0.7,0.7,0.0,1.0),Opacity);
+	TheGraphics->drawRect(getCellPosition(),Pnt2f(getCellPosition().x()+getCellWidth(),getCellPosition().y()+getCellHeight()),Color4f(0.0,0.0,0.0,1.0),Opacity);
+	TheGraphics->drawRect(getCellPosition(),Pnt2f(getCellPosition().x()+getCellWidth()-2,getCellPosition().y()+getCellHeight()-2),Color4f(1.0,1.0,1.0,1.0),Opacity);
 
 	if(getCell())
 	{
-		TheGraphics->drawText(getCellPosition(),boost::any_cast<std::string>(getCell()->getValue()),getFont(),Color4f(0.0,0.0,0.0,1.0),Opacity);
+		TheGraphics->drawText(Pnt2f(getCellPosition().x()+1,getCellPosition().y()+getCellHeight()/3),boost::any_cast<std::string>(getCell()->getValue()),getFont(),Color4f(0.0,0.0,0.0,1.0),Opacity);
 	}		
 }
 

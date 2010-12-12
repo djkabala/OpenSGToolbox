@@ -147,13 +147,17 @@ void AbstractBranchCell::setMaximumRow(UInt32 value)
 /*----------------------- constructors & destructors ----------------------*/
 
 AbstractBranchCell::AbstractBranchCell(void) :
-    Inherited()
+    Inherited(),
+	maxRow(0),
+	maxCol(0)
 {
 }
 
 AbstractBranchCell::AbstractBranchCell(const AbstractBranchCell &source) :
     Inherited(source)
 {
+	maxRow = source.maxRow;
+	maxCol = source.maxCol;
 }
 
 AbstractBranchCell::~AbstractBranchCell(void)

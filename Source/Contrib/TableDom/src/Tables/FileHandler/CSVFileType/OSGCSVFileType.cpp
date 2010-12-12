@@ -127,7 +127,17 @@ TableDOMTransitPtr CSVFileType::read(std::istream &InputStream,
 	   removeSlashRandSlashN(token);
 	   Result->insertValue(rowCount,columnCount,boost::any(token));
 
+	   if(Result->getRootCell()->getMaximumColumn() < columnCount+1 )
+	   {
+			Result->getRootCell()->setMaximumColumn(columnCount+1);
+	   }
+
 	   rowCount++;
+	}
+
+	if(Result->getRootCell()->getMaximumRow() < rowCount )
+	{
+		Result->getRootCell()->setMaximumRow(rowCount);
 	}
 
 	return TableDOMTransitPtr(Result);

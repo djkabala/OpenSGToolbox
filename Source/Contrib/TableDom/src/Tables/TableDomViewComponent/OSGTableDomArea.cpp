@@ -203,7 +203,7 @@ bool TableDomArea::getScrollableTracksViewportHeight(void)
 
 bool TableDomArea::getScrollableTracksViewportWidth(void)
 {
-    return true;
+    return false;
 }
 
 
@@ -214,7 +214,7 @@ bool TableDomArea::getScrollableHeightMinTracksViewport(void)
 
 bool TableDomArea::getScrollableWidthMinTracksViewport(void)
 {
-    return false;
+    return true;
 }
 
 Int32 TableDomArea::getScrollableUnitIncrement(const Pnt2f& VisibleRectTopLeft, const Pnt2f& VisibleRectBottomRight, const UInt32& orientation, const Int32& direction)

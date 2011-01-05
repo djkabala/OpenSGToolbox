@@ -24,4 +24,14 @@ Table AbstractCell
 		access="protected"
 	>
 	</Field>
+	<Field
+		name="AllwaysRedrawViewport"
+		type="bool"
+		category="data"
+		cardinality="single"
+		visibility="external"
+		access="public"
+		defaultValue="true"
+	>
+	</Field>
 </FieldContainer>

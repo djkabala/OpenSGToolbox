@@ -96,7 +96,7 @@ void SplitPanel::drawInternal(Graphics* const Graphics, Real32 Opacity) const
 void SplitPanel::updateLayout(void)
 {
     Pnt2f TopLeft, BottomRight;
-    getInsideBorderBounds(TopLeft, BottomRight);
+    getInsideInsetsBounds(TopLeft, BottomRight);
     Vec2f BorderSize(BottomRight - TopLeft);
 
     UInt32 AxisIndex(0);
@@ -225,23 +225,6 @@ void SplitPanel::updateLayout(void)
     }
 }
 
-void SplitPanel::setDividerDrawObject(UIDrawObjectCanvas* const value)
-{
-    if (getDividerDrawObject() != NULL)
-    {
-        _MouseEnteredConnection.disconnect();
-        _MouseExitedConnection.disconnect();
-        _MousePressedConnection.disconnect();
-    }
-    _sfDividerDrawObject.setValue(value);
-    if (getDividerDrawObject() != NULL)
-    {
-        _MouseEnteredConnection = value->connectMouseEntered(boost::bind(&SplitPanel::dividerMouseEntered, this, _1));
-        _MouseExitedConnection = value->connectMouseExited(boost::bind(&SplitPanel::dividerMouseExited, this, _1));
-        _MousePressedConnection = value->connectMousePressed(boost::bind(&SplitPanel::dividerMousePressed, this, _1));
-	}
-}
-
 void SplitPanel::updateChildren(void)
 {
     clearChildren();
@@ -263,9 +246,7 @@ void SplitPanel::updateChildren(void)
 void SplitPanel::detachFromEventProducer(void)
 {
     Inherited::detachFromEventProducer();
-    _MouseEnteredConnection.disconnect();
-    _MouseExitedConnection.disconnect();
-    _MousePressedConnection.disconnect();
+
     _DragMouseDraggedConnection.disconnect();
     _DragMouseReleasedConnection.disconnect();
 }
@@ -282,12 +263,6 @@ void SplitPanel::onCreate(const SplitPanel * Id)
 	{
         FieldContainerUnrecPtr TheDividerDrawObject(getDividerDrawObject()->shallowCopy());
         setDividerDrawObject(dynamic_pointer_cast<UIDrawObjectCanvas>(TheDividerDrawObject));
-        if(getDividerDrawObject() != NULL)
-        {
-            _MouseEnteredConnection = getDividerDrawObject()->connectMouseEntered(boost::bind(&SplitPanel::dividerMouseEntered, this, _1));
-            _MouseExitedConnection = getDividerDrawObject()->connectMouseExited(boost::bind(&SplitPanel::dividerMouseExited, this, _1));
-            _MousePressedConnection = getDividerDrawObject()->connectMousePressed(boost::bind(&SplitPanel::dividerMousePressed, this, _1));
-        }
 	}
 }
 
@@ -319,11 +294,79 @@ void SplitPanel::changed(ConstFieldMaskArg whichField,
 {
     Inherited::changed(whichField, origin, details);
 
+	/*if(whichField & (DividerPositionFieldMask |
+                     MaxDividerPositionFieldMask |
+                     MinDividerPositionFieldMask))
+    {
+        Pnt2f TopLeft, BottomRight;
+        getInsideInsetsBounds(TopLeft, BottomRight);
+        Vec2f BorderSize(BottomRight - TopLeft);
+        
+        Real32 MaxDividerPos(getMaxDividerPosition());
+        Real32 MinDividerPos(getMinDividerPosition());
+
+        UInt32 AxisIndex(0);
+        if(getOrientation() != SplitPanel::HORIZONTAL_ORIENTATION ) AxisIndex = 1;
+
+		if (getDividerPosition() <= 1.0 && getDividerPosition() >= -1.0)
+		{
+            if(getMaxDividerPosition() < 0.0f)
+            {
+                MaxDividerPos = (1.0 - getMaxDividerPosition());
+            }
+            else
+            {
+                MaxDividerPos = getMaxDividerPosition();
+            }
+            if(getMinDividerPosition() < 0.0f)
+            {
+                MinDividerPos = (1.0 - getMinDividerPosition());
+            }
+            else
+            {
+                MinDividerPos = getMinDividerPosition();
+            }
+        }
+        else
+        {
+            if(getMaxDividerPosition() < 0.0f)
+            {
+                MaxDividerPos = osgMax(0.0f, BorderSize[AxisIndex] + getMaxDividerPosition());
+            }
+            if(getMinDividerPosition() < 0.0f)
+            {
+                MinDividerPos = osgMax(0.0f, BorderSize[AxisIndex] + getMinDividerPosition());
+            }
+        }
+        if(MinDividerPos <= MaxDividerPos)
+        {
+            Real32 NewPos(osgClamp(MinDividerPos,getDividerPosition(),MaxDividerPos));
+            if(getDividerPosition() != NewPos &&
+               BorderSize[AxisIndex] > NewPos)
+            {
+                setDividerPosition(NewPos);
+            }
+        }
+    }*/
+
 	if( (whichField & DividerSizeFieldMask) || (whichField & DividerPositionFieldMask) ||
 		(whichField & OrientationFieldMask) )
     {
 		updateLayout();
 	}
+    if(whichField & DividerDrawObjectFieldMask)
+    {
+        _MouseEnteredConnection.disconnect();
+        _MouseExitedConnection.disconnect();
+        _MousePressedConnection.disconnect();
+
+        if (getDividerDrawObject() != NULL)
+        {
+            _MouseEnteredConnection = getDividerDrawObject()->connectMouseEntered(boost::bind(&SplitPanel::dividerMouseEntered, this, _1));
+            _MouseExitedConnection = getDividerDrawObject()->connectMouseExited(boost::bind(&SplitPanel::dividerMouseExited, this, _1));
+            _MousePressedConnection = getDividerDrawObject()->connectMousePressed(boost::bind(&SplitPanel::dividerMousePressed, this, _1));
+	    }
+    }
 
     if( (whichField & DividerDrawObjectFieldMask) ||
         (whichField & MinComponentFieldMask) ||
@@ -427,23 +470,23 @@ void SplitPanel::dividerDragMouseDragged(MouseEventDetails* const e)
 	if(e->getButton() == MouseEventDetails::BUTTON1)
 	{
 		Pnt2f temp = ViewportToComponent(e->getLocation(), this, e->getViewport());
-			if (getDividerPosition() <= 1.0)
+        Pnt2f TopLeft, BottomRight;
+        getInsideInsetsBounds(TopLeft, BottomRight);
+        Vec2f BorderSize(BottomRight - TopLeft);
+		if (getDividerPosition() <= 1.0 && getDividerPosition() >= -1.0)
+		{
+			if (temp[AxisIndex] >= 0) // this ensures it stays as a percentage position
 			{
-				if (temp[AxisIndex] >= 0) // this ensures it stays as a percentage position
-				{
-					Pnt2f TopLeft, BottomRight;
-					getInsideBorderBounds(TopLeft, BottomRight);
-					Vec2f BorderSize(BottomRight - TopLeft);
-					setDividerPosition((Real32)temp[AxisIndex]/(Real32)BorderSize[AxisIndex]);
-				}
+				setDividerPosition(temp[AxisIndex]/BorderSize[AxisIndex]);
 			}
-			else
+		}
+		else
+		{
+			if (temp[AxisIndex] > 1) // this ensures it stays absolute position
 			{
-				if (temp[AxisIndex] > 1) // this ensures it stays absolute position
-				{
-					setDividerPosition(temp[AxisIndex]);
-				}
+				setDividerPosition(temp[AxisIndex]);
 			}
+		}
 		//updateLayout();
 	}
 }

@@ -140,13 +140,13 @@ ComponentTransitPtr DefaultTreeComponentGenerator::getTreeComponentText(Tree* co
         TheLabel->setBackgrounds(getSelectedBackground());
         TheLabel->setBorders(getSelectedBorder());
     }
-    else
+    /*else
     {
         TheLabel->setTextColors(getNonSelectedTextColor());
         TheLabel->setBackgrounds(getNonSelectedBackground());
         EmptyBorderUnrecPtr TheBorder(EmptyBorder::create());
         TheLabel->setBorders(TheBorder);
-    }
+    }*/
     TheLabel->setText(Value);
 
     //Create the panel, set its children and layout

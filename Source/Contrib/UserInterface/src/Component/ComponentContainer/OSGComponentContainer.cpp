@@ -49,6 +49,7 @@
 #include "OSGUIDrawUtils.h"
 
 #include "OSGMouseEventDetails.h"
+#include "OSGNameAttachment.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -200,10 +201,6 @@ void ComponentContainer::drawInternal(Graphics* const TheGraphics, Real32 Opacit
     {
         getChildren(i)->draw(TheGraphics, Opacity*getOpacity());
     }
-	
-    //Make sure the clipping is reset
-	//Because child components may have changed it when they were drawn
-    setupClipping(TheGraphics);
 }
 void ComponentContainer::mouseClicked(MouseEventDetails* const e)
 {
@@ -303,10 +300,10 @@ void ComponentContainer::mouseReleased(MouseEventDetails* const e)
             break;
         }
     }
-	if(!e->isConsumed())
-	{
-		Component::mouseReleased(e);
-	}
+    if(!e->isConsumed())
+    {
+        Component::mouseReleased(e);
+    }
 }
 
 
@@ -354,7 +351,7 @@ void ComponentContainer::mouseDragged(MouseEventDetails* const e)
 void ComponentContainer::mouseWheelMoved(MouseWheelEventDetails* const e)
 {
     bool isContained;
-    for(Int32 i(0) ; i<getMFChildren()->size() ; ++i)
+    for(Int32 i(getMFChildren()->size()-1) ; i>=0 ; --i)
     {
         //If the event is consumed then stop sending the event
         if(e->isConsumed()) return;
@@ -423,6 +420,40 @@ void ComponentContainer::setParentWindow(InternalWindow* const parent)
     }
 }
 
+std::vector<Component*> ComponentContainer::getNamedChildren(const std::string & Name) const
+{
+    std::vector<Component*> Result;
+    
+    const Char8* ChildName;
+    for(MFChildrenType::const_iterator ChildItor(getMFChildren()->begin()) ; ChildItor != getMFChildren()->end(); ++ChildItor)
+    {
+        ChildName = getName(*ChildItor);
+        if(ChildName != NULL &&
+           Name.compare(ChildName) == 0)
+        {
+            Result.push_back(*ChildItor);
+        }
+    }
+
+    return Result;
+}
+
+std::vector<Component*> ComponentContainer::getNamedDecendents(const std::string & Name) const
+{
+    std::vector<Component*> Result(getNamedChildren(Name));
+
+    for(MFChildrenType::const_iterator ChildItor(getMFChildren()->begin()) ; ChildItor != getMFChildren()->end(); ++ChildItor)
+    {
+        if((*ChildItor)->getType().isDerivedFrom(ComponentContainer::getClassType()))
+        {
+            std::vector<Component*> ChildDec(dynamic_cast<ComponentContainer*>(*ChildItor)->getNamedDecendents(Name));
+            Result.insert(Result.end(), ChildDec.begin(), ChildDec.end());
+        }
+    }
+
+    return Result;
+}
+
 /*-------------------------------------------------------------------------*\
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
@@ -488,17 +519,6 @@ void ComponentContainer::changed(ConstFieldMaskArg whichField,
     {
         //Layout needs to be recalculated
         updateLayout();
-    }
-
-    if(whichField & EnabledFieldMask)
-    {
-        for(UInt32 i(0) ; i< getMFChildren()->size() ; ++i)
-        {
-            if(getChildren(i)->getEnabled() != getEnabled())
-            {
-                getChildren(i)->setEnabled(getEnabled());
-            }
-        }
     }
     Inherited::changed(whichField, origin, details);
 }

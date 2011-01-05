@@ -107,11 +107,6 @@ void TabPanel::calculateTabBorderLengths(Border* const TheBorder, Real32& Left, 
             Right = 0.0f;
             break;
     }
-
-    Left   += getTabBorderInsets().x();
-    Right  += getTabBorderInsets().x();
-    Top    += getTabBorderInsets().y();
-    Bottom += getTabBorderInsets().y();
 }
 
 void TabPanel::calculateContentBorderLengths(Border* const TheBorder, Real32& Left, Real32& Right, Real32& Top, Real32& Bottom) const
@@ -169,11 +164,6 @@ void TabPanel::calculateMaxTabBorderLengths(Real32& Left, Real32& Right, Real32&
             Right = 0.0f;
             break;
     }
-
-    Left += getTabBorderInsets().x();
-    Right += getTabBorderInsets().x();
-    Top += getTabBorderInsets().y();
-    Bottom += getTabBorderInsets().y();
 }
 
 void TabPanel::drawContents(Graphics* const TheGraphics, Real32 Opacity) const
@@ -246,7 +236,10 @@ void TabPanel::drawTab(UInt32 TabIndex, Graphics* const TheGraphics, Real32 Opac
 
     if(DrawnTabBackground != NULL)
     {
-        DrawnTabBackground->draw(TheGraphics, TabPosition - getTabBorderInsets(), TabPosition + TabSize + getTabBorderInsets(), getOpacity()*Opacity);
+        DrawnTabBackground->draw(TheGraphics, 
+                                 TabPosition, 
+                                 TabPosition + TabSize, 
+                                 getOpacity()*Opacity);
     }
 
     //Draw the tab component
@@ -472,12 +465,15 @@ void TabPanel::updateLayout(void)
     // naturally the alignments and such is necessary
     // on the first sweep, get the maximum size and cumLength
     const Real32 TabMajorAxisSpacing(5.0f);
+    Vec2f TabReqSize;
     for (UInt32 i=0; i < getMFTabs()->size(); ++i)
     {
-        cumMajorAxis += getTabs(i)->getRequestedSize()[AxisIndex];
-        if (getTabs(i)->getRequestedSize()[(AxisIndex+1)%2] > largestMinorAxis)
+        TabReqSize = getTabs(i)->getRequestedSize() + Vec2f(getTabBorderInsets().x() + getTabBorderInsets().y(),
+                                                            getTabBorderInsets().z() + getTabBorderInsets().w());
+        cumMajorAxis += TabReqSize[AxisIndex];
+        if (TabReqSize[(AxisIndex+1)%2] > largestMinorAxis)
         {
-            largestMinorAxis = getTabs(i)->getRequestedSize()[(AxisIndex+1)%2];
+            largestMinorAxis = TabReqSize[(AxisIndex+1)%2];
         }
     }
     cumMajorAxis += TabMajorAxisSpacing * 2.0f * getMFTabs()->size();
@@ -512,7 +508,8 @@ void TabPanel::updateLayout(void)
     for (UInt32 i=0; i < getMFTabs()->size(); ++i)
     {
         offset[AxisIndex] += TabBorderTopLeftWidth[AxisIndex];
-        Size = getTabs(i)->getRequestedSize() + 2.0f * TabMajorAxisSpacing;
+        Size = getTabs(i)->getRequestedSize() + Vec2f(getTabBorderInsets().x() + getTabBorderInsets().y(),
+                                                      getTabBorderInsets().z() + getTabBorderInsets().w());
         if(getTabs(i)->getSize() != Size)
         {
             getTabs(i)->setSize(Size);

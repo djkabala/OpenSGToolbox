@@ -154,6 +154,27 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING FieldContainerTreeModel : public Field
     /*! \}                                                                 */
     bool isFieldAllowed(const FieldDescriptionBase* fieldDesc) const;
     UInt32 getIndexFromFieldId(const FieldContainer* container, UInt32 index) const;
+    
+    void attachNameChangeHandler(AttachmentContainer * const TheContainer,
+                                               const TreePath& Parent, 
+                                               UInt32 ChangedIndex);
+    void dettachNameChangeHandler(AttachmentContainer * const TheContainer,
+                                               const TreePath& Parent, 
+                                               UInt32 ChangedIndex);
+
+    void handleNameChanged(FieldContainer *fc, 
+                          ConstFieldMaskArg whichField,
+                          const TreePath& Parent, 
+                          UInt32 ChangedIndex);
+
+    void handleFieldChanged(FieldContainer *fc, 
+                          ConstFieldMaskArg whichField,
+                          const TreePath& Parent, 
+                          UInt32 ChangedIndex);
+
+    virtual void setAsVisible(const TreePath& path);
+
+    virtual void setAsNotVisible(const TreePath& path);
     /*==========================  PRIVATE  ================================*/
 
   private:

@@ -4,8 +4,6 @@
  *                                                                           *
  *               Copyright (C) 2000-2006 by the OpenSG Forum                 *
  *                                                                           *
- *                            www.opensg.org                                 *
- *                                                                           *
  *   contact:  David Kabala (djkabala@gmail.com)                             *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
@@ -40,19 +38,6 @@
 //  Includes
 //---------------------------------------------------------------------------
 
+OSG_BEGIN_NAMESPACE
 
-#include "OSGConfig.h"
-#include "OSGBaseInitFunctions.h"
-
-#define SVN_REVISION "382"
-
-/*! Append our version to the library versions string 
-*/
-static bool versionAdder(void)
-{
-    OSG::addLibraryVersion("OSGContribVideo:           " OSG_VERSION_STRING 
-                           "\tRev: "               SVN_REVISION );    
-    return true;
-}
-
-static OSG::StaticInitFuncWrapper versionAdderWrapper(versionAdder);
+OSG_END_NAMESPACE

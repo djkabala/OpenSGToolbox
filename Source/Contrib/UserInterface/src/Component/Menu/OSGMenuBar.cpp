@@ -167,22 +167,22 @@ void MenuBar::updateClipBounds(void)
 		ContainerClipBottomRight -= Vec2f(getPosition());
 
 		//Get Parent ComponentContainer's MenuBar Bounds
-		Pnt2f ContainerInsetTopLeft, ContainerInsetBottomRight;
-		dynamic_cast<InternalWindow*>(getParentContainer())->getMenuBarBounds(ContainerInsetTopLeft, ContainerInsetBottomRight);
+		//Pnt2f ContainerInsetTopLeft, ContainerInsetBottomRight;
+		//dynamic_cast<InternalWindow*>(getParentContainer())->getMenuBarBounds(ContainerInsetTopLeft, ContainerInsetBottomRight);
 		
         //Parent ComponentContainer's Inset Bounds are in the Parent ComponentContainer's Coordinate space
         //We need to convert them to this Components Coordinate space
-        ContainerInsetTopLeft -= Vec2f(getPosition());
-		ContainerInsetBottomRight -= Vec2f(getPosition());
+        //ContainerInsetTopLeft -= Vec2f(getPosition());
+		//ContainerInsetBottomRight -= Vec2f(getPosition());
 
 		//Get the intersection of my bounds with my parent containers clip bounds
 		quadIntersection(MyTopLeft,MyBottomRight,
 			ContainerClipTopLeft,ContainerClipBottomRight,
 			TopLeft, BottomRight);
 
-		quadIntersection(TopLeft,BottomRight,
-			ContainerInsetTopLeft,ContainerInsetBottomRight,
-			TopLeft, BottomRight);
+		//quadIntersection(TopLeft,BottomRight,
+		//	ContainerInsetTopLeft,ContainerInsetBottomRight,
+		//	TopLeft, BottomRight);
 	}
 
 	//The Clip Bounds calculated are in my Parent Containers coordinate space

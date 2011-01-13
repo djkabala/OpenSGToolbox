@@ -362,6 +362,12 @@ ComboBoxBase::TypeObject ComboBoxBase::_type(
     "\t\tconsumable=\"true\"\n"
     "        >\n"
     "    </ProducedEvent>\n"
+    "\t<ProducedEvent\n"
+    "\t\tname=\"SelectionChanged\"\n"
+    "\t\tdetailsType=\"ComboBoxSelectionEventDetails\"\n"
+    "\t\tconsumable=\"true\"\n"
+    "\t>\n"
+    "\t</ProducedEvent>\n"
     "</FieldContainer>\n",
     "A UI ComboBox\n"
     );
@@ -375,7 +381,14 @@ EventDescription *ComboBoxBase::_eventDesc[] =
                           ActionPerformedEventId, 
                           FieldTraits<ActionEventDetails *>::getType(),
                           true,
-                          static_cast<EventGetMethod>(&ComboBoxBase::getHandleActionPerformedSignal))
+                          static_cast<EventGetMethod>(&ComboBoxBase::getHandleActionPerformedSignal)),
+
+    new EventDescription("SelectionChanged", 
+                          "",
+                          SelectionChangedEventId, 
+                          FieldTraits<ComboBoxSelectionEventDetails *>::getType(),
+                          true,
+                          static_cast<EventGetMethod>(&ComboBoxBase::getHandleSelectionChangedSignal))
 
 };
 
@@ -712,7 +725,6 @@ ComboBox *ComboBoxBase::createEmpty(void)
     return returnValue;
 }
 
-
 FieldContainerTransitPtr ComboBoxBase::shallowCopyLocal(
     BitVector bFlags) const
 {
@@ -769,6 +781,12 @@ void ComboBoxBase::produceEvent(UInt32 eventId, EventDetails* const e)
         _ActionPerformedEvent.set_combiner(ConsumableEventCombiner(e));
         _ActionPerformedEvent(dynamic_cast<ActionPerformedEventDetailsType* const>(e), ActionPerformedEventId);
         break;
+    case SelectionChangedEventId:
+        OSG_ASSERT(dynamic_cast<SelectionChangedEventDetailsType* const>(e));
+
+        _SelectionChangedEvent.set_combiner(ConsumableEventCombiner(e));
+        _SelectionChangedEvent(dynamic_cast<SelectionChangedEventDetailsType* const>(e), SelectionChangedEventId);
+        break;
     default:
         Inherited::produceEvent(eventId, e);
         break;
@@ -783,6 +801,9 @@ boost::signals2::connection ComboBoxBase::connectEvent(UInt32 eventId,
     {
     case ActionPerformedEventId:
         return _ActionPerformedEvent.connect(listener, at);
+        break;
+    case SelectionChangedEventId:
+        return _SelectionChangedEvent.connect(listener, at);
         break;
     default:
         return Inherited::connectEvent(eventId, listener, at);
@@ -802,6 +823,9 @@ boost::signals2::connection  ComboBoxBase::connectEvent(UInt32 eventId,
     case ActionPerformedEventId:
         return _ActionPerformedEvent.connect(group, listener, at);
         break;
+    case SelectionChangedEventId:
+        return _SelectionChangedEvent.connect(group, listener, at);
+        break;
     default:
         return Inherited::connectEvent(eventId, group, listener, at);
         break;
@@ -817,6 +841,9 @@ void  ComboBoxBase::disconnectEvent(UInt32 eventId, const BaseEventType::group_t
     case ActionPerformedEventId:
         _ActionPerformedEvent.disconnect(group);
         break;
+    case SelectionChangedEventId:
+        _SelectionChangedEvent.disconnect(group);
+        break;
     default:
         return Inherited::disconnectEvent(eventId, group);
         break;
@@ -829,6 +856,9 @@ void  ComboBoxBase::disconnectAllSlotsEvent(UInt32 eventId)
     {
     case ActionPerformedEventId:
         _ActionPerformedEvent.disconnect_all_slots();
+        break;
+    case SelectionChangedEventId:
+        _SelectionChangedEvent.disconnect_all_slots();
         break;
     default:
         Inherited::disconnectAllSlotsEvent(eventId);
@@ -843,6 +873,9 @@ bool  ComboBoxBase::isEmptyEvent(UInt32 eventId) const
     case ActionPerformedEventId:
         return _ActionPerformedEvent.empty();
         break;
+    case SelectionChangedEventId:
+        return _SelectionChangedEvent.empty();
+        break;
     default:
         return Inherited::isEmptyEvent(eventId);
         break;
@@ -855,6 +888,9 @@ UInt32  ComboBoxBase::numSlotsEvent(UInt32 eventId) const
     {
     case ActionPerformedEventId:
         return _ActionPerformedEvent.num_slots();
+        break;
+    case SelectionChangedEventId:
+        return _SelectionChangedEvent.num_slots();
         break;
     default:
         return Inherited::numSlotsEvent(eventId);
@@ -1145,6 +1181,17 @@ GetEventHandlePtr ComboBoxBase::getHandleActionPerformedSignal(void) const
         new  GetTypedEventHandle<ActionPerformedEventType>(
              const_cast<ActionPerformedEventType *>(&_ActionPerformedEvent),
              _producerType.getEventDescription(ActionPerformedEventId),
+             const_cast<ComboBoxBase *>(this)));
+
+    return returnValue;
+}
+
+GetEventHandlePtr ComboBoxBase::getHandleSelectionChangedSignal(void) const
+{
+    GetEventHandlePtr returnValue(
+        new  GetTypedEventHandle<SelectionChangedEventType>(
+             const_cast<SelectionChangedEventType *>(&_SelectionChangedEvent),
+             _producerType.getEventDescription(SelectionChangedEventId),
              const_cast<ComboBoxBase *>(this)));
 
     return returnValue;

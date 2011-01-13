@@ -88,4 +88,62 @@ void ComboBox::hidePopup(void)
 	getComboListPopupMenu()->clearSelection();
 }
 
+
+inline 
+boost::signals2::connection ComboBox::connectSelectionChanged(const SelectionChangedEventType::slot_type &listener,
+                                                   boost::signals2::connect_position at)
+{
+	return	getModel()->connectSelectionChanged(listener,at);
+
+}
+
+inline 
+boost::signals2::connection ComboBox::connectSelectionChanged(const SelectionChangedEventType::group_type &group,
+                                                   const SelectionChangedEventType::slot_type &listener,
+                                                   boost::signals2::connect_position at)
+{
+	return	getModel()->connectSelectionChanged(group,listener,at);
+}
+
+inline
+void   ComboBox::disconnectSelectionChanged       (const SelectionChangedEventType::group_type &group)
+{
+	getModel()->disconnectSelectionChanged(group);
+}
+
+inline
+void   ComboBox::disconnectAllSlotsSelectionChanged(void)
+{
+	getModel()->disconnectAllSlotsSelectionChanged();
+}
+
+inline
+bool   ComboBox::isEmptySelectionChanged(void) const
+{
+	return getModel()->isEmptySelectionChanged();
+}
+
+inline
+UInt32 ComboBox::numSlotsSelectionChanged(void) const
+{
+	return getModel()->numSlotsSelectionChanged();
+}
+
+inline
+boost::signals2::connection ComboBox::connectActionPerformed(const Button::ActionPerformedEventType::slot_type &listener,
+                                                   boost::signals2::connect_position at)
+{
+	return getEditor()->connectActionPerformed(listener,at);
+}
+
+inline
+boost::signals2::connection ComboBox::connectActionPerformed(const Button::ActionPerformedEventType::group_type &group,
+                                                   const Button::ActionPerformedEventType::slot_type &listener,
+                                                   boost::signals2::connect_position at)
+{
+	return getEditor()->connectActionPerformed(group,listener,at);
+}
+
+
+
 OSG_END_NAMESPACE

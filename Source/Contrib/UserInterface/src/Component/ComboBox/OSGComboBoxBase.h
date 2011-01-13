@@ -76,6 +76,7 @@
 #include "OSGComboBoxFields.h"
 
 #include "OSGActionEventDetailsFields.h"
+#include "OSGComboBoxSelectionEventDetailsFields.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -97,8 +98,10 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComboBoxBase : public ComponentContain
     
     
     typedef ActionEventDetails ActionPerformedEventDetailsType;
+    typedef ComboBoxSelectionEventDetails SelectionChangedEventDetailsType;
 
     typedef boost::signals2::signal<void (ActionEventDetails* const, UInt32), ConsumableEventCombiner> ActionPerformedEventType;
+    typedef boost::signals2::signal<void (ComboBoxSelectionEventDetails* const, UInt32), ConsumableEventCombiner> SelectionChangedEventType;
 
     /*==========================  PUBLIC  =================================*/
 
@@ -148,7 +151,8 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComboBoxBase : public ComponentContain
     enum
     {
         ActionPerformedEventId = Inherited::NextProducedEventId,
-        NextProducedEventId = ActionPerformedEventId + 1
+        SelectionChangedEventId = ActionPerformedEventId + 1,
+        NextProducedEventId = SelectionChangedEventId + 1
     };
 
     /*---------------------------------------------------------------------*/
@@ -277,6 +281,17 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComboBoxBase : public ComponentContain
     bool   isEmptyActionPerformed           (void) const;
     UInt32 numSlotsActionPerformed          (void) const;
     
+    //SelectionChanged
+    boost::signals2::connection connectSelectionChanged(const SelectionChangedEventType::slot_type &listener,
+                                                       boost::signals2::connect_position at= boost::signals2::at_back);
+    boost::signals2::connection connectSelectionChanged(const SelectionChangedEventType::group_type &group,
+                                                       const SelectionChangedEventType::slot_type &listener,
+                                                       boost::signals2::connect_position at= boost::signals2::at_back);
+    void   disconnectSelectionChanged       (const SelectionChangedEventType::group_type &group);
+    void   disconnectAllSlotsSelectionChanged(void);
+    bool   isEmptySelectionChanged          (void) const;
+    UInt32 numSlotsSelectionChanged         (void) const;
+    
     
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -315,6 +330,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComboBoxBase : public ComponentContain
 
     //Event Event producers
     ActionPerformedEventType _ActionPerformedEvent;
+    SelectionChangedEventType _SelectionChangedEvent;
     /*! \}                                                                 */
 
     static TypeObject _type;
@@ -385,6 +401,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComboBoxBase : public ComponentContain
     /*! \{                                                                 */
 
     GetEventHandlePtr getHandleActionPerformedSignal(void) const;
+    GetEventHandlePtr getHandleSelectionChangedSignal(void) const;
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                    Field Get                                 */
@@ -421,6 +438,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComboBoxBase : public ComponentContain
     virtual void produceEvent       (UInt32 eventId, EventDetails* const e);
     
     void produceActionPerformed     (ActionPerformedEventDetailsType* const e);
+    void produceSelectionChanged    (SelectionChangedEventDetailsType* const e);
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                       Sync                                   */

@@ -88,6 +88,7 @@ void ComboBox::initMethod(InitPhase ePhase)
  *                           Instance methods                              *
 \***************************************************************************/
 
+
 void ComboBox::setEmptyDescText(const std::string& text)
 {
     if(getEditor() != NULL &&
@@ -350,13 +351,6 @@ void ComboBox::configurePropertiesFromAction(Action a)
     //TODO:Implement
 }
 
-void ComboBox::produceActionPerformed(void)
-{
-    ActionEventDetailsUnrecPtr Details = ActionEventDetails::create(this, getTimeStamp());
-
-    Inherited::produceActionPerformed(Details);
-}
-
 void ComboBox::keyTyped(KeyEventDetails* const e)
 {
     if(e->getKey() == KeyEventDetails::KEY_UP)
@@ -388,7 +382,7 @@ void ComboBox::mouseClicked(MouseEventDetails* const e)
     if(getEnabled() && !getEditable() && !getExpandButton()->isContained(e->getLocation(), true))
     {
         getExpandButton()->setSelected(true);
-    }
+	}
     else
     {
         Inherited::mouseClicked(e);

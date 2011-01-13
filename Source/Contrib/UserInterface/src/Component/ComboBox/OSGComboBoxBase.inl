@@ -49,6 +49,7 @@
 \*****************************************************************************/
 
 #include "OSGActionEventDetails.h"
+#include "OSGComboBoxSelectionEventDetails.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -320,6 +321,50 @@ inline
 void ComboBoxBase::produceActionPerformed(ActionPerformedEventDetailsType* const e)
 {
     produceEvent(ActionPerformedEventId, e);
+}
+
+inline
+boost::signals2::connection  ComboBoxBase::connectSelectionChanged(const SelectionChangedEventType::slot_type &listener, 
+                                                                               boost::signals2::connect_position at)
+{
+    return _SelectionChangedEvent.connect(listener, at);
+}
+
+inline
+boost::signals2::connection  ComboBoxBase::connectSelectionChanged(const SelectionChangedEventType::group_type &group,
+                                                    const SelectionChangedEventType::slot_type &listener, boost::signals2::connect_position at)
+{
+    return _SelectionChangedEvent.connect(group, listener, at);
+}
+
+inline
+void  ComboBoxBase::disconnectSelectionChanged(const SelectionChangedEventType::group_type &group)
+{
+    _SelectionChangedEvent.disconnect(group);
+}
+
+inline
+void  ComboBoxBase::disconnectAllSlotsSelectionChanged(void)
+{
+    _SelectionChangedEvent.disconnect_all_slots();
+}
+
+inline
+bool  ComboBoxBase::isEmptySelectionChanged(void) const
+{
+    return _SelectionChangedEvent.empty();
+}
+
+inline
+UInt32  ComboBoxBase::numSlotsSelectionChanged(void) const
+{
+    return _SelectionChangedEvent.num_slots();
+}
+
+inline
+void ComboBoxBase::produceSelectionChanged(SelectionChangedEventDetailsType* const e)
+{
+    produceEvent(SelectionChangedEventId, e);
 }
 
 OSG_GEN_CONTAINERPTR(ComboBox);

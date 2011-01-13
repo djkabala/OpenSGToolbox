@@ -163,6 +163,24 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComboBox : public ComboBoxBase
 	virtual void keyTyped(KeyEventDetails* const e);
     virtual void mouseClicked(MouseEventDetails* const e);
 
+    boost::signals2::connection connectSelectionChanged(const SelectionChangedEventType::slot_type &listener,
+                                                       boost::signals2::connect_position at= boost::signals2::at_back);
+    boost::signals2::connection connectSelectionChanged(const SelectionChangedEventType::group_type &group,
+                                                       const SelectionChangedEventType::slot_type &listener,
+                                                       boost::signals2::connect_position at= boost::signals2::at_back);
+
+    void   disconnectSelectionChanged       (const SelectionChangedEventType::group_type &group);
+    void   disconnectAllSlotsSelectionChanged(void);
+    bool   isEmptySelectionChanged          (void) const;
+    UInt32 numSlotsSelectionChanged         (void) const;
+
+    boost::signals2::connection connectActionPerformed(const Button::ActionPerformedEventType::slot_type &listener,
+                                                       boost::signals2::connect_position at= boost::signals2::at_back);
+
+    boost::signals2::connection connectActionPerformed(const Button::ActionPerformedEventType::group_type &group,
+                                                       const Button::ActionPerformedEventType::slot_type &listener,
+                                                       boost::signals2::connect_position at= boost::signals2::at_back);
+
     /*=========================  PROTECTED  ===============================*/
 
   protected:
@@ -201,12 +219,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComboBox : public ComboBoxBase
 
 	//Factory method which sets the ActionEvent source's properties according to values from the Action instance.
 	void configurePropertiesFromAction(Action a);
-
-	//Notifies all listeners that have registered interest for notification on this event type.
-    void produceActionPerformed(void);
-
-	//Notifies all listeners that have registered interest for notification on this event type.
-	//void produceItemStateChanged(ItemEvent e);
 
 	//This method is public as an implementation side effect.
 	void handleMenuItemActionPerformed(ActionEventDetails* const e);

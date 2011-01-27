@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletCapsuleShape"
+    parent="BulletCollisionShape"
+    library="ContribBullet"
+    structure="concrete"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btCapsuleShape.
+    <Field
+        name="Radius"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+    </Field>
+    <Field
+        name="Height"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+    </Field>
+</FieldContainer>

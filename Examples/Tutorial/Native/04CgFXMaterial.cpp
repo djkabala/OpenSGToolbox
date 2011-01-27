@@ -133,6 +133,7 @@ int main(int argc, char **argv)
         // Make Torus Node (creates Torus in background of scene)
         GeometryRefPtr TorusGeometry = makeTorusGeo(.5, 2, 16, 16);
         //GeometryRefPtr TorusGeometry = makeBoxGeo(1.0,1.0,1.0,1,1,1);
+        //GeometryRefPtr TorusGeometry = makeSphereGeo(1.0,2);
         TorusGeometry->setMaterial(ExampleMaterial);
         TorusGeometry->setDlistCache(false);
 

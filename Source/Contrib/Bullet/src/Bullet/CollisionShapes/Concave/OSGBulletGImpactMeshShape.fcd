@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletGImpactMeshShape"
+    parent="BulletCollisionShape"
+    library="ContribBullet"
+    structure="concrete"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btGImpactMeshShape.
+    <Field
+        name="GeometryNode"
+        type="Node"
+        category="pointer"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        defaultValue="NULL"
+    >
+    this node should contain a geometrynode core with geo data.
+    </Field>
+</FieldContainer>

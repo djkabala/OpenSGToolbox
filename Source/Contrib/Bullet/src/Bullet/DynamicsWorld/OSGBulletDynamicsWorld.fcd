@@ -1,0 +1,83 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletDynamicsWorld"
+    parent="BulletCollisionWorld"
+    library="ContribBullet"
+    structure="abstract"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    childFields="single"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btDynamicsWorld.
+    <Field
+       name="ParentHandler"
+       type="FieldContainer"
+       cardinality="single"
+       access="none"
+       category="parentpointer"
+       >
+    </Field>
+    <Field
+        name="Gravity"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btDynamicsWorld.
+    </Field>
+    <Field
+        name="RigidBodies"
+        type="BulletRigidBody"
+        cardinality="multi"
+        category="childpointer"
+        childParentType="FieldContainer"
+        visibility="external"
+        access="public"
+        ptrFieldAccess = "nullCheck"
+        linkParentField="ParentWorld"
+        >
+    </Field>
+    <Field
+        name="Constraints"
+        type="BulletTypedConstraint"
+        cardinality="multi"
+        category="childpointer"
+        childParentType="FieldContainer"
+        visibility="external"
+        access="public"
+        ptrFieldAccess = "nullCheck"
+        linkParentField="ParentWorld"
+        >
+    </Field>
+    <!--<Field-->
+        <!--name="Constraints"-->
+        <!--type=""-->
+        <!--category="pointer"-->
+        <!--cardinality="single"-->
+        <!--visibility="external"-->
+        <!--access="public"-->
+        <!--bridge="true"-->
+        <!-->-->
+        <!--Passthrough value to btDynamicsWorld.-->
+    <!--</Field>-->
+    <!--<Field-->
+        <!--name="Actions"-->
+        <!--type=""-->
+        <!--category="pointer"-->
+        <!--cardinality="single"-->
+        <!--visibility="external"-->
+        <!--access="public"-->
+        <!--bridge="true"-->
+        <!-->-->
+        <!--Passthrough value to btDynamicsWorld.-->
+    <!--</Field>-->
+</FieldContainer>

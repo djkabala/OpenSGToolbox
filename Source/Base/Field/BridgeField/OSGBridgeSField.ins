@@ -1,0 +1,141 @@
+/*---------------------------------------------------------------------------*\
+ *                                OpenSG                                     *
+ *                                                                           *
+ *                                                                           *
+ *           Copyright (C) 2003 by the OpenSG Forum                          *
+ *                                                                           *
+ *                            www.opensg.org                                 *
+ *                                                                           *
+ *   contact:  David Kabala (djkabala@gmail.com)                             *
+ *                                                                           *
+\*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*\
+ *                                License                                    *
+ *                                                                           *
+ * This library is free software; you can redistribute it and/or modify it   *
+ * under the terms of the GNU Library General Public License as published    *
+ * by the Free Software Foundation, version 2.                               *
+ *                                                                           *
+ * This library is distributed in the hope that it will be useful, but       *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of                *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU         *
+ * Library General Public License for more details.                          *
+ *                                                                           *
+ * You should have received a copy of the GNU Library General Public         *
+ * License along with this library; if not, write to the Free Software       *
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                 *
+ *                                                                           *
+\*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*\
+ *                                Changes                                    *
+ *                                                                           *
+ *                                                                           *
+ *                                                                           *
+ *                                                                           *
+ *                                                                           *
+ *                                                                           *
+\*---------------------------------------------------------------------------*/
+
+OSG_BEGIN_NAMESPACE
+
+template <class ValueT, Int32 iNamespace> inline
+FieldDescriptionBase *BridgeSField<ValueT, iNamespace>::createFieldDescription(
+    const Char8           *szFieldname,
+          UInt32           uiFieldFlags,
+          FieldEditMethod  fEditMethod,
+          FieldGetMethod   fGetMethod)
+{
+    if(szFieldname == NULL)
+    {
+        FWARNING(("createFieldDescription no fieldname given"));
+
+        return NULL;
+    }
+
+    if(uiFieldFlags == FieldDescFactoryBase::AutoFlags)
+    {
+        uiFieldFlags = SFDefaultFlags;
+    }
+
+    FieldDescriptionBase *returnValue = new typename Self::Description(
+        _fieldType, 
+        szFieldname,
+        "",
+        0,
+        0,
+        false,
+        uiFieldFlags,
+        fEditMethod,
+        fGetMethod);
+
+    return returnValue;
+}
+
+template <class ValueT, Int32 iNamespace> inline
+FieldDescriptionBase *BridgeSField<ValueT, iNamespace>::createIdxFieldDescription(
+    const Char8                *szFieldname,
+          UInt32                uiFieldFlags,
+          FieldIndexEditMethod  fEditMethod,
+          FieldIndexGetMethod   fGetMethod)
+{
+    if(szFieldname == NULL)
+    {
+        FWARNING(("createFieldDescriptionIdx no fieldname given"));
+
+        return NULL;
+    }
+
+    if(uiFieldFlags == FieldDescFactoryBase::AutoFlags)
+    {
+        uiFieldFlags = SFDefaultFlags;
+    }
+
+    FieldDescriptionBase *returnValue = new typename Self::Description(
+        _fieldType, 
+        szFieldname,
+        "",
+        0,
+        0,
+        false,
+        uiFieldFlags,
+        fEditMethod,
+        fGetMethod);
+
+    return returnValue;
+}
+
+#if defined(OSG_STATIC_MEMEBER_NEEDS_COPY_ASIGN_INIT)
+
+template <class ValueT, Int32 iNamespace>
+FieldType BridgeSField<ValueT, iNamespace>::_fieldType = FieldType(
+     std::string("Bridge") + SFieldTraits::getSName(),
+     SFieldTraits::getSPName(),
+     SFieldTraits::getType  (),
+     FieldType::SingleField,
+     Self::Class,
+    &Self::createFieldDescription,
+    &Self::createIdxFieldDescription);
+
+#else
+
+template <class ValueT, Int32 iNamespace>
+FieldType BridgeSField<ValueT, iNamespace>::_fieldType(
+     std::string("Bridge") + SFieldTraits::getSName(),
+     std::string("Bridge") + SFieldTraits::getSPName(),
+     SFieldTraits::getType  (),
+     FieldType::SingleField,
+     Self::Class,
+    &Self::createFieldDescription,
+    &Self::createIdxFieldDescription);
+
+#endif
+
+#if defined(OSG_TMPL_STATIC_MEMBER_NEEDS_HELPER_FCT)
+template <class ValueT, Int32 iNamespace>
+const FieldType &BridgeSField<ValueT, iNamespace>::fieldTypeExportHelper(void)
+{
+    return _fieldType;
+}
+#endif
+
+OSG_END_NAMESPACE

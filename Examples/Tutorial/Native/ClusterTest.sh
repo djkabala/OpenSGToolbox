@@ -1,20 +1,20 @@
 #!/bin/sh
 
-HORZ_SERVER_COUNT=2
-VERT_SERVER_COUNT=2
+HORZ_SERVER_COUNT=3
+VERT_SERVER_COUNT=3
 
-SERVER_WIN_WIDTH=600
-SERVER_WIN_HEIGHT=400
+SERVER_WIN_WIDTH=300
+SERVER_WIN_HEIGHT=300
 
-SERVER_WIN_TOP=560
-SERVER_WIN_LEFT=200
+SERVER_WIN_TOP=660
+SERVER_WIN_LEFT=700
 
 SERVER_EXE_DIR=.
 CLIENT_EXE_DIR=.
 
 #SCENE_FILE=../UserInterface/Data/53LoadGUI.xml
 #SCENE_FILE="/Users/davidkabala/Downloads/ColladaTests/Duck/duck.dae"
-#SCENE_FILE=../Animation/Data/Collada/Nanobot.dae
+#SCENE_FILE=/Users/davidkabala/Documents/Work/OpenSG/Toolbox/OpenSGToolbox/Examples/Tutorial/Animation/Data/Nanobot.dae
 #SCENE_FILE=/Users/davidkabala/Documents/Work/VirtualCellData/Engine/Models/CellModel.osb
 #SCENE_FILE=../ParticleSystem/Data/ParticleSystemExport.xml
 #SCENE_FILE=../FieldContainerEditor/FgExport.xml

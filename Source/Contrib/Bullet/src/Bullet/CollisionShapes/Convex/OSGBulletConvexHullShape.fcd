@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletConvexHullShape"
+    parent="BulletCollisionShape"
+    library="ContribBullet"
+    structure="concrete"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btConvexHullShape.
+    <Field
+        name="Points"
+        type="Pnt3f"
+        category="data"
+        cardinality="multi"
+        visibility="external"
+        access="public"
+        >
+    </Field>
+</FieldContainer>

@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletGpu3DGridBroadphase"
+    parent="BulletBroadphaseInterface"
+    library="ContribBullet"
+    structure="concrete"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btGpu3DGridBroadphase.
+</FieldContainer>

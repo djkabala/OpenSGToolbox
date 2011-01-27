@@ -105,7 +105,8 @@ void WindowEventProducer::internalReshape(Vec2f size)
     }
     else
     {
-        resize(size.x(), size.y());
+        resize(static_cast<int>(size.x()),
+               static_cast<int>(size.y()));
     }
 }
 

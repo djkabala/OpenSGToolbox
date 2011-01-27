@@ -429,9 +429,9 @@ Animation::connectToEvent(EventDescription const * eventDesc,
                           ReflexiveContainer* const eventProducer) const
 {
     //Validate the EventDescription and producer
-    EventDescription const * LocalDesc(eventProducer->getEventDescription(eventDesc->getName().c_str()));
     if(validateConnectable(eventDesc,eventProducer))
     {
+        EventDescription const * LocalDesc(eventProducer->getEventDescription(eventDesc->getName().c_str()));
         return eventProducer->connectEvent(LocalDesc->getEventId(),
                                            boost::bind(&Animation::handleUpdate,
                                                        const_cast<Animation*>(this),

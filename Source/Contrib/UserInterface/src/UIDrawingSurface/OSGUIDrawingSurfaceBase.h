@@ -110,7 +110,8 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurfaceBase : public Attachme
         ActiveFieldId = SizeFieldId + 1,
         CursorsFieldId = ActiveFieldId + 1,
         CursorPositionFieldId = CursorsFieldId + 1,
-        NextFieldId = CursorPositionFieldId + 1
+        CursorAlignmentFieldId = CursorPositionFieldId + 1,
+        NextFieldId = CursorAlignmentFieldId + 1
     };
 
     static const OSG::BitVector InternalWindowsFieldMask =
@@ -131,6 +132,8 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurfaceBase : public Attachme
         (TypeTraits<BitVector>::One << CursorsFieldId);
     static const OSG::BitVector CursorPositionFieldMask =
         (TypeTraits<BitVector>::One << CursorPositionFieldId);
+    static const OSG::BitVector CursorAlignmentFieldMask =
+        (TypeTraits<BitVector>::One << CursorAlignmentFieldId);
     static const OSG::BitVector NextFieldMask =
         (TypeTraits<BitVector>::One << NextFieldId);
         
@@ -143,6 +146,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurfaceBase : public Attachme
     typedef SFBool            SFActiveType;
     typedef SFFieldContainerMap SFCursorsType;
     typedef SFPnt2f           SFCursorPositionType;
+    typedef SFUInt32          SFCursorAlignmentType;
 
     /*---------------------------------------------------------------------*/
     /*! \name                    Class Get                                 */
@@ -186,6 +190,9 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurfaceBase : public Attachme
                   SFFieldContainerMap *editSFCursors        (void);
             const SFFieldContainerMap *getSFCursors         (void) const;
 
+                  SFUInt32            *editSFCursorAlignment(void);
+            const SFUInt32            *getSFCursorAlignment (void) const;
+
 
                   InternalWindow * getInternalWindows(const UInt32 index) const;
 
@@ -206,6 +213,9 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurfaceBase : public Attachme
                   FieldContainerMap   &editCursors        (void);
             const FieldContainerMap   &getCursors         (void) const;
 
+                  UInt32              &editCursorAlignment(void);
+                  UInt32               getCursorAlignment (void) const;
+
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                    Field Set                                 */
@@ -218,6 +228,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurfaceBase : public Attachme
             void setSize           (const Vec2f &value);
             void setActive         (const bool value);
             void setCursors        (const FieldContainerMap &value);
+            void setCursorAlignment(const UInt32 value);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -303,6 +314,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurfaceBase : public Attachme
     SFBool            _sfActive;
     SFFieldContainerMap _sfCursors;
     SFPnt2f           _sfCursorPosition;
+    SFUInt32          _sfCursorAlignment;
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -357,6 +369,8 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurfaceBase : public Attachme
     EditFieldHandlePtr editHandleCursors        (void);
     GetFieldHandlePtr  getHandleCursorPosition  (void) const;
     EditFieldHandlePtr editHandleCursorPosition (void);
+    GetFieldHandlePtr  getHandleCursorAlignment (void) const;
+    EditFieldHandlePtr editHandleCursorAlignment(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/

@@ -62,6 +62,13 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurface : public UIDrawingSur
     /*==========================  PUBLIC  =================================*/
 
   public:
+    enum CursorAlignment
+    {
+        CURSOR_ALIGN_SURFACE   = 0,
+        CURSOR_ALIGN_VIEW_DIR  = 1,
+        CURSOR_ALIGN_VIEWPOINT = 2,
+        CURSOR_ALIGN_SCREEN    = 3
+    };
 
     typedef UIDrawingSurfaceBase Inherited;
     typedef UIDrawingSurface     Self;
@@ -156,6 +163,11 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING UIDrawingSurface : public UIDrawingSur
                             const BoostPath& Path,
                             Vec2f Size = Vec2f(-1.0f,-1.0f),
                             Vec2f Offset = Vec2f(0.0f,0.0f));
+
+    static void calcMatrix(const Matrix &camToWorld,
+                           const Matrix &mToWorld,
+                           Matrix &mResult,
+                           UInt32 Alignment);
     /*! \}                                                                 */
     /*=========================  PROTECTED  ===============================*/
 

@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+    name="BulletDebugForeground"
+    parent="Foreground"
+    library="ContribBullet"
+    pointerfieldtypes="both"
+    structure="concrete"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    docGroupBase="GrpBullet"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    A Foreground wrapper around the Bullet btIDebugDraw interface. 
+    <Field
+        name="World"
+        type="BulletCollisionWorld"
+        category="pointer"
+        cardinality="single"
+        visibility="external"
+        defaultValue="NULL"
+        access="public"
+        >
+    </Field>
+    <Field
+        name="Mode"
+        type="Int32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="0"
+        access="public"
+        >
+    </Field>
+    <Field
+        name="DrawOccluded"
+        type="bool"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="true"
+        access="public"
+        >
+    </Field>
+    <Field
+        name="OccludedAlpha"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="0.5"
+        access="public"
+        >
+    </Field>
+    <Field
+        name="LineWidth"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="1.0"
+        access="public"
+        >
+    </Field>
+</FieldContainer>

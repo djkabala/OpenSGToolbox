@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletCylinderShape"
+    parent="BulletCollisionShape"
+    library="ContribBullet"
+    structure="concrete"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btCylinderShape.
+    <Field
+        name="HalfExtents"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+    </Field>
+</FieldContainer>

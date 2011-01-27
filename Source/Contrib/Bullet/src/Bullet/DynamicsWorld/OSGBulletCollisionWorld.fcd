@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletCollisionWorld"
+    parent="AttachmentContainer"
+    library="ContribBullet"
+    structure="abstract"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    childFields="single"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btCollisionWorld.
+
+    <Field
+        name="InternalBroadphase"
+        type="BulletBroadphaseInterface"
+        cardinality="single"
+        category="childpointer"
+        childParentType="FieldContainer"
+        visibility="external"
+        access="protected"
+        ptrFieldAccess = "nullCheck"
+        linkParentField="ParentWorld"
+        defaultValue="NULL"
+        >
+    </Field>
+    <Field
+        name="ForceUpdateAllAabbs"
+        type="bool"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionWorld.
+    </Field>
+
+</FieldContainer>

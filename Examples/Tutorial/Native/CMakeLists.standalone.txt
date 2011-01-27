@@ -30,11 +30,11 @@ SET(OSG_COMPONENTS OSGBase
                    OSGDynamics
                    OSGTBAnimation
                    OSGContribCgFX
-                   OSGWindowGLUT
                    OSGContribParticleSystem
                    OSGContribUserInterface
                    OSGEffectGroups
                    )
+                   #OSGWindowGLUT
                    #OSGContribPhysics
                    #OSGContribVideo
 

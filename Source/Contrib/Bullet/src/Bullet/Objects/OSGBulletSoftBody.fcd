@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+    name="BulletSoftBody"
+    parent="Geometry"
+    library="ContribBullet"
+    pointerfieldtypes="both"
+    structure="concrete"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="true"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btSoftBody.  This core treats the geometric properties it contains as
+    being in world space.  This is done by first applying an inverse transformation.  This means that the 
+    transformations of parent nodes will not influence a BulletSoftBody.
+    <Field
+        name="UpdateNormals"
+        type="bool"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="true"
+        >
+    </Field>
+</FieldContainer>

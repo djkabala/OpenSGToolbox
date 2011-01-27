@@ -3,10 +3,25 @@ GET_FILENAME_COMPONENT(_CMAKE_CURRENT_LIST_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 
 MESSAGE(STATUS "Extending OSGBase in ${_CMAKE_CURRENT_LIST_DIR}")
 
+LIST(APPEND OSG_ADDITIONAL_CONFIGURE_LINES "#cmakedefine OSG_BRIDGE_FIELD 1")
+
+OSG_OPTION(OSG_ENABLE_BRIDGE_FIELD "Enable support for bridge fields" OFF)
+
+IF(OSG_ENABLE_BRIDGE_FIELD)
+    SET(OSG_BRIDGE_FIELD 1)
+ENDIF(OSG_ENABLE_BRIDGE_FIELD)
+
+SET(OSGBase_DEP_DEFS OSG_BRIDGE_FIELD)
+
 LIST(APPEND OSGBase_EXT_DIRS ${_CMAKE_CURRENT_LIST_DIR}/Activity
                              ${_CMAKE_CURRENT_LIST_DIR}/Field
+                             ${_CMAKE_CURRENT_LIST_DIR}/Field/BridgeField
                              ${_CMAKE_CURRENT_LIST_DIR}/FieldContainer
                              ${_CMAKE_CURRENT_LIST_DIR}/FieldContainer/Fields
                              ${_CMAKE_CURRENT_LIST_DIR}/Event
                              ${_CMAKE_CURRENT_LIST_DIR}/Event/Producers
                              ${_CMAKE_CURRENT_LIST_DIR}/Base)
+
+IF(OSG_BRIDGE_FIELD)
+    LIST(APPEND OSGBase_EXT_DIRS ${_CMAKE_CURRENT_LIST_DIR}/Field/BridgeField)
+ENDIF()

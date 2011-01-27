@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+    name="BulletHandler"
+    parent="AttachmentContainer"
+    library="ContribBullet"
+    pointerfieldtypes="both"
+    structure="concrete"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    <Field
+        name="StepSize"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="0.0167f"
+        access="public"
+        >
+    </Field>
+    <Field
+        name="MaxStepsPerUpdate"
+        type="UInt32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="10"
+        access="public"
+        >
+    </Field>
+    <Field
+        name="DynamicsWorld"
+        type="BulletDynamicsWorld"
+        cardinality="single"
+        category="childpointer"
+        childParentType="FieldContainer"
+        visibility="external"
+        access="public"
+        ptrFieldAccess = "nullCheck"
+        linkParentField="ParentHandler"
+        defaultValue="NULL"
+        >
+    </Field>
+    <ProducedEvent
+        name="SimulationUpdated"
+        detailsType="BulletSimulationEventDetails"
+        consumable="true"
+        >
+    </ProducedEvent>
+</FieldContainer>

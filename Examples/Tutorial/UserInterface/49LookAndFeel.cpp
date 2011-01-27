@@ -94,6 +94,8 @@
 #include "OSGUIDrawUtils.h"
 #include "OSGDefaultColorSelectionModel.h"
 
+#include "OSGContainerUtils.h"
+#include "OSGContainerGatherUtils.h"
 // Activate the OpenSG namespace
 OSG_USING_NAMESPACE
 
@@ -298,6 +300,27 @@ void keyPressed(KeyEventDetails* const e,
         TutorialUIForeground->setDrawingSurface(TutorialDrawingSurface);
 
         //Switch all fonts to disable anti-aliasing
+        FCFileType::FCPtrStore SearchRoots;
+        SearchRoots.insert(TutorialDrawingSurface);
+
+        FCFileType::FCPtrStore Exclude;
+
+        FCFileType::FCPtrStore AllContainers = getAllDependantFCs(SearchRoots,
+                                                                  Exclude,
+                                                                  std::vector<const FieldContainerType*>(),
+                                                                  true);
+
+        for(FCFileType::FCPtrStore::iterator StoreItor(AllContainers.begin());
+            StoreItor != AllContainers.end();
+            ++StoreItor)
+        {
+            if((*StoreItor)->getType().isDerivedFrom(UIFont::getClassType()))
+            {
+                UIFontRecPtr TheFont(dynamic_pointer_cast<UIFont>(*StoreItor));
+                dynamic_pointer_cast<UIFont>(*StoreItor)->setAntiAliasing(false);
+                //TheFont->setGlyphPixelSize(TheFont->getSize());
+            }
+        }
     }
     if(e->getKey() == KeyEventDetails::KEY_F2)
     {
@@ -310,6 +333,27 @@ void keyPressed(KeyEventDetails* const e,
         ExampleUIRectangle->setDrawingSurface(TutorialDrawingSurface);
 
         //Switch all fonts to enable anti-aliasing
+        FCFileType::FCPtrStore SearchRoots;
+        SearchRoots.insert(TutorialDrawingSurface);
+
+        FCFileType::FCPtrStore Exclude;
+
+        FCFileType::FCPtrStore AllContainers = getAllDependantFCs(SearchRoots,
+                                                                  Exclude,
+                                                                  std::vector<const FieldContainerType*>(),
+                                                                  true);
+
+        for(FCFileType::FCPtrStore::iterator StoreItor(AllContainers.begin());
+            StoreItor != AllContainers.end();
+            ++StoreItor)
+        {
+            if((*StoreItor)->getType().isDerivedFrom(UIFont::getClassType()))
+            {
+                UIFontRecPtr TheFont(dynamic_pointer_cast<UIFont>(*StoreItor));
+                TheFont->setAntiAliasing(true);
+                //TheFont->setGlyphPixelSize(48.0f);
+            }
+        }
     }
 }
 
@@ -956,10 +1000,14 @@ int main(int argc, char **argv)
         TutorialDrawingSurface->openWindow(MainInternalWindow);
 
         //Make A 3D Rectangle to draw the UI on
+        //Get the aspect ratio of the desktop
+        Real32 UIRectWidth(TutorialWindow->getDesktopSize().x());
+        Real32 UIRectHeight(TutorialWindow->getDesktopSize().y());
+
         UIRectangleRecPtr ExampleUIRectangle = UIRectangle::create();
-        ExampleUIRectangle->setPoint(Pnt3f(-640,-512,750));
-        ExampleUIRectangle->setWidth(1280);
-        ExampleUIRectangle->setHeight(1024);
+        ExampleUIRectangle->setPoint(Pnt3f(-UIRectWidth/2.0f,-UIRectHeight/2.0f,750.0f));
+        ExampleUIRectangle->setWidth(UIRectWidth);
+        ExampleUIRectangle->setHeight(UIRectHeight);
 
         NodeRecPtr ExampleUIRectangleNode = Node::create();
         ExampleUIRectangleNode->setCore(ExampleUIRectangle);

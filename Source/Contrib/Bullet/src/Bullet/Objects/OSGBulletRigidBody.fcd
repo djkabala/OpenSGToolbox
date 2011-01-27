@@ -1,0 +1,394 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletRigidBody"
+    parent="Group"
+    library="ContribBullet"
+    structure="concrete"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    childFields="multi"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btRigidBody.  This core uses the world transformation of the
+    btRigidBody as the transformation for the node this core is connected to.  This is done by first applying
+    an inverse transformation and then applying the to world transfromation of the btRigidBody.  This means that the 
+    transformations of parent nodes will not influence a BulletRigidBody.
+    <Field
+       name="ParentWorld"
+       type="FieldContainer"
+       cardinality="single"
+       access="none"
+       category="parentpointer"
+       >
+    </Field>
+    <Field
+        name="ToWorld"
+        type="Matrix"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="protected"
+        >
+    </Field>
+    <Field
+        name="GroupMask"
+        type="Int16"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        defaultValue="TypeTraits&lt;Int16&gt;::getMax()"
+        >
+    </Field>
+    <Field
+        name="CollisionMask"
+        type="Int16"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        defaultValue="TypeTraits&lt;Int16&gt;::getMax()"
+        >
+    </Field>
+
+    <!--                   btCollisionObject                    -->
+
+    <Field
+        name="CollisionShape"
+        type="BulletCollisionShape"
+        cardinality="single"
+        category="childpointer"
+        childParentType="FieldContainer"
+        visibility="external"
+        access="public"
+        ptrFieldAccess = "nullCheck"
+        linkParentField="ParentObject"
+        >
+    </Field>
+    <Field
+        name="AnisotropicFriction"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="ContactProcessingThreashold"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="Activation"
+        type="Int32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject
+    </Field>
+    <Field
+        name="DeactivationTime"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="Restitution"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="Friction"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="WorldTransform"
+        type="Matrix"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <!--<Field-->
+        <!--name="BroadphaseHandle"-->
+        <!--type=""-->
+        <!--category="data"-->
+        <!--cardinality="single"-->
+        <!--visibility="external"-->
+        <!--access="public"-->
+        <!--bridge="true"-->
+        <!-->-->
+        <!--Passthrough value to btCollisionObject.-->
+    <!--</Field>-->
+    <Field
+        name="InterpolationWorldTransform"
+        type="Matrix"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="InterpolationLinearVelocity"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="InterpolationAngularVelocity"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="IslandTag"
+        type="Int32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="CompanionId"
+        type="Int32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="HitFraction"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="CollisionFlags"
+        type="Int32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="CcdSweptSphereRadius"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <Field
+        name="CcdMotionThreashold"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btCollisionObject.
+    </Field>
+    <!--                   btRigidBody                    -->
+
+    <Field
+        name="Gravity"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <Field
+        name="Damping"
+        type="Vec2f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <Field
+        name="Mass"
+        type="Real32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <Field
+        name="Inertia"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <Field
+        name="LinearFactor"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <Field
+        name="CenterOfMassTransform"
+        type="Matrix"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <Field
+        name="LinearVelocity"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <Field
+        name="AngularVelocity"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <Field
+        name="AngularFactor"
+        type="Vec3f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <Field
+        name="Flags"
+        type="Int32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+    <!--<Field-->
+        <!--name="Constraints"-->
+        <!--type=""-->
+        <!--category="data"-->
+        <!--cardinality="single"-->
+        <!--visibility="external"-->
+        <!--access="public"-->
+        <!--bridge="true"-->
+        <!-->-->
+        <!--Passthrough value to btRigidBody.-->
+    <!--</Field>-->
+    <Field
+        name="SleepingThresholds"
+        type="Vec2f"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btRigidBody.
+    </Field>
+</FieldContainer>

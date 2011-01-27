@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletSoftRigidDynamicsWorld"
+    parent="BulletDiscreteDynamicsWorld"
+    library="ContribBullet"
+    structure="concrete"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btSoftRigidDynamicsWorld.
+    <Field
+        name="DrawFlags"
+        type="Int32"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btSoftRigidDynamicsWorld.
+    </Field>
+    <!--<Field-->
+        <!--name="SoftBody"-->
+        <!--type=""-->
+        <!--category="pointer"-->
+        <!--cardinality="single"-->
+        <!--visibility="external"-->
+        <!--access="public"-->
+        <!--bridge="true"-->
+        <!-->-->
+        <!--Passthrough value to btDiscreetDynamicsWorld.-->
+    <!--</Field>-->
+</FieldContainer>

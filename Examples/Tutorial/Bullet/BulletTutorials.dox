@@ -1,0 +1,8 @@
+#include "OSGConfig.h"
+
+using namespace OSG;
+
+/*! 
+   \example 01SimpleRigidBody.cpp  Example
+   \example 20SimpleSoftBody.cpp  Example
+ */

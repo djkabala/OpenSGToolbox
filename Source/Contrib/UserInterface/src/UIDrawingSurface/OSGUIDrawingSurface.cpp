@@ -52,6 +52,7 @@
 #include "OSGTextureObjChunk.h"
 #include "OSGUIDrawObjectCanvas.h"
 #include "OSGTexturedQuadUIDrawObject.h"
+#include "OSGQuaternion.h"
 
 #include "OSGInternalWindow.h"
 
@@ -110,12 +111,140 @@ void UIDrawingSurface::draw(void)
     {
         glPushMatrix();
             glTranslatef(getCursorPosition().x(), getCursorPosition().y(), 0.0f);
+            if(getCursorAlignment() != CURSOR_ALIGN_SURFACE)
+            {
+                Matrix LocalToWorld(getGraphics()->getDrawEnv()->getObjectToWorld());
+                Matrix CameraToWorld(getGraphics()->getDrawEnv()->getCameraToWorld());
+
+                Matrix Result;
+                calcMatrix(CameraToWorld,LocalToWorld,Result,getCursorAlignment());
+
+                glMultMatrixf(Result.getValues());
+            }
             dynamic_pointer_cast<UIDrawObjectCanvas>(FindItor->second)->draw(getGraphics());
         glPopMatrix();
     }
 
     //Call the PostDraw on the Graphics
     getGraphics()->postDraw();
+}
+
+void UIDrawingSurface::calcMatrix(const Matrix &camToWorld,
+                                  const Matrix &ToWorld,
+                                  Matrix &Result,
+                                  UInt32 Alignment)
+{
+    Pnt3f eyepos(0.f, 0.f, 0.f);
+    Pnt3f objpos(0.f, 0.f, 0.f);
+
+    Vec3f vDir;
+    Vec3f n(0.f, 0.f, 1.f);
+
+    Quaternion q1;
+
+    Result.invertFrom(ToWorld);
+
+    ToWorld.mult(n, n);
+
+    if(Alignment == CURSOR_ALIGN_VIEWPOINT)
+    {
+        Vec3f vUp;
+        Vec3f uW;
+        Vec3f vX;
+
+        camToWorld.mult(eyepos, eyepos);
+        ToWorld  .mult(objpos, objpos);
+
+        vDir = eyepos - objpos;
+
+        vUp.setValue (camToWorld[0]);
+
+        vUp = vDir.cross(vUp);
+
+        vUp.normalize();
+        vDir.normalize();
+
+        Matrix mTr;
+
+        vX = vUp.cross(vDir);
+        vX.normalize();
+
+        mTr[0][0] = vX[0];
+        mTr[0][1] = vX[1];
+        mTr[0][2] = vX[2];
+        mTr[1][0] = vUp[0];
+        mTr[1][1] = vUp[1];
+        mTr[1][2] = vUp[2];
+        mTr[2][0] = vDir[0];
+        mTr[2][1] = vDir[1];
+        mTr[2][2] = vDir[2];
+
+        q1.setValue(mTr);
+    }
+    else if(Alignment == CURSOR_ALIGN_SCREEN)
+    {
+        Vec3f u  (0.f, 1.f, 0.f);
+        Vec3f vUp;
+        Vec3f uW;
+
+        camToWorld.mult(eyepos, eyepos);
+        ToWorld  .mult(objpos, objpos);
+
+        vDir = eyepos - objpos;
+
+        //            vDir.setValue(camToWorld[2]);
+
+        vUp.setValue (camToWorld[1]);
+
+        Quaternion qN(n, vDir);
+
+        ToWorld.mult(u, u);
+
+        qN.multVec(u, uW);
+
+        q1.setValue(uW, vUp);
+
+        q1.mult(qN);
+    }
+    else if(Alignment == CURSOR_ALIGN_VIEW_DIR)
+    {
+        Vec3f u  (0.f, 1.f, 0.f);
+        Vec3f vUp;
+        Vec3f uW;
+
+        vDir.setValue(camToWorld[2]);
+
+        vUp.setValue (camToWorld[1]);
+
+        Quaternion qN(n, vDir);
+
+        ToWorld.mult(u, u);
+
+        qN.multVec(u, uW);
+
+        q1.setValue(uW, vUp);
+
+        q1.mult(qN);
+    }
+
+    Matrix Trans;
+    Matrix mMat;
+
+    Trans[3][0] = ToWorld[3][0];
+    Trans[3][1] = ToWorld[3][1];
+    Trans[3][2] = ToWorld[3][2];
+
+    mMat.setTransform(q1);
+
+    Result.mult(Trans);
+    Result.mult(mMat  );
+
+    Trans[3][0] = -ToWorld[3][0];
+    Trans[3][1] = -ToWorld[3][1];
+    Trans[3][2] = -ToWorld[3][2];
+
+    Result.mult(Trans);
+    Result.mult(ToWorld);
 }
 
 void UIDrawingSurface::openWindow(InternalWindow* const TheWindow, const Int32 Layer)

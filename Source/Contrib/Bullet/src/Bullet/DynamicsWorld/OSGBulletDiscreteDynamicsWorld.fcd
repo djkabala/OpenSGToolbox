@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+
+<FieldContainer
+    name="BulletDiscreteDynamicsWorld"
+    parent="BulletDynamicsWorld"
+    library="ContribBullet"
+    structure="concrete"
+    pointerfieldtypes="both"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="false"
+    isNodeCore="false"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    This core is a wrapper around the bullet btDiscreetDynamicsWorld.
+    <Field
+        name="SynchronizeAllMotionsStates"
+        type="bool"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="public"
+        bridge="true"
+        >
+        Passthrough value to btDiscreetDynamicsWorld.
+    </Field>
+    <!--<Field-->
+        <!--name="CollisionObject"-->
+        <!--type=""-->
+        <!--category="pointer"-->
+        <!--cardinality="single"-->
+        <!--visibility="external"-->
+        <!--access="public"-->
+        <!--bridge="true"-->
+        <!-->-->
+        <!--Passthrough value to btDiscreetDynamicsWorld.-->
+    <!--</Field>-->
+</FieldContainer>

@@ -133,6 +133,10 @@ OSG_BEGIN_NAMESPACE
     The position of the cursor.
 */
 
+/*! \var UInt32          UIDrawingSurfaceBase::_sfCursorAlignment
+    The Alignment of the cursor.
+*/
+
 
 /***************************************************************************\
  *                      FieldType/FieldTrait Instantiation                 *
@@ -276,6 +280,18 @@ void UIDrawingSurfaceBase::classDescInserter(TypeObject &oType)
         static_cast<FieldGetMethodSig >(&UIDrawingSurface::getHandleCursorPosition));
 
     oType.addInitialDesc(pDesc);
+
+    pDesc = new SFUInt32::Description(
+        SFUInt32::getClassType(),
+        "CursorAlignment",
+        "The Alignment of the cursor.\n",
+        CursorAlignmentFieldId, CursorAlignmentFieldMask,
+        false,
+        (Field::SFDefaultFlags | Field::FStdAccess),
+        static_cast<FieldEditMethodSig>(&UIDrawingSurface::editHandleCursorAlignment),
+        static_cast<FieldGetMethodSig >(&UIDrawingSurface::getHandleCursorAlignment));
+
+    oType.addInitialDesc(pDesc);
 }
 
 
@@ -416,6 +432,17 @@ UIDrawingSurfaceBase::TypeObject UIDrawingSurfaceBase::_type(
     "        >\n"
     "        The position of the cursor.\n"
     "    </Field>\n"
+    "    <Field\n"
+    "        name=\"CursorAlignment\"\n"
+    "        type=\"UInt32\"\n"
+    "        category=\"data\"\n"
+    "        cardinality=\"single\"\n"
+    "        visibility=\"external\"\n"
+    "        access=\"public\"\n"
+    "        defaultValue=\"UIDrawingSurface::CURSOR_ALIGN_VIEWPOINT\"\n"
+    "        >\n"
+    "        The Alignment of the cursor.\n"
+    "    </Field>\n"
     "</FieldContainer>\n",
     "A virtual surface that a graphical user interface is drawn on.\n"
     "The drawing surface manages a set of OSG::InternalWindows.  The \n"
@@ -550,6 +577,19 @@ SFPnt2f *UIDrawingSurfaceBase::editSFCursorPosition(void)
 const SFPnt2f *UIDrawingSurfaceBase::getSFCursorPosition(void) const
 {
     return &_sfCursorPosition;
+}
+
+
+SFUInt32 *UIDrawingSurfaceBase::editSFCursorAlignment(void)
+{
+    editSField(CursorAlignmentFieldMask);
+
+    return &_sfCursorAlignment;
+}
+
+const SFUInt32 *UIDrawingSurfaceBase::getSFCursorAlignment(void) const
+{
+    return &_sfCursorAlignment;
 }
 
 
@@ -700,6 +740,10 @@ UInt32 UIDrawingSurfaceBase::getBinSize(ConstFieldMaskArg whichField)
     {
         returnValue += _sfCursorPosition.getBinSize();
     }
+    if(FieldBits::NoField != (CursorAlignmentFieldMask & whichField))
+    {
+        returnValue += _sfCursorAlignment.getBinSize();
+    }
 
     return returnValue;
 }
@@ -744,6 +788,10 @@ void UIDrawingSurfaceBase::copyToBin(BinaryDataHandler &pMem,
     if(FieldBits::NoField != (CursorPositionFieldMask & whichField))
     {
         _sfCursorPosition.copyToBin(pMem);
+    }
+    if(FieldBits::NoField != (CursorAlignmentFieldMask & whichField))
+    {
+        _sfCursorAlignment.copyToBin(pMem);
     }
 }
 
@@ -796,6 +844,11 @@ void UIDrawingSurfaceBase::copyFromBin(BinaryDataHandler &pMem,
     {
         editSField(CursorPositionFieldMask);
         _sfCursorPosition.copyFromBin(pMem);
+    }
+    if(FieldBits::NoField != (CursorAlignmentFieldMask & whichField))
+    {
+        editSField(CursorAlignmentFieldMask);
+        _sfCursorAlignment.copyFromBin(pMem);
     }
 }
 
@@ -930,7 +983,8 @@ UIDrawingSurfaceBase::UIDrawingSurfaceBase(void) :
     _sfSize                   (Vec2f(0.0f,0.0f)),
     _sfActive                 (bool(true)),
     _sfCursors                (),
-    _sfCursorPosition         (Pnt2f(0.0f,0.0f))
+    _sfCursorPosition         (Pnt2f(0.0f,0.0f)),
+    _sfCursorAlignment        (UInt32(UIDrawingSurface::CURSOR_ALIGN_VIEWPOINT))
 {
 }
 
@@ -946,7 +1000,8 @@ UIDrawingSurfaceBase::UIDrawingSurfaceBase(const UIDrawingSurfaceBase &source) :
     _sfSize                   (source._sfSize                   ),
     _sfActive                 (source._sfActive                 ),
     _sfCursors                (source._sfCursors                ),
-    _sfCursorPosition         (source._sfCursorPosition         )
+    _sfCursorPosition         (source._sfCursorPosition         ),
+    _sfCursorAlignment        (source._sfCursorAlignment        )
 {
 }
 
@@ -1286,6 +1341,31 @@ EditFieldHandlePtr UIDrawingSurfaceBase::editHandleCursorPosition (void)
 
 
     editSField(CursorPositionFieldMask);
+
+    return returnValue;
+}
+
+GetFieldHandlePtr UIDrawingSurfaceBase::getHandleCursorAlignment (void) const
+{
+    SFUInt32::GetHandlePtr returnValue(
+        new  SFUInt32::GetHandle(
+             &_sfCursorAlignment,
+             this->getType().getFieldDesc(CursorAlignmentFieldId),
+             const_cast<UIDrawingSurfaceBase *>(this)));
+
+    return returnValue;
+}
+
+EditFieldHandlePtr UIDrawingSurfaceBase::editHandleCursorAlignment(void)
+{
+    SFUInt32::EditHandlePtr returnValue(
+        new  SFUInt32::EditHandle(
+             &_sfCursorAlignment,
+             this->getType().getFieldDesc(CursorAlignmentFieldId),
+             this));
+
+
+    editSField(CursorAlignmentFieldMask);
 
     return returnValue;
 }

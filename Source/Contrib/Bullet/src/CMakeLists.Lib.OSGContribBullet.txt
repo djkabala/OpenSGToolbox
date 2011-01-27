@@ -1,0 +1,86 @@
+
+OSG_ADD_PROJECT("OSGContribBullet")
+OSG_SELECT_PROJECT()
+
+##############################################################################
+# Version and revision values
+##############################################################################
+
+FILE(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION VersionFile)
+STRING(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+).*" VersionMatch ${VersionFile})
+
+SET(${PROJECT_NAME}_MAJOR_VERSION ${CMAKE_MATCH_1})
+SET(${PROJECT_NAME}_MINOR_VERSION ${CMAKE_MATCH_2})
+SET(${PROJECT_NAME}_PATCH_VERSION ${CMAKE_MATCH_3})
+SET(${PROJECT_NAME}_VERSION ${CMAKE_MATCH_0})
+
+FILE(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/REVISION RevisionFile)
+SET(${PROJECT_NAME}_REVISION ${RevisionFile})
+
+##############################################################################
+# dependencies
+##############################################################################
+
+##############################################################################
+# simplify the tests below by setting local variables
+
+##############################################################################
+# depdencies start here
+
+SET(${PROJECT_NAME}_DEP_OSG_LIB OSGGroup
+                                OSGDrawable)
+
+#SET(${PROJECT_NAME}_DEP_TEST_OSG_LIB OSGEffectGroups OSGImageFileIO)
+
+SET(${PROJECT_NAME}_CXXFLAGS ${OSG_ADD_CXX_FLAGS})
+
+IF(OSG_WITH_BULLET)
+    IF(NOT OSG_BRIDGE_FIELD)
+        MESSAGE(FATAL_ERROR "The OSGContribBullet library requires that OpenSG is built with bride field support.  Make sure OSG_ENABLE_BRIDGE_FIELD is ON.")
+    ENDIF()
+
+    SET(${PROJECT_NAME}_DEP_LIB BULLET_LIBRARIES)
+    SET(${PROJECT_NAME}_DEP_INCDIR BULLET_INCLUDE_DIRS)
+
+    IF(NOT OSG_BUILD_ACTIVE)
+        SET(${PROJECT_NAME}_DEP_DEFS OSG_WITH_BULLET)
+    ELSE()
+        OSG_SET(OSG_WITH_BULLET 1)
+    ENDIF(NOT OSG_BUILD_ACTIVE)
+ENDIF(OSG_WITH_BULLET)
+
+OSG_STORE_PROJECT_DEPENDENCIES()
+
+##############################################################################
+# collect sources
+##############################################################################
+
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}")
+
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/Constraints")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/CollisionShapes")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/CollisionShapes/Convex")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/CollisionShapes/Concave")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/Objects")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/Broadphase")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/DynamicsWorld")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/Events")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/Util")
+OSG_ADD_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/Bullet/Debug")
+
+#Library def source
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Def.cpp.in"
+               "${CMAKE_BINARY_DIR}/Source/${PROJECT_NAME}/${PROJECT_NAME}Def.cpp")
+OSG_ADD_DIRECTORY("${CMAKE_BINARY_DIR}/Source/${PROJECT_NAME}")
+
+##############################################################################
+# setup build
+##############################################################################
+
+##############################################################################
+# setup documentation
+##############################################################################
+SET(OSG_${PROJECT_NAME}_DOC_EXAMPLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../Examples/Tutorial/Bullet)
+
+OSG_SETUP_PROJECT("OSG_COMPILETBCONTRIBBULLETLIB")

@@ -238,6 +238,31 @@ void UIDrawingSurfaceBase::setCursorPosition(const Pnt2f &value)
 
     _sfCursorPosition.setValue(value);
 }
+//! Get the value of the UIDrawingSurface::_sfCursorAlignment field.
+
+inline
+UInt32 &UIDrawingSurfaceBase::editCursorAlignment(void)
+{
+    editSField(CursorAlignmentFieldMask);
+
+    return _sfCursorAlignment.getValue();
+}
+
+//! Get the value of the UIDrawingSurface::_sfCursorAlignment field.
+inline
+      UInt32  UIDrawingSurfaceBase::getCursorAlignment(void) const
+{
+    return _sfCursorAlignment.getValue();
+}
+
+//! Set the value of the UIDrawingSurface::_sfCursorAlignment field.
+inline
+void UIDrawingSurfaceBase::setCursorAlignment(const UInt32 value)
+{
+    editSField(CursorAlignmentFieldMask);
+
+    _sfCursorAlignment.setValue(value);
+}
 
 //! Get the value of the \a index element the UIDrawingSurface::_mfInternalWindows field.
 inline
@@ -286,6 +311,9 @@ void UIDrawingSurfaceBase::execSync (      UIDrawingSurfaceBase *pFrom,
 
     if(FieldBits::NoField != (CursorPositionFieldMask & whichField))
         _sfCursorPosition.syncWith(pFrom->_sfCursorPosition);
+
+    if(FieldBits::NoField != (CursorAlignmentFieldMask & whichField))
+        _sfCursorAlignment.syncWith(pFrom->_sfCursorAlignment);
 }
 #endif
 

@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+	name="BreakpointGutter"
+	parent="TextAreaGutter"
+	library="ContribLuaToolbox"
+	pointerfieldtypes="both"
+	structure="concrete"
+	systemcomponent="true"
+	parentsystemcomponent="true"
+	decoratable="false"
+	useLocalIncludes="true"
+    isNodeCore="false"
+	parentProducer="Component"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    TextArea Gutter that connects with a BreakpointManager to display and modify local breakpoints
+    in a code file.
+    <Field
+        name="FileBreakpointPrototype"
+        type="Button"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="NULL"
+        access="public"
+        >
+        Prototype Button used when creating FileBreakpoints.
+    </Field>
+    <Field
+        name="ConditionalBreakpointPrototype"
+        type="Button"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="NULL"
+        access="public"
+        >
+        Prototype Button used when creating ConditionalBreakpoints.
+    </Field>
+    <Field
+        name="CountBreakpointPrototype"
+        type="Button"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        defaultValue="NULL"
+        access="public"
+        >
+        Prototype Button used when creating CountBreakpoints.
+    </Field>
+</FieldContainer>

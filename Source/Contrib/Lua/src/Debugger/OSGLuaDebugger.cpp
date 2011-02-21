@@ -102,9 +102,6 @@ EventProducerType LuaDebugger::_producerType(
                                             _eventDesc,
                                             sizeof(_eventDesc));
 
-StatElemDesc<StatTimeElem> LuaDebugger::statScriptsRunTime("ScriptsRunTime", 
-                                                         "time to run the lua scripts");
-
 /***************************************************************************\
  *                           Class methods                                 *
 \***************************************************************************/

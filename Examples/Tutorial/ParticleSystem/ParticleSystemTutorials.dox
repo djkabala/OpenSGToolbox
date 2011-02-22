@@ -4,40 +4,259 @@ using namespace OSG;
 
 /*! 
    \example 01ParticleSystemDrawers.cpp Example
+   \n
+   \toolbox_video{S1kcsvVK8Yc}
+   \n
+
+
+
+
    \example 02DynamicDistributions.cpp Example using OSG::Distribution
-   \htmlonly
-   <br>
-   <iframe title="YouTube video player" class="youtube-player" type="text/html" width="600" height="450" src="http://www.youtube.com/embed/_rzUxT5mAFc" frameborder="0" allowFullScreen></iframe>
-   <br>
-   \endhtmlonly
+   \n
+   \toolbox_video{Wmck8NQz3yc}
+   \n
+
+
+
+
    \example 03RateParticleGenerator.cpp Example
+   \n
+   \toolbox_video{-IURmSHM6fc}
+   \n
+
+
+
+
    \example 04BurstParticleGenerator.cpp Example
+   \n
+   \toolbox_video{pIMBl-ZBmyQ}
+   \n
+
+
+
+
    \example 05aQuadSequenceParticleDrawer.cpp Example
+   \n
+   \toolbox_video{9MfLwwFSCuA}
+   \n
+
+
+
+
    \example 05bQuadSequenceParticleDrawer.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 05QuadParticleDrawer.cpp Example
+   \n
+   \toolbox_video{JW6GzkQD3LM}
+   \n
+
+
+
+
    \example 06Explosion.cpp Example
+   \n
+   \toolbox_video{MwIDfK1h1mw}
+   \n
+
+
+
+
    \example 07AgeSizeParticleAffector.cpp Example
+   \n
+   \toolbox_video{Q_WClN_YctE}
+   \n
+
+
+
+
    \example 08DistanceFadeAffector.cpp Example
+   \n
+   \toolbox_video{JUfl6gv3BeI}
+   \n
+
+
+
+
    \example 09DistanceKillParticleAffector.cpp Example
+   \n
+   \toolbox_video{YcMhS3_QTD4}
+   \n
+
+
+
+
    \example 10GravityParticleSystemAffector.cpp Example
+   \n
+   \toolbox_video{j6ToYSgCZ-k}
+   \n
+
+
+
+
    \example 11DistanceAttractRepelParticleAffector.cpp Example
+   \n
+   \toolbox_video{2v0FNfldkfg}
+   \n
+
+
+
+
    \example 12NodeParticleDrawer.cpp Example
+   \n
+   \toolbox_video{Fl7pEm41QX8}
+   \n
+
+
+
+
    \example 13GeometryCollision.cpp Example
+   \n
+   \toolbox_video{2TX2lFeJtmo}
+   \n
+
+
+
+
    \example 14ParticleSorting.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 15FCFileTypeIO.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 16FullTest.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 17RandomMovement.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 18GravityFieldParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 19UniformFieldParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 20RocketLauncher.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 21Fireworks.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 22VortexParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 23RadialFieldParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 24NewtonFieldParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 25AirFieldParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 26DragParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 27TurbulenceParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 28ConserveVelocityParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 29AgeFadeAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
    \example 30SineWaveParticleAffector.cpp Example
+   \n
+   \toolbox_video{}
+   \n
+
+
+
+
  */

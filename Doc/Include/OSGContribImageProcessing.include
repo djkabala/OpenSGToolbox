@@ -1,0 +1,6 @@
+
+INPUT += ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Doc/ImageProcessingMainPage.dox
+INPUT += ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Source/Contrib/ImageProcessing/ImageProcessing.dox
+INPUT += ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Examples/Tutorial/ImageProcessing/ImageProcessingTutorials.dox
+
+IMAGE_PATH += ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Examples/Tutorial/ImageProcessing/Data

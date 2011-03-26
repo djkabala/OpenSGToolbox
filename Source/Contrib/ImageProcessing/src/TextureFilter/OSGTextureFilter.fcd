@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<FieldContainer
+    name="TextureFilter"
+    parent="AttachmentContainer"
+    library="ContribImageProcessing"
+    pointerfieldtypes="both"
+    structure="abstract"
+    systemcomponent="true"
+    parentsystemcomponent="true"
+    decoratable="false"
+    useLocalIncludes="true"
+    authors="David Kabala (djkabala@gmail.com)"
+    >
+    <Field
+        name="InternalDirty"
+        type="bool"
+        category="data"
+        cardinality="single"
+        visibility="external"
+        access="protected"
+        defaultValue="true"
+        >
+    </Field>
+</FieldContainer>

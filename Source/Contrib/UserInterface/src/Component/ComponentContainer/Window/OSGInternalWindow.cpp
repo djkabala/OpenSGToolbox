@@ -1001,6 +1001,7 @@ void InternalWindow::changed(ConstFieldMaskArg whichField,
         for(UInt32 i(0) ; i<getMFActivePopupMenus()->size() ; ++i)
         {
             getActivePopupMenus(i)->setParentWindow(this);
+            getActivePopupMenus(i)->updateLayout();
             _PopupConnections[getActivePopupMenus(i)].push_back(boost::shared_ptr<boost::signals2::scoped_connection>(new boost::signals2::scoped_connection(getParentDrawingSurface()->getEventProducer()->connectMouseClicked(boost::bind(&InternalWindow::popupMenuMouseClicked, this, _1)))));
             _PopupConnections[getActivePopupMenus(i)].push_back(boost::shared_ptr<boost::signals2::scoped_connection>(new boost::signals2::scoped_connection(getParentDrawingSurface()->getEventProducer()->connectMousePressed(boost::bind(&InternalWindow::popupMenuMousePressed, this, _1)))));
             _PopupConnections[getActivePopupMenus(i)].push_back(boost::shared_ptr<boost::signals2::scoped_connection>(new boost::signals2::scoped_connection(getParentDrawingSurface()->getEventProducer()->connectMouseReleased(boost::bind(&InternalWindow::popupMenuMouseReleased, this, _1)))));

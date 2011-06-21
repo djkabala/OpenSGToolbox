@@ -99,6 +99,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING PopupMenu : public PopupMenuBase
     void removeAllSeparators(void);
     UInt32 getNumSeparators(void) const;
     
+    virtual void updateLayout(void);
     virtual void updateClipBounds(void);
     
     //Mouse Motion Events
@@ -113,6 +114,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING PopupMenu : public PopupMenuBase
     Int32 getSelectionIndex(void) const;
 
     virtual ComponentContainer* getParentContainer(void) const;
+
 
     /*=========================  PROTECTED  ===============================*/
 
@@ -152,7 +154,6 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING PopupMenu : public PopupMenuBase
     
     /*! \}                                                                 */
     
-    virtual void updateLayout(void);
     
     void selectionChanged(SelectionEventDetails* const e);
     boost::signals2::connection _SelectionChangedConnection;

@@ -51,7 +51,7 @@
 //#include "OSGProxyGroup.h"
 #include "OSGFCFileHandler.h"
 
-#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem.hpp>
 
 OSG_BEGIN_NAMESPACE
 
@@ -230,7 +230,7 @@ FieldContainerUnrecPtr FilePathAttachment::loadFromFilePath(BoostPath &LoadFileP
             }
         }
     }
-    catch(boost::filesystem::basic_filesystem_error<BoostPath> &)
+    catch(boost::filesystem::filesystem_error &)
     {
         return NULL;
     }

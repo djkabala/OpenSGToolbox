@@ -46,7 +46,7 @@
 #include <OSGConfig.h>
 
 #include "OSGKeyframeFCPtrSequence.h"
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 #include "OSGTypeFactory.h"
 #include "OSGKeyframeInterpolations.h"
 #include "OSGPointerSFieldBase.h"
@@ -199,12 +199,12 @@ bool KeyframeFCPtrSequence::interpolate(UInt32 Type,
                                         UInt32 Index,
                                         Real32 Blend)
 {
-    if(Type != Animator::STEP_INTERPOLATION)
+    if(Type != TBAnimator::STEP_INTERPOLATION)
     {
         SWARNING << "Interpolation type " << Type<< " not supported for FCPtrs" << std::endl;
         return false;
     }
-    if(ReplacePolicy != Animator::OVERWRITE)
+    if(ReplacePolicy != TBAnimator::OVERWRITE)
     {
         SWARNING << "Replacement policy " << ReplacePolicy << " not supported for FCPtrs" << std::endl;
         return false;

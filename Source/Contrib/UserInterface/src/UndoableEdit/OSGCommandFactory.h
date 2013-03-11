@@ -71,6 +71,11 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING CommandFactoryBase : public FactoryBas
     void operator =(const CommandFactoryBase &source);
 };
 
+
+#if defined(WIN32)
+template class OSG_CONTRIBUSERINTERFACE_DLLMAPPING SingletonHolder<CommandFactoryBase>;
+#endif
+
 typedef OSG::SingletonHolder<OSG::CommandFactoryBase> CommandFactory;
 
 OSG_END_NAMESPACE

@@ -49,7 +49,6 @@
 #include "OSGTextLayoutParam.h"
 #include "OSGTextLayoutResult.h"
 #include "OSGTextTXFGlyph.h"
-#include "OSGPathType.h"
 
 OSG_BEGIN_NAMESPACE
 

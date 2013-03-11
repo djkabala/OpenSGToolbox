@@ -114,12 +114,12 @@ int main(int argc, char **argv)
         TutorialWindow->initWindow();
 
         // Create the SimpleSceneManager helper
-        SimpleSceneManager sceneManager;
-        TutorialWindow->setDisplayCallback(boost::bind(display, &sceneManager));
-        TutorialWindow->setReshapeCallback(boost::bind(reshape, _1, &sceneManager));
+        SimpleSceneManagerRefPtr sceneManager = SimpleSceneManager::create();
+        TutorialWindow->setDisplayCallback(boost::bind(display, sceneManager));
+        TutorialWindow->setReshapeCallback(boost::bind(reshape, _1, sceneManager));
 
         // Tell the Manager what to manage
-        sceneManager.setWindow(TutorialWindow);
+        sceneManager->setWindow(TutorialWindow);
 
         TutorialWindow->connectKeyTyped(boost::bind(keyPressed, _1));
 
@@ -264,17 +264,17 @@ int main(int argc, char **argv)
 
 
         // Tell the Manager what to manage
-        sceneManager.setRoot(scene);
+        sceneManager->setRoot(scene);
 
         // Add the UI Foreground Object to the Scene
-        ViewportRecPtr TutorialViewport = sceneManager.getWindow()->getPort(0);
+        ViewportRecPtr TutorialViewport = sceneManager->getWindow()->getPort(0);
         TutorialViewport->addForeground(TutorialUIForeground);
 
         //Create the Documentation Foreground and add it to the viewport
-        SimpleScreenDoc TheSimpleScreenDoc(&sceneManager, TutorialWindow);
+        SimpleScreenDoc TheSimpleScreenDoc(sceneManager, TutorialWindow);
 
         // Show the whole Scene
-        sceneManager.showAll();
+        sceneManager->showAll();
 
 
         //Open Window
@@ -357,7 +357,7 @@ SimpleScreenDoc::SimpleScreenDoc(SimpleSceneManager*  SceneManager,
     //Animation
     _ShowDocFadeOutAnimation = FieldAnimation::create();
     _ShowDocFadeOutAnimation->setAnimator(TheAnimator);
-    _ShowDocFadeOutAnimation->setInterpolationType(Animator::LINEAR_INTERPOLATION);
+    _ShowDocFadeOutAnimation->setInterpolationType(TBAnimator::LINEAR_INTERPOLATION);
     _ShowDocFadeOutAnimation->setCycling(1);
     _ShowDocFadeOutAnimation->setAnimatedField(_DocShowForeground,
                                                SimpleTextForeground::ColorFieldId);

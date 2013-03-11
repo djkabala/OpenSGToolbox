@@ -149,6 +149,7 @@ UInt32 MenuButton::getNumItems(void) const
     {
         return getMenuButtonPopupMenu()->getNumItems();
     }
+	return 0u;
 }
 
 /*-------------------------------------------------------------------------*\

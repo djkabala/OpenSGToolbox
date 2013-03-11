@@ -77,14 +77,14 @@ OSG::UInt16 FieldAnimationBase::getClassGroupId(void)
 
 //! Get the value of the FieldAnimation::_sfAnimator field.
 inline
-Animator * FieldAnimationBase::getAnimator(void) const
+TBAnimator * FieldAnimationBase::getAnimator(void) const
 {
     return _sfAnimator.getValue();
 }
 
 //! Set the value of the FieldAnimation::_sfAnimator field.
 inline
-void FieldAnimationBase::setAnimator(Animator * const value)
+void FieldAnimationBase::setAnimator(TBAnimator * const value)
 {
     editSField(AnimatorFieldMask);
 

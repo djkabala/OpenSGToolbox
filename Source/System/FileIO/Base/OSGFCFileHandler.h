@@ -43,7 +43,6 @@
 
 #include "OSGBaseTypes.h"
 #include "OSGFCFileType.h"
-#include "OSGPathType.h"
 #include "OSGPathHandler.h"
 #include "OSGSingletonHolder.h"
 
@@ -168,6 +167,11 @@ class OSG_SYSTEM_DLLMAPPING FCFileHandlerBase
     PathHandler    _defaultPathHandler;
     std::string initPathHandler(const Char8 *filename);
 };
+
+#if defined(WIN32)
+OSG_SYSTEM_EXPIMP_TMPL
+template class OSG_SYSTEM_DLLMAPPING SingletonHolder<FCFileHandlerBase>;
+#endif
 
 typedef SingletonHolder<FCFileHandlerBase> FCFileHandler;
 

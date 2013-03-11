@@ -35,6 +35,9 @@
  *                                                                           *
  *                                                                           *
 \*---------------------------------------------------------------------------*/
+#define OSG_COMPILE_EVENTPRODUCERFACTORY
+
+#include "OSGConfig.h"
 
 #include "OSGEventProducerFactory.h"
 
@@ -47,15 +50,17 @@
 #include <algorithm>
 #include <functional>
 
-OSG_BEGIN_NAMESPACE
 
 //---------------------------------------------------------------------------
 //  Class
 //---------------------------------------------------------------------------
 
+OSG_BEGIN_NAMESPACE
+
 OSG_SINGLETON_INST(EventProducerFactoryBase, addPostFactoryExitFunction)
 
 template class SingletonHolder<EventProducerFactoryBase>;
+
 
 /***************************************************************************\
  *                               Types                                     *

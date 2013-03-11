@@ -94,7 +94,7 @@ OSG_BEGIN_NAMESPACE
 \***************************************************************************/
 
 #if !defined(OSG_DO_DOC) || defined(OSG_DOC_DEV)
-DataType FieldTraits<KeyframeAnimator *>::_type("KeyframeAnimatorPtr", "AnimatorPtr");
+DataType FieldTraits<KeyframeAnimator *>::_type("KeyframeAnimatorPtr", "TBAnimatorPtr");
 #endif
 
 OSG_FIELDTRAITS_GETTYPE(KeyframeAnimator *)

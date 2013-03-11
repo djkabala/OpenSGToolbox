@@ -444,7 +444,7 @@ OSG_GEN_CONTAINERPTR(KeyframeRotationSequenceQuaternionfx);
         //if(ePhase == TypeObject::SystemPost)
         //{
             //_interpolationFuncs[Animator::STEP_INTERPOLATION] = stepKeyframeSequence<StoredFieldType,SingleFieldType>;
-            //_interpolationFuncs[Animator::LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredFieldType,SingleFieldType>;
+            //_interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredFieldType,SingleFieldType>;
             //_interpolationFuncs[Animator::SPHERICAL_LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredFieldType,SingleFieldType>;
             //_interpolationFuncs[Animator::NORMALIZED_LINEAR_INTERPOLATION] = nlerpKeyframeSequence<StoredFieldType,SingleFieldType>;
             //_interpolationFuncs[Animator::CUBIC_INTERPOLATION] = squadKeyframeSequence<StoredFieldType,SingleFieldType>;

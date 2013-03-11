@@ -28,7 +28,8 @@ SET(OSG_COMPONENTS OSGBase
                    OSGSystem 
                    OSGUtil 
                    OSGWindow 
-                   OSGTBFileIO 
+                   OSGTBFileIO
+                   OSGTBAnimation				   
                    OSGText 
                    OSGContribUserInterface 
                    )

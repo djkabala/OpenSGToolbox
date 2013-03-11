@@ -50,8 +50,8 @@
 #include "OSGSpringLayoutConstraintsFields.h"
 #include <set>
 
-#include "rapidxml.h"
-#include "rapidxml_iterators.h"
+#include "rapidxml.hpp"
+#include "rapidxml_iterators.hpp"
 #include "OSGXMLFCFileType.h"
 
 OSG_BEGIN_NAMESPACE

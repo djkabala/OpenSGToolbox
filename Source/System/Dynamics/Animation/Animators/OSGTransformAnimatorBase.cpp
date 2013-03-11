@@ -104,7 +104,7 @@ OSG_BEGIN_NAMESPACE
     //Animation
     FieldAnimationRecPtr TheAnimation = FieldAnimation::create();
     TheAnimation->setAnimator(TheAnimator);
-    TheAnimation->setInterpolationType(Animator::LINEAR_INTERPOLATION);
+    TheAnimation->setInterpolationType(TBAnimator::LINEAR_INTERPOLATION);
     TheAnimation->setCycling(2);
     TheAnimation->setAnimatedField(TransCore, std::string("matrix"));
 
@@ -169,7 +169,7 @@ OSG_BEGIN_NAMESPACE
 \***************************************************************************/
 
 #if !defined(OSG_DO_DOC) || defined(OSG_DOC_DEV)
-DataType FieldTraits<TransformAnimator *>::_type("TransformAnimatorPtr", "AnimatorPtr");
+DataType FieldTraits<TransformAnimator *>::_type("TransformAnimatorPtr", "TBAnimatorPtr");
 #endif
 
 OSG_FIELDTRAITS_GETTYPE(TransformAnimator *)
@@ -377,7 +377,7 @@ TransformAnimatorBase::TypeObject TransformAnimatorBase::_type(
     "    //Animation\n"
     "    FieldAnimationRecPtr TheAnimation = FieldAnimation::create();\n"
     "    TheAnimation-&gt;setAnimator(TheAnimator);\n"
-    "    TheAnimation-&gt;setInterpolationType(Animator::LINEAR_INTERPOLATION);\n"
+    "    TheAnimation-&gt;setInterpolationType(TBAnimator::LINEAR_INTERPOLATION);\n"
     "    TheAnimation-&gt;setCycling(2);\n"
     "    TheAnimation-&gt;setAnimatedField(TransCore, std::string(\"matrix\"));\n"
     "\n"
@@ -535,7 +535,7 @@ TransformAnimatorBase::TypeObject TransformAnimatorBase::_type(
     "//Animation\n"
     "FieldAnimationRecPtr TheAnimation = FieldAnimation::create();\n"
     "TheAnimation->setAnimator(TheAnimator);\n"
-    "TheAnimation->setInterpolationType(Animator::LINEAR_INTERPOLATION);\n"
+    "TheAnimation->setInterpolationType(TBAnimator::LINEAR_INTERPOLATION);\n"
     "TheAnimation->setCycling(2);\n"
     "TheAnimation->setAnimatedField(TransCore, std::string(\"matrix\"));\n"
     "\n"

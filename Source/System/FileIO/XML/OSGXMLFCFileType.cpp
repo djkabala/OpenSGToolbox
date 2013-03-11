@@ -58,11 +58,10 @@
 
 #include "OSGXMLFCFileType.h"
 #include "OSGNode.h"
+#include "OSGFieldContainerUtils.h"
 #include "OSGContainerGatherUtils.h"
-#include "OSGContainerUtils.h"
 
 #include "OSGStringUtils.h"
-#include "OSGPathUtils.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -116,7 +115,7 @@ void XMLFCFileType::printXMLParseError(const rapidxml::parse_error& Error,
                          const std::string& FileNameOrExtension)
 {
     Int32 LineNum;
-    Int32 LineStartPos;
+	SizeT LineStartPos;
     getLine(StreamText, Error.where<char>() - &StreamText[0],LineNum,LineStartPos);
     
     // print out where the error occured
@@ -132,7 +131,7 @@ void XMLFCFileType::printXMLSemanticError(const std::string& ErrorDesc,
                                   const std::string& FileNameOrExtension)
 {
     Int32 LineNum;
-    Int32 LineStartPos;
+    SizeT LineStartPos;
     getLine(StreamText, ErrorPos,LineNum,LineStartPos);
     
     // print out where the error occured
@@ -701,7 +700,7 @@ XMLFCFileType::IDLookupMap XMLFCFileType::createFieldContainers(rapidxml::node_i
                                  std::endl;
                     }
                 }
-                catch(boost::filesystem::basic_filesystem_error<BoostPath>& e)
+                catch(boost::filesystem::filesystem_error& e)
                 {
                     SWARNING <<
                         "ERROR in XMLFCFileType::read():" <<

@@ -175,7 +175,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING GLViewport : public GLViewportBase
     Matrix _InitialMat;
 
     ViewportRecPtr   _DrawingViewport;
-    boost::scoped_ptr<RenderAction> _RenderAction;
+    OSG::RenderActionRefPtr _RenderAction;
 
     /*==========================  PRIVATE  ================================*/
 

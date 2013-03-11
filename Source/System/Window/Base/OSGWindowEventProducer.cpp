@@ -164,7 +164,7 @@ ViewportUnrecPtr WindowEventProducer::windowToViewport(const Pnt2f& WindowPoint,
         ThePort = getPort(i);
         if(ThePort->getEnabled())
         {
-            ViewportPoint.setValues(WindowPoint.x() - ThePort->getPixelLeft(), WindowPoint.y() - ThePort->getPixelBottom());
+            ViewportPoint.setValues(WindowPoint.x() - ThePort->calcPixelLeft(), WindowPoint.y() - ThePort->calcPixelBottom());
             
             return ThePort;
         }
@@ -535,4 +535,9 @@ void WindowEventProducer::dump(      UInt32    ,
     SLOG << "Dump WindowEventProducer NI" << std::endl;
 }
 
+void WindowEventProducer::setSize(UInt16 width,
+                                 UInt16 height)
+{
+	this->setSize( Vec2us(width, height) );
+}
 OSG_END_NAMESPACE

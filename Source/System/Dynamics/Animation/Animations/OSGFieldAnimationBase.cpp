@@ -57,10 +57,10 @@
 #include "OSGConfig.h"
 
 
-#include "OSGAnimator.h"                  // InterpolationType default header
-#include "OSGAnimator.h"                  // ReplacementPolicy default header
+#include "OSGTBAnimator.h"                  // InterpolationType default header
+#include "OSGTBAnimator.h"                  // ReplacementPolicy default header
 
-#include "OSGAnimator.h"                // Animator Class
+#include "OSGTBAnimator.h"                // Animator Class
 #include "OSGFieldContainer.h"          // Container Class
 
 #include "OSGFieldAnimationBase.h"
@@ -121,7 +121,7 @@ OSG_BEGIN_NAMESPACE
 \***************************************************************************/
 
 #if !defined(OSG_DO_DOC) || defined(OSG_DOC_DEV)
-DataType FieldTraits<FieldAnimation *>::_type("FieldAnimationPtr", "AnimationPtr");
+DataType FieldTraits<FieldAnimation *>::_type("FieldAnimationPtr", "TBAnimationPtr");
 #endif
 
 OSG_FIELDTRAITS_GETTYPE(FieldAnimation *)
@@ -143,9 +143,9 @@ void FieldAnimationBase::classDescInserter(TypeObject &oType)
     FieldDescriptionBase *pDesc = NULL;
 
 
-    pDesc = new SFUnrecAnimatorPtr::Description(
-        SFUnrecAnimatorPtr::getClassType(),
-        "Animator",
+    pDesc = new SFUnrecTBAnimatorPtr::Description(
+        SFUnrecTBAnimatorPtr::getClassType(),
+        "TBAnimator",
         "",
         AnimatorFieldId, AnimatorFieldMask,
         false,
@@ -308,7 +308,7 @@ FieldAnimationBase::TypeObject FieldAnimationBase::_type(
     "\t\tcardinality=\"single\"\n"
     "\t\tvisibility=\"external\"\n"
     "\t\taccess=\"public\"\n"
-    "\t\tdefaultValue=\"Animator::LINEAR_INTERPOLATION\"\n"
+    "\t\tdefaultValue=\"TBAnimator::LINEAR_INTERPOLATION\"\n"
     "\t\tdefaultHeader=\"OSGAnimator.h\"\n"
     "\t>\n"
     "\t</Field>\n"
@@ -349,12 +349,12 @@ UInt32 FieldAnimationBase::getContainerSize(void) const
 
 
 //! Get the FieldAnimation::_sfAnimator field.
-const SFUnrecAnimatorPtr *FieldAnimationBase::getSFAnimator(void) const
+const SFUnrecTBAnimatorPtr *FieldAnimationBase::getSFAnimator(void) const
 {
     return &_sfAnimator;
 }
 
-SFUnrecAnimatorPtr  *FieldAnimationBase::editSFAnimator       (void)
+SFUnrecTBAnimatorPtr  *FieldAnimationBase::editSFAnimator       (void)
 {
     editSField(AnimatorFieldMask);
 
@@ -677,8 +677,8 @@ FieldAnimationBase::FieldAnimationBase(void) :
     _sfFieldId                (),
     _sfFieldName              (),
     _sfIndex                  (),
-    _sfInterpolationType      (UInt32(Animator::LINEAR_INTERPOLATION)),
-    _sfReplacementPolicy      (UInt32(Animator::OVERWRITE))
+    _sfInterpolationType      (UInt32(TBAnimator::LINEAR_INTERPOLATION)),
+    _sfReplacementPolicy      (UInt32(TBAnimator::OVERWRITE))
 {
 }
 
@@ -717,8 +717,8 @@ void FieldAnimationBase::onCreate(const FieldAnimation *source)
 
 GetFieldHandlePtr FieldAnimationBase::getHandleAnimator        (void) const
 {
-    SFUnrecAnimatorPtr::GetHandlePtr returnValue(
-        new  SFUnrecAnimatorPtr::GetHandle(
+    SFUnrecTBAnimatorPtr::GetHandlePtr returnValue(
+        new  SFUnrecTBAnimatorPtr::GetHandle(
              &_sfAnimator,
              this->getType().getFieldDesc(AnimatorFieldId),
              const_cast<FieldAnimationBase *>(this)));
@@ -728,8 +728,8 @@ GetFieldHandlePtr FieldAnimationBase::getHandleAnimator        (void) const
 
 EditFieldHandlePtr FieldAnimationBase::editHandleAnimator       (void)
 {
-    SFUnrecAnimatorPtr::EditHandlePtr returnValue(
-        new  SFUnrecAnimatorPtr::EditHandle(
+    SFUnrecTBAnimatorPtr::EditHandlePtr returnValue(
+        new  SFUnrecTBAnimatorPtr::EditHandle(
              &_sfAnimator,
              this->getType().getFieldDesc(AnimatorFieldId),
              this));

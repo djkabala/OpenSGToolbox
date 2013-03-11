@@ -142,17 +142,17 @@ void MorphGeometry::initMethod(InitPhase ePhase)
     {
         IntersectAction::registerEnterDefault(
             getClassType(),
-            reinterpret_cast<Action::Callback>(&Geometry::intersect));
+            reinterpret_cast<Action::Callback>(&Geometry::intersectEnter));
 
         RenderAction::registerEnterDefault(
             getClassType(),
             reinterpret_cast<Action::Callback>(
-                &MaterialDrawable::renderActionEnterHandler));
+                &MaterialDrawable::renderEnter));
                 
         RenderAction::registerLeaveDefault(
             getClassType(),
             reinterpret_cast<Action::Callback>(
-                &MaterialDrawable::renderActionLeaveHandler));
+                &MaterialDrawable::renderLeave));
     }
 }
 

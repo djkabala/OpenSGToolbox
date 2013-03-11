@@ -79,12 +79,12 @@ void SkeletonDrawable::initMethod(InitPhase ePhase)
         RenderAction::registerEnterDefault(
             SkeletonDrawable::getClassType(),
             reinterpret_cast<Action::Callback>(
-                &MaterialDrawable::renderActionEnterHandler));
+                &MaterialDrawable::renderEnter));
 
         RenderAction::registerLeaveDefault(
             SkeletonDrawable::getClassType(),
             reinterpret_cast<Action::Callback>(
-                &MaterialDrawable::renderActionLeaveHandler));
+                &MaterialDrawable::renderLeave));
     }
 }
 

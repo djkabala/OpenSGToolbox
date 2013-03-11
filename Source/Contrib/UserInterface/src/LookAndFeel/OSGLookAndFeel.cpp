@@ -47,7 +47,7 @@
 
 #include "OSGLookAndFeel.h"
 #include "OSGFieldContainerFactory.h"
-#include "OSGContainerUtils.h"
+#include "OSGFieldContainerUtils.h"
 
 OSG_BEGIN_NAMESPACE
 

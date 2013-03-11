@@ -36,8 +36,8 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGFIELDANIMATION_H_
-#define _OSGFIELDANIMATION_H_
+#ifndef OSGFIELDANIMATION_H_3568257
+#define OSGFIELDANIMATION_H_3568257
 #ifdef __sgi
 #pragma once
 #endif
@@ -134,7 +134,7 @@ typedef FieldAnimation *FieldAnimationP;
 
 OSG_END_NAMESPACE
 
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 
 #include "OSGFieldAnimationBase.inl"
 #include "OSGFieldAnimation.inl"

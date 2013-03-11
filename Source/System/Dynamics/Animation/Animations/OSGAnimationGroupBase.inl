@@ -77,7 +77,7 @@ OSG::UInt16 AnimationGroupBase::getClassGroupId(void)
 
 //! Get the value of the \a index element the AnimationGroup::_mfAnimations field.
 inline
-Animation * AnimationGroupBase::getAnimations(const UInt32 index) const
+TBAnimation * AnimationGroupBase::getAnimations(const UInt32 index) const
 {
     return _mfAnimations[index];
 }

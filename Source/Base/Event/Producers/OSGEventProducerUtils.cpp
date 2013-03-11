@@ -48,10 +48,10 @@
 #include "OSGEventProducerUtils.h"
 
 #include <boost/lexical_cast.hpp>
-#include "OSGContainerUtils.h"
 #include "OSGContainerPtrFuncs.h"
 #include "OSGActivity.h"
 #include "OSGEventDescription.h"
+#include "OSGFieldContainerUtils.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -63,6 +63,7 @@ void putEventProducerToStream(OutStream &outVal, const ReflexiveContainer& conta
 {
     bool isFirstItemWritten(true);
     //Loop through all of the Produced Event Ids
+#if 0
     for(UInt32 ProdEventId(1) ; ProdEventId <= container.getNumEvents() ; ++ProdEventId)
     {
         //Loop through all activies attached to this Event
@@ -89,6 +90,7 @@ void putEventProducerToStream(OutStream &outVal, const ReflexiveContainer& conta
             }
         }*/
     }
+#endif
 }
 
 bool getEventProducerFromCString(const Char8     *&inVal, ReflexiveContainer& container)

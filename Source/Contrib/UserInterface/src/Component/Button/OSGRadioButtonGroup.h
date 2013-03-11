@@ -45,6 +45,9 @@
 #include "OSGRadioButtonGroupBase.h"
 #include "OSGButtonSelectedEventDetailsFields.h"
 
+#include <boost/signals2.hpp>
+#include <vector>
+
 OSG_BEGIN_NAMESPACE
 
 /*! \brief RadioButtonGroup class. See \ref

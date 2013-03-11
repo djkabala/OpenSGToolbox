@@ -350,7 +350,7 @@ void ComboBox::updateSelectedItemComponent(void)
     }
 }
 
-void ComboBox::configurePropertiesFromAction(Action a)
+void ComboBox::configurePropertiesFromAction( const Action& a)
 {
     //TODO:Implement
 }

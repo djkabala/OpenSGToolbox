@@ -47,7 +47,7 @@
 
 #include "OSGKeyframePositionSequenceTmplFuncs.ins"
 #include "OSGKeyframePositionSequenceTmpl.ins"
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 #include "OSGKeyframeInterpolations.h"
 
 OSG_USING_NAMESPACE
@@ -117,13 +117,13 @@ void KeyframePositionSequencePnt2sDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -131,13 +131,13 @@ void KeyframePositionSequencePnt3sDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -145,13 +145,13 @@ void KeyframePositionSequencePnt4sDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -159,13 +159,13 @@ void KeyframePositionSequencePnt2fDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -173,13 +173,13 @@ void KeyframePositionSequencePnt3fDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -187,13 +187,13 @@ void KeyframePositionSequencePnt4fDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -201,13 +201,13 @@ void KeyframePositionSequencePnt2fxDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -215,13 +215,13 @@ void KeyframePositionSequencePnt3fxDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -229,13 +229,13 @@ void KeyframePositionSequencePnt4fxDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -243,13 +243,13 @@ void KeyframePositionSequencePnt2dDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -257,13 +257,13 @@ void KeyframePositionSequencePnt3dDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -271,13 +271,13 @@ void KeyframePositionSequencePnt4dDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 

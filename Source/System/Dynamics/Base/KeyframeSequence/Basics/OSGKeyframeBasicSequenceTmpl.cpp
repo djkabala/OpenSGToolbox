@@ -47,7 +47,7 @@
 
 #include "OSGKeyframeBasicSequenceTmplFuncs.ins"
 #include "OSGKeyframeBasicSequenceTmpl.ins"
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 #include "OSGKeyframeInterpolations.h"
 
 OSG_USING_NAMESPACE
@@ -95,10 +95,10 @@ void KeyframeBasicSequenceStringDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteNoBlendReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteNoBlendReplacement<StoredType>;
     }
 }
 
@@ -106,10 +106,10 @@ void KeyframeBasicSequenceBoolDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteNoBlendReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteNoBlendReplacement<StoredType>;
     }
 }
 
@@ -117,10 +117,10 @@ void KeyframeBasicSequenceGLenumDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequenceSpec<StoredType,1>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequenceSpec<StoredType,1>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequenceSpec<StoredType,1>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequenceSpec<StoredType,1>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteNoBlendReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteNoBlendReplacement<StoredType>;
     }
 }
 
@@ -128,9 +128,9 @@ void KeyframeBasicSequenceBoxVolumeDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteNoBlendReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteNoBlendReplacement<StoredType>;
     }
 }
 

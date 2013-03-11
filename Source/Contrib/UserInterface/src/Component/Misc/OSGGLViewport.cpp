@@ -97,10 +97,7 @@ const Matrix& GLViewport::getViewMatrix(void)
     {
         return dynamic_cast<Transform*>(_DrawingViewport->getCamera()->getBeacon()->getCore())->getMatrix();
     }
-    else
-    {
-        _Navigator.getMatrix();
-    }
+    return _Navigator.getMatrix();
 }
  
 
@@ -213,7 +210,7 @@ void GLViewport::mouseWheelMoved(MouseWheelEventDetails* const e)
     {
         if(e->getUnitsToScroll() > 0)
         {
-            for(UInt32 i(0) ; i<e->getUnitsToScroll() ;++i)
+            for( Int32 i=0; i<e->getUnitsToScroll() ;++i)
             {
                 _Navigator.buttonPress(Navigator::DOWN_MOUSE,e->getLocation().x(),e->getLocation().y());
                 _Navigator.buttonRelease(Navigator::DOWN_MOUSE,e->getLocation().x(),e->getLocation().y());
@@ -222,7 +219,7 @@ void GLViewport::mouseWheelMoved(MouseWheelEventDetails* const e)
         }
         else if(e->getUnitsToScroll() < 0)
         {
-            for(UInt32 i(0) ; i<abs(e->getUnitsToScroll()) ;++i)
+            for( Int32 i=0; i<abs(e->getUnitsToScroll()) ;++i)
             {
                 _Navigator.buttonPress(Navigator::UP_MOUSE,e->getLocation().x(),e->getLocation().y());
                 _Navigator.buttonRelease(Navigator::UP_MOUSE,e->getLocation().x(),e->getLocation().y());
@@ -287,7 +284,7 @@ Node* GLViewport::grabNode(const Pnt2f& Location, UInt32 TravMask, Real32 MaxDis
     Line ViewRay;
     _DrawingViewport->getCamera()->calcViewRay( ViewRay, ViewportPoint.x(), ViewportPoint.y(), *_DrawingViewport);
 
-    boost::scoped_ptr<IntersectAction> CastRayAction(IntersectAction::create());
+    IntersectActionRefPtr CastRayAction = IntersectAction::create();
 
     CastRayAction->setLine( ViewRay, MaxDistance );
     CastRayAction->setTravMask(TravMask);
@@ -423,10 +420,13 @@ void GLViewport::drawViewport(DrawEnv* dEnv) const
                          getClipTopLeft(), getClipBottomRight(),
                          InsideInsetTopLeftToWindow, InsideInsetBottomRightToWindow);
 
+		OSG::Int32 w = dEnv->getPixelWidth();
+		OSG::Int32 h = dEnv->getPixelHeight();
+		OSG::Int32 x = dEnv->getPixelLeft();
+		OSG::Int32 y = dEnv->getPixelBottom();
 
-        ViewportRefPtr ContainingViewport(dEnv->getAction()->getViewport());
-        InsideInsetTopLeftToWindow = ComponentToWindow(InsideInsetTopLeftToWindow,this, ContainingViewport);
-        InsideInsetBottomRightToWindow = ComponentToWindow(InsideInsetBottomRightToWindow,this, ContainingViewport);
+        InsideInsetTopLeftToWindow = ComponentToWindow(InsideInsetTopLeftToWindow,this, x, y, w, h);
+        InsideInsetBottomRightToWindow = ComponentToWindow(InsideInsetBottomRightToWindow,this, x, y, w, h);
 
 
 
@@ -488,23 +488,23 @@ void GLViewport::drawViewport(DrawEnv* dEnv) const
 
             _DrawingViewport->setEnabled(true);
 
-            _RenderAction->setWindow(dEnv->getAction()->getWindow());
+            _RenderAction->setWindow(dEnv->getWindow());
             
-            if(dEnv->getAction()->getWindow()->getDrawerId() < 0)
+            if(dEnv->getWindow()->getDrawerId() < 0)
             {
-                _RenderAction->setDrawerId(dEnv->getAction()->getWindow()->getId());
+                _RenderAction->setDrawerId(dEnv->getWindow()->getId());
             }
             else
             {
-                _RenderAction->setDrawerId(dEnv->getAction()->getWindow()->getDrawerId());
+                _RenderAction->setDrawerId(dEnv->getWindow()->getDrawerId());
             }
 
-            if((dEnv->getAction()->getWindow()->getDrawMode() & Window::PartitionDrawMask) == 
+            if((dEnv->getWindow()->getDrawMode() & Window::PartitionDrawMask) == 
                                                            Window::SequentialPartitionDraw)
             {
                 _RenderAction->setDrawPartPar(false);
             }
-            else if((dEnv->getAction()->getWindow()->getDrawMode() & Window::PartitionDrawMask) == 
+            else if((dEnv->getWindow()->getDrawMode() & Window::PartitionDrawMask) == 
                                                              Window::ParallelPartitionDraw)
             {
                 _RenderAction->setDrawPartPar(true);
@@ -562,7 +562,7 @@ GLViewport::GLViewport(void) :
 {
     _Navigator.setMode(Navigator::TRACKBALL);
     _Navigator.setClickCenter(false);
-    _RenderAction.reset(RenderAction::create());
+    _RenderAction = RenderAction::create();
 }
 
 GLViewport::GLViewport(const GLViewport &source) :
@@ -571,7 +571,7 @@ GLViewport::GLViewport(const GLViewport &source) :
 {
     _Navigator.setMode(Navigator::TRACKBALL);
     _Navigator.setClickCenter(false);
-    _RenderAction.reset(RenderAction::create());
+    _RenderAction = RenderAction::create();
 }
 
 GLViewport::~GLViewport(void)

@@ -44,8 +44,8 @@ ENDIF(WIN32)
 ##############################################################################
 # MAIN BUILD STEPS
 ##############################################################################
-
-OSG_COLLECT_LIBS()
+SET( OSG_ENABLE_FCD2CODE FALSE )
+OSG_COLLECT_LIBS(FALSE)
 
 
 IF(OSG_WITH_CUDA)

@@ -36,17 +36,17 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGANIMATOR_H_
-#define _OSGANIMATOR_H_
+#ifndef _OSGTBANIMATOR_H_
+#define _OSGTBANIMATOR_H_
 #ifdef __sgi
 #pragma once
 #endif
 
-#include "OSGAnimatorBase.h"
+#include "OSGTBAnimatorBase.h"
 
 OSG_BEGIN_NAMESPACE
 
-class OSG_TBANIMATION_DLLMAPPING Animator : public AnimatorBase
+class OSG_TBANIMATION_DLLMAPPING TBAnimator : public TBAnimatorBase
 {
   protected:
 
@@ -78,8 +78,8 @@ class OSG_TBANIMATION_DLLMAPPING Animator : public AnimatorBase
                                  the current result with the value */
     };
 
-    typedef AnimatorBase Inherited;
-    typedef Animator     Self;
+    typedef TBAnimatorBase Inherited;
+    typedef TBAnimator     Self;
 
     /*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
@@ -120,15 +120,15 @@ class OSG_TBANIMATION_DLLMAPPING Animator : public AnimatorBase
     /*! \name                  Constructors                                */
     /*! \{                                                                 */
 
-    Animator(void);
-    Animator(const Animator &source);
+    TBAnimator(void);
+    TBAnimator(const TBAnimator &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~Animator(void);
+    virtual ~TBAnimator(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -143,17 +143,17 @@ class OSG_TBANIMATION_DLLMAPPING Animator : public AnimatorBase
   private:
 
     friend class FieldContainer;
-    friend class AnimatorBase;
+    friend class TBAnimatorBase;
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const Animator &source);
+    void operator =(const TBAnimator &source);
 };
 
-typedef Animator *AnimatorP;
+typedef TBAnimator *TBAnimatorP;
 
 OSG_END_NAMESPACE
 
-#include "OSGAnimatorBase.inl"
-#include "OSGAnimator.inl"
+#include "OSGTBAnimatorBase.inl"
+#include "OSGTBAnimator.inl"
 
 #endif /* _OSGANIMATOR_H_ */

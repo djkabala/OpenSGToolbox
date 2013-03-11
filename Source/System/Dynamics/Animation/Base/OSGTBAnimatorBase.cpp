@@ -59,8 +59,8 @@
 
 
 
-#include "OSGAnimatorBase.h"
-#include "OSGAnimator.h"
+#include "OSGTBAnimatorBase.h"
+#include "OSGTBAnimator.h"
 
 #include <boost/bind.hpp>
 
@@ -89,37 +89,37 @@ OSG_BEGIN_NAMESPACE
 \***************************************************************************/
 
 #if !defined(OSG_DO_DOC) || defined(OSG_DOC_DEV)
-DataType FieldTraits<Animator *>::_type("AnimatorPtr", "FieldContainerPtr");
+DataType FieldTraits<TBAnimator *>::_type("TBAnimatorPtr", "FieldContainerPtr");
 #endif
 
-OSG_FIELDTRAITS_GETTYPE(Animator *)
+OSG_FIELDTRAITS_GETTYPE(TBAnimator *)
 
 OSG_EXPORT_PTR_SFIELD_FULL(PointerSField,
-                           Animator *,
+                           TBAnimator *,
                            0);
 
 OSG_EXPORT_PTR_MFIELD_FULL(PointerMField,
-                           Animator *,
+                           TBAnimator *,
                            0);
 
 /***************************************************************************\
  *                         Field Description                               *
 \***************************************************************************/
 
-void AnimatorBase::classDescInserter(TypeObject &oType)
+void TBAnimatorBase::classDescInserter(TypeObject &oType)
 {
 }
 
 
-AnimatorBase::TypeObject AnimatorBase::_type(
-    AnimatorBase::getClassname(),
+TBAnimatorBase::TypeObject TBAnimatorBase::_type(
+    TBAnimatorBase::getClassname(),
     Inherited::getClassname(),
     "NULL",
     0,
     NULL,
-    Animator::initMethod,
-    Animator::exitMethod,
-    reinterpret_cast<InitalInsertDescFunc>(&Animator::classDescInserter),
+    TBAnimator::initMethod,
+    TBAnimator::exitMethod,
+    reinterpret_cast<InitalInsertDescFunc>(&TBAnimator::classDescInserter),
     false,
     0,
     "<?xml version=\"1.0\"?>\n"
@@ -145,19 +145,19 @@ AnimatorBase::TypeObject AnimatorBase::_type(
 
 /*------------------------------ get -----------------------------------*/
 
-FieldContainerType &AnimatorBase::getType(void)
+FieldContainerType &TBAnimatorBase::getType(void)
 {
     return _type;
 }
 
-const FieldContainerType &AnimatorBase::getType(void) const
+const FieldContainerType &TBAnimatorBase::getType(void) const
 {
     return _type;
 }
 
-UInt32 AnimatorBase::getContainerSize(void) const
+UInt32 TBAnimatorBase::getContainerSize(void) const
 {
-    return sizeof(Animator);
+    return sizeof(TBAnimator);
 }
 
 /*------------------------- decorator get ------------------------------*/
@@ -169,7 +169,7 @@ UInt32 AnimatorBase::getContainerSize(void) const
 
 /*------------------------------ access -----------------------------------*/
 
-UInt32 AnimatorBase::getBinSize(ConstFieldMaskArg whichField)
+UInt32 TBAnimatorBase::getBinSize(ConstFieldMaskArg whichField)
 {
     UInt32 returnValue = Inherited::getBinSize(whichField);
 
@@ -177,14 +177,14 @@ UInt32 AnimatorBase::getBinSize(ConstFieldMaskArg whichField)
     return returnValue;
 }
 
-void AnimatorBase::copyToBin(BinaryDataHandler &pMem,
+void TBAnimatorBase::copyToBin(BinaryDataHandler &pMem,
                                   ConstFieldMaskArg  whichField)
 {
     Inherited::copyToBin(pMem, whichField);
 
 }
 
-void AnimatorBase::copyFromBin(BinaryDataHandler &pMem,
+void TBAnimatorBase::copyFromBin(BinaryDataHandler &pMem,
                                     ConstFieldMaskArg  whichField)
 {
     Inherited::copyFromBin(pMem, whichField);
@@ -195,12 +195,12 @@ void AnimatorBase::copyFromBin(BinaryDataHandler &pMem,
 
 /*------------------------- constructors ----------------------------------*/
 
-AnimatorBase::AnimatorBase(void) :
+TBAnimatorBase::TBAnimatorBase(void) :
     Inherited()
 {
 }
 
-AnimatorBase::AnimatorBase(const AnimatorBase &source) :
+TBAnimatorBase::TBAnimatorBase(const TBAnimatorBase &source) :
     Inherited(source)
 {
 }
@@ -208,7 +208,7 @@ AnimatorBase::AnimatorBase(const AnimatorBase &source) :
 
 /*-------------------------- destructors ----------------------------------*/
 
-AnimatorBase::~AnimatorBase(void)
+TBAnimatorBase::~TBAnimatorBase(void)
 {
 }
 
@@ -216,15 +216,15 @@ AnimatorBase::~AnimatorBase(void)
 
 
 #ifdef OSG_MT_CPTR_ASPECT
-void AnimatorBase::execSyncV(      FieldContainer    &oFrom,
+void TBAnimatorBase::execSyncV(      FieldContainer    &oFrom,
                                         ConstFieldMaskArg  whichField,
                                         AspectOffsetStore &oOffsets,
                                         ConstFieldMaskArg  syncMode,
                                   const UInt32             uiSyncInfo)
 {
-    Animator *pThis = static_cast<Animator *>(this);
+    TBAnimator *pThis = static_cast<TBAnimator *>(this);
 
-    pThis->execSync(static_cast<Animator *>(&oFrom),
+    pThis->execSync(static_cast<TBAnimator *>(&oFrom),
                     whichField,
                     oOffsets,
                     syncMode,
@@ -234,7 +234,7 @@ void AnimatorBase::execSyncV(      FieldContainer    &oFrom,
 
 
 
-void AnimatorBase::resolveLinks(void)
+void TBAnimatorBase::resolveLinks(void)
 {
     Inherited::resolveLinks();
 

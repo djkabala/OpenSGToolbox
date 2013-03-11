@@ -51,8 +51,8 @@
 \*****************************************************************************/
 
 
-#ifndef _OSGANIMATIONBASE_H_
-#define _OSGANIMATIONBASE_H_
+#ifndef OSGTBANIMATIONBASE_H_
+#define OSGTBANIMATIONBASE_H_
 #ifdef __sgi
 #pragma once
 #endif
@@ -67,7 +67,7 @@
 
 #include "OSGSysFields.h"               // Cycling type
 
-#include "OSGAnimationFields.h"
+#include "OSGTBAnimationFields.h"
 
 //Event Producer Headers
 #include "OSGActivity.h"
@@ -77,11 +77,11 @@
 
 OSG_BEGIN_NAMESPACE
 
-class Animation;
+class TBAnimation;
 
 //! \brief Animation Base Class.
 
-class OSG_TBANIMATION_DLLMAPPING AnimationBase : public AttachmentContainer
+class OSG_TBANIMATION_DLLMAPPING TBAnimationBase : public AttachmentContainer
 {
   public:
 
@@ -91,7 +91,7 @@ class OSG_TBANIMATION_DLLMAPPING AnimationBase : public AttachmentContainer
     typedef Inherited::TypeObject TypeObject;
     typedef TypeObject::InitPhase InitPhase;
 
-    OSG_GEN_INTERNALPTR(Animation);
+    OSG_GEN_INTERNALPTR(TBAnimation);
     
     
     typedef AnimationEventDetails AnimationStartedEventDetailsType;
@@ -372,15 +372,15 @@ class OSG_TBANIMATION_DLLMAPPING AnimationBase : public AttachmentContainer
     /*! \name                   Constructors                               */
     /*! \{                                                                 */
 
-    AnimationBase(void);
-    AnimationBase(const AnimationBase &source);
+    TBAnimationBase(void);
+    TBAnimationBase(const TBAnimationBase &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~AnimationBase(void);
+    virtual ~TBAnimationBase(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -440,7 +440,7 @@ class OSG_TBANIMATION_DLLMAPPING AnimationBase : public AttachmentContainer
                                  ConstFieldMaskArg  syncMode  ,
                            const UInt32             uiSyncInfo);
 
-            void execSync (      AnimationBase *pFrom,
+            void execSync (      TBAnimationBase *pFrom,
                                  ConstFieldMaskArg  whichField,
                                  AspectOffsetStore &oOffsets,
                                  ConstFieldMaskArg  syncMode  ,
@@ -478,10 +478,10 @@ class OSG_TBANIMATION_DLLMAPPING AnimationBase : public AttachmentContainer
 
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const AnimationBase &source);
+    void operator =(const TBAnimationBase &source);
 };
 
-typedef AnimationBase *AnimationBaseP;
+typedef TBAnimationBase *TBAnimationBaseP;
 
 OSG_END_NAMESPACE
 

@@ -36,13 +36,13 @@
  *                                                                           *
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OSGANIMATION_H_
-#define _OSGANIMATION_H_
+#ifndef OSGTBANIMATION_H_
+#define OSGTBANIMATION_H_
 #ifdef __sgi
 #pragma once
 #endif
 
-#include "OSGAnimationBase.h"
+#include "OSGTBAnimationBase.h"
 
 //#include "OSGAnimationAdvancer.h"
 #include "OSGAnimationEventDetails.h"
@@ -50,7 +50,7 @@
 
 OSG_BEGIN_NAMESPACE
 
-class OSG_TBANIMATION_DLLMAPPING Animation : public AnimationBase
+class OSG_TBANIMATION_DLLMAPPING TBAnimation : public TBAnimationBase
 {
   protected:
 
@@ -58,8 +58,8 @@ class OSG_TBANIMATION_DLLMAPPING Animation : public AnimationBase
 
   public:
 
-    typedef AnimationBase Inherited;
-    typedef Animation     Self;
+    typedef TBAnimationBase Inherited;
+    typedef TBAnimation     Self;
 
     /*---------------------------------------------------------------------*/
     /*! \name                      Sync                                    */
@@ -137,15 +137,15 @@ class OSG_TBANIMATION_DLLMAPPING Animation : public AnimationBase
     /*! \name                  Constructors                                */
     /*! \{                                                                 */
 
-    Animation(void);
-    Animation(const Animation &source);
+    TBAnimation(void);
+    TBAnimation(const TBAnimation &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~Animation(void);
+    virtual ~TBAnimation(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -176,18 +176,18 @@ class OSG_TBANIMATION_DLLMAPPING Animation : public AnimationBase
   private:
 
     friend class FieldContainer;
-    friend class AnimationBase;
+    friend class TBAnimationBase;
     friend class AnimationGroup;
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const Animation &source);
+    void operator =(const TBAnimation &source);
 };
 
-typedef Animation *AnimationP;
+typedef TBAnimation *TBAnimationP;
 
 OSG_END_NAMESPACE
 
-#include "OSGAnimationBase.inl"
-#include "OSGAnimation.inl"
+#include "OSGTBAnimationBase.inl"
+#include "OSGTBAnimation.inl"
 
 #endif /* _OSGANIMATION_H_ */

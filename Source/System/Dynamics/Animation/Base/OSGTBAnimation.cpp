@@ -45,7 +45,7 @@
 
 #include <OSGConfig.h>
 
-#include "OSGAnimation.h"
+#include "OSGTBAnimation.h"
 #include "OSGUpdateEventDetails.h"
 #include "OSGStatCollector.h"
 #include <boost/bind.hpp>
@@ -74,10 +74,10 @@ OSG_BEGIN_NAMESPACE
  *                           Class variables                               *
 \***************************************************************************/
 
-StatElemDesc<StatTimeElem> Animation::statAnimUpdateTime("AnimUpdateTime", 
+StatElemDesc<StatTimeElem> TBAnimation::statAnimUpdateTime("AnimUpdateTime", 
                                                          "time to update all animations");
 
-StatElemDesc<StatIntElem> Animation::statNAnimations("NAnimations", 
+StatElemDesc<StatIntElem> TBAnimation::statNAnimations("NAnimations", 
                                                      "number of animations updated");
 
 
@@ -85,7 +85,7 @@ StatElemDesc<StatIntElem> Animation::statNAnimations("NAnimations",
  *                           Class methods                                 *
 \***************************************************************************/
 
-void Animation::initMethod(InitPhase ePhase)
+void TBAnimation::initMethod(InitPhase ePhase)
 {
     Inherited::initMethod(ePhase);
 
@@ -109,7 +109,7 @@ void Animation::initMethod(InitPhase ePhase)
  *
  * @return The length in seconds of the animation.
  */
-Real32 Animation::getLength(void) const
+Real32 TBAnimation::getLength(void) const
 {
     if(getCycling() > 0)
     {
@@ -129,7 +129,7 @@ Real32 Animation::getLength(void) const
  *
  * @return The length, in seconds, of one cycle of the animation.
  */
-Real32 Animation::getCycleLength(void) const
+Real32 TBAnimation::getCycleLength(void) const
 {
     Real32 UnclippedCycleLength;
     if(getSpan() > 0.0f)
@@ -163,7 +163,7 @@ Real32 Animation::getCycleLength(void) const
  *
  * @return The length, in seconds, of the unclipped animation.
  */
-Real32 Animation::getUnclippedLength(void) const
+Real32 TBAnimation::getUnclippedLength(void) const
 {
     if(getCycling() > 0)
     {
@@ -182,7 +182,7 @@ Real32 Animation::getUnclippedLength(void) const
  * @param[in] StartTime The time (in seconds) to start the animation at.
  * This defaults to time 0.0.
  */
-void Animation::start(const Time& StartTime)
+void TBAnimation::start(const Time& StartTime)
 {
     if(_IsPlaying)
     {
@@ -205,7 +205,7 @@ void Animation::start(const Time& StartTime)
  *
  * @param[in] SeekTime The time, in seconds, to move the animation to.
  */
-void Animation::seek(const Time& SeekTime)
+void TBAnimation::seek(const Time& SeekTime)
 {
     if(_IsPlaying)
     {
@@ -223,7 +223,7 @@ void Animation::seek(const Time& SeekTime)
  * animation is already paused.  If false, the animation will be
  * unpaused.
  */
-void Animation::pause(bool ShouldPause)
+void TBAnimation::pause(bool ShouldPause)
 {
     if(_IsPaused && !ShouldPause)
     {
@@ -244,7 +244,7 @@ void Animation::pause(bool ShouldPause)
  * @param[in] DisconnectFromEventProducer If true the animation will also be
  * detached from the event producer. By default it is true.
  */
-void Animation::stop(bool DisconnectFromEventProducer)
+void TBAnimation::stop(bool DisconnectFromEventProducer)
 {
     if(_IsPlaying)
     {
@@ -268,7 +268,7 @@ void Animation::stop(bool DisconnectFromEventProducer)
  * \param[in] ElapsedTime The time, in seconds, since the previous call to
  * update.
  */
-bool Animation::update(const Time& ElapsedTime)
+bool TBAnimation::update(const Time& ElapsedTime)
 {
     if(!_IsPlaying || _IsPaused)
     {
@@ -359,7 +359,7 @@ bool Animation::update(const Time& ElapsedTime)
  *
  * @param[in] Producer A ReflexiveContainer that can produce an UpdateEvent.
  */
-void Animation::attachUpdateProducer(ReflexiveContainer* const producer)
+void TBAnimation::attachUpdateProducer(ReflexiveContainer* const producer)
 {
     const EventDescription* Desc(producer->getProducerType().findEventDescription("Update"));
 
@@ -376,17 +376,17 @@ void Animation::attachUpdateProducer(ReflexiveContainer* const producer)
  * \brief Detach the event update producer from this animation if there is one
  * attached.
  */
-void Animation::detachUpdateProducer(void)
+void TBAnimation::detachUpdateProducer(void)
 {
     _UpdateEventConnection.disconnect();
 }
 
-bool Animation::isConnectableEvent(EventDescription const * eventDesc) const
+bool TBAnimation::isConnectableEvent(EventDescription const * eventDesc) const
 {
     return eventDesc->getEventArgumentType() == FieldTraits<UpdateEventDetails *>::getType();
 }
 
-Animation::EventDescVector Animation::getConnectableEvents(void) const
+TBAnimation::EventDescVector TBAnimation::getConnectableEvents(void) const
 {
     EventDescVector ConnectableEvents;
 
@@ -398,7 +398,7 @@ Animation::EventDescVector Animation::getConnectableEvents(void) const
 }
 
 bool
-Animation::isConnected(EventDescription const * eventDesc) const
+TBAnimation::isConnected(EventDescription const * eventDesc) const
 {
     if(eventDesc->getEventArgumentType() == FieldTraits<UpdateEventDetails *>::getType())
     {
@@ -411,7 +411,7 @@ Animation::isConnected(EventDescription const * eventDesc) const
 }
 
 bool
-Animation::disconnectFromEvent(EventDescription const * eventDesc) const
+TBAnimation::disconnectFromEvent(EventDescription const * eventDesc) const
 {
     if(eventDesc->getEventArgumentType() == FieldTraits<UpdateEventDetails *>::getType())
     {
@@ -425,7 +425,7 @@ Animation::disconnectFromEvent(EventDescription const * eventDesc) const
 }
 
 boost::signals2::connection 
-Animation::connectToEvent(EventDescription const * eventDesc,
+TBAnimation::connectToEvent(EventDescription const * eventDesc,
                           ReflexiveContainer* const eventProducer) const
 {
     //Validate the EventDescription and producer
@@ -433,8 +433,8 @@ Animation::connectToEvent(EventDescription const * eventDesc,
     if(validateConnectable(eventDesc,eventProducer))
     {
         return eventProducer->connectEvent(LocalDesc->getEventId(),
-                                           boost::bind(&Animation::handleUpdate,
-                                                       const_cast<Animation*>(this),
+                                           boost::bind(&TBAnimation::handleUpdate,
+                                                       const_cast<TBAnimation*>(this),
                                                        _1));
     }
     else
@@ -447,42 +447,42 @@ Animation::connectToEvent(EventDescription const * eventDesc,
  -  private                                                                 -
 \*-------------------------------------------------------------------------*/
 
-void Animation::produceAnimationStarted(void)
+void TBAnimation::produceAnimationStarted(void)
 {
     AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
    
     Inherited::produceAnimationStarted(Details);
 }
 
-void Animation::produceAnimationStopped(void)
+void TBAnimation::produceAnimationStopped(void)
 {
     AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
    
     Inherited::produceAnimationStopped(Details);
 }
 
-void Animation::produceAnimationPaused(void)
+void TBAnimation::produceAnimationPaused(void)
 {
     AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
    
     Inherited::produceAnimationPaused(Details);
 }
 
-void Animation::produceAnimationUnpaused(void)
+void TBAnimation::produceAnimationUnpaused(void)
 {
     AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
    
     Inherited::produceAnimationUnpaused(Details);
 }
 
-void Animation::produceAnimationEnded(void)
+void TBAnimation::produceAnimationEnded(void)
 {
     AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
    
     Inherited::produceAnimationEnded(Details);
 }
 
-void Animation::produceAnimationCycled(void)
+void TBAnimation::produceAnimationCycled(void)
 {
     AnimationEventDetailsUnrecPtr Details = AnimationEventDetails::create(this,getTimeStamp());
    
@@ -491,7 +491,7 @@ void Animation::produceAnimationCycled(void)
 
 /*----------------------- constructors & destructors ----------------------*/
 
-Animation::Animation(void) :
+TBAnimation::TBAnimation(void) :
     Inherited(),
     _CurrentTime(0.0),
     _PrevTime(0.0),
@@ -500,7 +500,7 @@ Animation::Animation(void) :
 {
 }
 
-Animation::Animation(const Animation &source) :
+TBAnimation::TBAnimation(const TBAnimation &source) :
     Inherited(source),
     _CurrentTime(0.0),
     _PrevTime(0.0),
@@ -509,26 +509,26 @@ Animation::Animation(const Animation &source) :
 {
 }
 
-Animation::~Animation(void)
+TBAnimation::~TBAnimation(void)
 {
 }
 
 /*----------------------------- class specific ----------------------------*/
 
-void Animation::changed(ConstFieldMaskArg whichField, 
+void TBAnimation::changed(ConstFieldMaskArg whichField, 
                             UInt32            origin,
                             BitVector         details)
 {
     Inherited::changed(whichField, origin, details);
 }
 
-void Animation::dump(      UInt32    ,
+void TBAnimation::dump(      UInt32    ,
                          const BitVector ) const
 {
     SLOG << "Dump Animation NI" << std::endl;
 }
 
-void Animation::handleUpdate(EventDetails* const details)
+void TBAnimation::handleUpdate(EventDetails* const details)
 {
     Time elapsed = dynamic_cast<UpdateEventDetails* const>(details)->getElapsedTime();
     update(elapsed);

@@ -54,20 +54,20 @@ OSG_BEGIN_NAMESPACE
 
 //! access the type of the class
 inline
-OSG::FieldContainerType &AnimatorBase::getClassType(void)
+OSG::FieldContainerType &TBAnimatorBase::getClassType(void)
 {
     return _type;
 }
 
 //! access the numerical type of the class
 inline
-OSG::UInt32 AnimatorBase::getClassTypeId(void)
+OSG::UInt32 TBAnimatorBase::getClassTypeId(void)
 {
     return _type.getId();
 }
 
 inline
-OSG::UInt16 AnimatorBase::getClassGroupId(void)
+OSG::UInt16 TBAnimatorBase::getClassGroupId(void)
 {
     return _type.getGroupId();
 }
@@ -78,7 +78,7 @@ OSG::UInt16 AnimatorBase::getClassGroupId(void)
 
 #ifdef OSG_MT_CPTR_ASPECT
 inline
-void AnimatorBase::execSync (      AnimatorBase *pFrom,
+void TBAnimatorBase::execSync (      TBAnimatorBase *pFrom,
                                         ConstFieldMaskArg  whichField,
                                         AspectOffsetStore &oOffsets,
                                         ConstFieldMaskArg  syncMode,
@@ -90,11 +90,11 @@ void AnimatorBase::execSync (      AnimatorBase *pFrom,
 
 
 inline
-const Char8 *AnimatorBase::getClassname(void)
+const Char8 *TBAnimatorBase::getClassname(void)
 {
-    return "Animator";
+    return "TBAnimator";
 }
-OSG_GEN_CONTAINERPTR(Animator);
+OSG_GEN_CONTAINERPTR(TBAnimator);
 
 OSG_END_NAMESPACE
 

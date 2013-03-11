@@ -47,7 +47,7 @@ OSG_BEGIN_NAMESPACE
  * @return true if the animation is playing, false otherwise.
  */
 inline
-bool Animation::isPlaying(void) const
+bool TBAnimation::isPlaying(void) const
 {
     return _IsPlaying;
 }
@@ -59,7 +59,7 @@ bool Animation::isPlaying(void) const
  * @return true if the animation is paused, false otherwise.
  */
 inline
-bool Animation::isPaused(void) const
+bool TBAnimation::isPaused(void) const
 {
     return _IsPaused;
 }

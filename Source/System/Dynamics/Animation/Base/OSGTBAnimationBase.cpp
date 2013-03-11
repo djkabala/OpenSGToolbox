@@ -59,8 +59,8 @@
 
 
 
-#include "OSGAnimationBase.h"
-#include "OSGAnimation.h"
+#include "OSGTBAnimationBase.h"
+#include "OSGTBAnimation.h"
 
 #include <boost/bind.hpp>
 
@@ -122,24 +122,24 @@ OSG_BEGIN_NAMESPACE
 \***************************************************************************/
 
 #if !defined(OSG_DO_DOC) || defined(OSG_DOC_DEV)
-DataType FieldTraits<Animation *>::_type("AnimationPtr", "AttachmentContainerPtr");
+DataType FieldTraits<TBAnimation *>::_type("TBAnimationPtr", "AttachmentContainerPtr");
 #endif
 
-OSG_FIELDTRAITS_GETTYPE(Animation *)
+OSG_FIELDTRAITS_GETTYPE(TBAnimation *)
 
 OSG_EXPORT_PTR_SFIELD_FULL(PointerSField,
-                           Animation *,
+                           TBAnimation *,
                            0);
 
 OSG_EXPORT_PTR_MFIELD_FULL(PointerMField,
-                           Animation *,
+                           TBAnimation *,
                            0);
 
 /***************************************************************************\
  *                         Field Description                               *
 \***************************************************************************/
 
-void AnimationBase::classDescInserter(TypeObject &oType)
+void TBAnimationBase::classDescInserter(TypeObject &oType)
 {
     FieldDescriptionBase *pDesc = NULL;
 
@@ -151,8 +151,8 @@ void AnimationBase::classDescInserter(TypeObject &oType)
         CyclingFieldId, CyclingFieldMask,
         false,
         (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&Animation::editHandleCycling),
-        static_cast<FieldGetMethodSig >(&Animation::getHandleCycling));
+        static_cast<FieldEditMethodSig>(&TBAnimation::editHandleCycling),
+        static_cast<FieldGetMethodSig >(&TBAnimation::getHandleCycling));
 
     oType.addInitialDesc(pDesc);
 
@@ -163,8 +163,8 @@ void AnimationBase::classDescInserter(TypeObject &oType)
         ScaleFieldId, ScaleFieldMask,
         false,
         (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&Animation::editHandleScale),
-        static_cast<FieldGetMethodSig >(&Animation::getHandleScale));
+        static_cast<FieldEditMethodSig>(&TBAnimation::editHandleScale),
+        static_cast<FieldGetMethodSig >(&TBAnimation::getHandleScale));
 
     oType.addInitialDesc(pDesc);
 
@@ -175,8 +175,8 @@ void AnimationBase::classDescInserter(TypeObject &oType)
         OffsetFieldId, OffsetFieldMask,
         false,
         (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&Animation::editHandleOffset),
-        static_cast<FieldGetMethodSig >(&Animation::getHandleOffset));
+        static_cast<FieldEditMethodSig>(&TBAnimation::editHandleOffset),
+        static_cast<FieldGetMethodSig >(&TBAnimation::getHandleOffset));
 
     oType.addInitialDesc(pDesc);
 
@@ -187,8 +187,8 @@ void AnimationBase::classDescInserter(TypeObject &oType)
         SpanFieldId, SpanFieldMask,
         false,
         (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&Animation::editHandleSpan),
-        static_cast<FieldGetMethodSig >(&Animation::getHandleSpan));
+        static_cast<FieldEditMethodSig>(&TBAnimation::editHandleSpan),
+        static_cast<FieldGetMethodSig >(&TBAnimation::getHandleSpan));
 
     oType.addInitialDesc(pDesc);
 
@@ -199,22 +199,22 @@ void AnimationBase::classDescInserter(TypeObject &oType)
         CyclesFieldId, CyclesFieldMask,
         true,
         (Field::SFDefaultFlags | Field::FStdAccess),
-        static_cast<FieldEditMethodSig>(&Animation::editHandleCycles),
-        static_cast<FieldGetMethodSig >(&Animation::getHandleCycles));
+        static_cast<FieldEditMethodSig>(&TBAnimation::editHandleCycles),
+        static_cast<FieldGetMethodSig >(&TBAnimation::getHandleCycles));
 
     oType.addInitialDesc(pDesc);
 }
 
 
-AnimationBase::TypeObject AnimationBase::_type(
-    AnimationBase::getClassname(),
+TBAnimationBase::TypeObject TBAnimationBase::_type(
+    TBAnimationBase::getClassname(),
     Inherited::getClassname(),
     "NULL",
     0,
     NULL,
-    Animation::initMethod,
-    Animation::exitMethod,
-    reinterpret_cast<InitalInsertDescFunc>(&Animation::classDescInserter),
+    TBAnimation::initMethod,
+    TBAnimation::exitMethod,
+    reinterpret_cast<InitalInsertDescFunc>(&TBAnimation::classDescInserter),
     false,
     0,
     "<?xml version=\"1.0\"?>\n"
@@ -350,53 +350,53 @@ AnimationBase::TypeObject AnimationBase::_type(
 
 //! Animation Produced Events
 
-EventDescription *AnimationBase::_eventDesc[] =
+EventDescription *TBAnimationBase::_eventDesc[] =
 {
     new EventDescription("AnimationStarted", 
                           "",
                           AnimationStartedEventId, 
                           FieldTraits<AnimationEventDetails *>::getType(),
                           true,
-                          static_cast<EventGetMethod>(&AnimationBase::getHandleAnimationStartedSignal)),
+                          static_cast<EventGetMethod>(&TBAnimationBase::getHandleAnimationStartedSignal)),
 
     new EventDescription("AnimationStopped", 
                           "",
                           AnimationStoppedEventId, 
                           FieldTraits<AnimationEventDetails *>::getType(),
                           true,
-                          static_cast<EventGetMethod>(&AnimationBase::getHandleAnimationStoppedSignal)),
+                          static_cast<EventGetMethod>(&TBAnimationBase::getHandleAnimationStoppedSignal)),
 
     new EventDescription("AnimationPaused", 
                           "",
                           AnimationPausedEventId, 
                           FieldTraits<AnimationEventDetails *>::getType(),
                           true,
-                          static_cast<EventGetMethod>(&AnimationBase::getHandleAnimationPausedSignal)),
+                          static_cast<EventGetMethod>(&TBAnimationBase::getHandleAnimationPausedSignal)),
 
     new EventDescription("AnimationUnpaused", 
                           "",
                           AnimationUnpausedEventId, 
                           FieldTraits<AnimationEventDetails *>::getType(),
                           true,
-                          static_cast<EventGetMethod>(&AnimationBase::getHandleAnimationUnpausedSignal)),
+                          static_cast<EventGetMethod>(&TBAnimationBase::getHandleAnimationUnpausedSignal)),
 
     new EventDescription("AnimationEnded", 
                           "",
                           AnimationEndedEventId, 
                           FieldTraits<AnimationEventDetails *>::getType(),
                           true,
-                          static_cast<EventGetMethod>(&AnimationBase::getHandleAnimationEndedSignal)),
+                          static_cast<EventGetMethod>(&TBAnimationBase::getHandleAnimationEndedSignal)),
 
     new EventDescription("AnimationCycled", 
                           "",
                           AnimationCycledEventId, 
                           FieldTraits<AnimationEventDetails *>::getType(),
                           true,
-                          static_cast<EventGetMethod>(&AnimationBase::getHandleAnimationCycledSignal))
+                          static_cast<EventGetMethod>(&TBAnimationBase::getHandleAnimationCycledSignal))
 
 };
 
-EventProducerType AnimationBase::_producerType(
+EventProducerType TBAnimationBase::_producerType(
     "AnimationProducerType",
     "EventProducerType",
     "",
@@ -406,89 +406,89 @@ EventProducerType AnimationBase::_producerType(
 
 /*------------------------------ get -----------------------------------*/
 
-FieldContainerType &AnimationBase::getType(void)
+FieldContainerType &TBAnimationBase::getType(void)
 {
     return _type;
 }
 
-const FieldContainerType &AnimationBase::getType(void) const
+const FieldContainerType &TBAnimationBase::getType(void) const
 {
     return _type;
 }
 
-const EventProducerType &AnimationBase::getProducerType(void) const
+const EventProducerType &TBAnimationBase::getProducerType(void) const
 {
     return _producerType;
 }
 
-UInt32 AnimationBase::getContainerSize(void) const
+UInt32 TBAnimationBase::getContainerSize(void) const
 {
-    return sizeof(Animation);
+    return sizeof(TBAnimation);
 }
 
 /*------------------------- decorator get ------------------------------*/
 
 
-SFInt32 *AnimationBase::editSFCycling(void)
+SFInt32 *TBAnimationBase::editSFCycling(void)
 {
     editSField(CyclingFieldMask);
 
     return &_sfCycling;
 }
 
-const SFInt32 *AnimationBase::getSFCycling(void) const
+const SFInt32 *TBAnimationBase::getSFCycling(void) const
 {
     return &_sfCycling;
 }
 
 
-SFReal32 *AnimationBase::editSFScale(void)
+SFReal32 *TBAnimationBase::editSFScale(void)
 {
     editSField(ScaleFieldMask);
 
     return &_sfScale;
 }
 
-const SFReal32 *AnimationBase::getSFScale(void) const
+const SFReal32 *TBAnimationBase::getSFScale(void) const
 {
     return &_sfScale;
 }
 
 
-SFReal32 *AnimationBase::editSFOffset(void)
+SFReal32 *TBAnimationBase::editSFOffset(void)
 {
     editSField(OffsetFieldMask);
 
     return &_sfOffset;
 }
 
-const SFReal32 *AnimationBase::getSFOffset(void) const
+const SFReal32 *TBAnimationBase::getSFOffset(void) const
 {
     return &_sfOffset;
 }
 
 
-SFReal32 *AnimationBase::editSFSpan(void)
+SFReal32 *TBAnimationBase::editSFSpan(void)
 {
     editSField(SpanFieldMask);
 
     return &_sfSpan;
 }
 
-const SFReal32 *AnimationBase::getSFSpan(void) const
+const SFReal32 *TBAnimationBase::getSFSpan(void) const
 {
     return &_sfSpan;
 }
 
 
-SFReal32 *AnimationBase::editSFCycles(void)
+SFReal32 *TBAnimationBase::editSFCycles(void)
 {
     editSField(CyclesFieldMask);
 
     return &_sfCycles;
 }
 
-const SFReal32 *AnimationBase::getSFCycles(void) const
+const SFReal32 *TBAnimationBase::getSFCycles(void) const
 {
     return &_sfCycles;
 }
@@ -500,7 +500,7 @@ const SFReal32 *AnimationBase::getSFCycles(void) const
 
 /*------------------------------ access -----------------------------------*/
 
-UInt32 AnimationBase::getBinSize(ConstFieldMaskArg whichField)
+UInt32 TBAnimationBase::getBinSize(ConstFieldMaskArg whichField)
 {
     UInt32 returnValue = Inherited::getBinSize(whichField);
 
@@ -528,7 +528,7 @@ UInt32 AnimationBase::getBinSize(ConstFieldMaskArg whichField)
     return returnValue;
 }
 
-void AnimationBase::copyToBin(BinaryDataHandler &pMem,
+void TBAnimationBase::copyToBin(BinaryDataHandler &pMem,
                                   ConstFieldMaskArg  whichField)
 {
     Inherited::copyToBin(pMem, whichField);
@@ -555,7 +555,7 @@ void AnimationBase::copyToBin(BinaryDataHandler &pMem,
     }
 }
 
-void AnimationBase::copyFromBin(BinaryDataHandler &pMem,
+void TBAnimationBase::copyFromBin(BinaryDataHandler &pMem,
                                     ConstFieldMaskArg  whichField)
 {
     Inherited::copyFromBin(pMem, whichField);
@@ -585,7 +585,7 @@ void AnimationBase::copyFromBin(BinaryDataHandler &pMem,
 
 
 /*------------------------- event producers ----------------------------------*/
-void AnimationBase::produceEvent(UInt32 eventId, EventDetails* const e)
+void TBAnimationBase::produceEvent(UInt32 eventId, EventDetails* const e)
 {
     switch(eventId)
     {
@@ -631,7 +631,7 @@ void AnimationBase::produceEvent(UInt32 eventId, EventDetails* const e)
     }
 }
 
-boost::signals2::connection AnimationBase::connectEvent(UInt32 eventId, 
+boost::signals2::connection TBAnimationBase::connectEvent(UInt32 eventId, 
                                                              const BaseEventType::slot_type &listener, 
                                                              boost::signals2::connect_position at)
 {
@@ -664,7 +664,7 @@ boost::signals2::connection AnimationBase::connectEvent(UInt32 eventId,
     return boost::signals2::connection();
 }
 
-boost::signals2::connection  AnimationBase::connectEvent(UInt32 eventId, 
+boost::signals2::connection  TBAnimationBase::connectEvent(UInt32 eventId, 
                                                               const BaseEventType::group_type &group,
                                                               const BaseEventType::slot_type &listener,
                                                               boost::signals2::connect_position at)
@@ -698,7 +698,7 @@ boost::signals2::connection  AnimationBase::connectEvent(UInt32 eventId,
     return boost::signals2::connection();
 }
     
-void  AnimationBase::disconnectEvent(UInt32 eventId, const BaseEventType::group_type &group)
+void  TBAnimationBase::disconnectEvent(UInt32 eventId, const BaseEventType::group_type &group)
 {
     switch(eventId)
     {
@@ -726,7 +726,7 @@ void  AnimationBase::disconnectEvent(UInt32 eventId, const BaseEventType::group_
     }
 }
 
-void  AnimationBase::disconnectAllSlotsEvent(UInt32 eventId)
+void  TBAnimationBase::disconnectAllSlotsEvent(UInt32 eventId)
 {
     switch(eventId)
     {
@@ -754,7 +754,7 @@ void  AnimationBase::disconnectAllSlotsEvent(UInt32 eventId)
     }
 }
 
-bool  AnimationBase::isEmptyEvent(UInt32 eventId) const
+bool  TBAnimationBase::isEmptyEvent(UInt32 eventId) const
 {
     switch(eventId)
     {
@@ -783,7 +783,7 @@ bool  AnimationBase::isEmptyEvent(UInt32 eventId) const
     }
 }
 
-UInt32  AnimationBase::numSlotsEvent(UInt32 eventId) const
+UInt32  TBAnimationBase::numSlotsEvent(UInt32 eventId) const
 {
     switch(eventId)
     {
@@ -815,7 +815,7 @@ UInt32  AnimationBase::numSlotsEvent(UInt32 eventId) const
 
 /*------------------------- constructors ----------------------------------*/
 
-AnimationBase::AnimationBase(void) :
+TBAnimationBase::TBAnimationBase(void) :
     Inherited(),
     _sfCycling                (Int32(-1)),
     _sfScale                  (Real32(1.0)),
@@ -825,7 +825,7 @@ AnimationBase::AnimationBase(void) :
 {
 }
 
-AnimationBase::AnimationBase(const AnimationBase &source) :
+TBAnimationBase::TBAnimationBase(const TBAnimationBase &source) :
     Inherited(source),
     _sfCycling                (source._sfCycling                ),
     _sfScale                  (source._sfScale                  ),
@@ -838,23 +838,23 @@ AnimationBase::AnimationBase(const AnimationBase &source) :
 
 /*-------------------------- destructors ----------------------------------*/
 
-AnimationBase::~AnimationBase(void)
+TBAnimationBase::~TBAnimationBase(void)
 {
 }
 
 
-GetFieldHandlePtr AnimationBase::getHandleCycling         (void) const
+GetFieldHandlePtr TBAnimationBase::getHandleCycling         (void) const
 {
     SFInt32::GetHandlePtr returnValue(
         new  SFInt32::GetHandle(
              &_sfCycling,
              this->getType().getFieldDesc(CyclingFieldId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr AnimationBase::editHandleCycling        (void)
+EditFieldHandlePtr TBAnimationBase::editHandleCycling        (void)
 {
     SFInt32::EditHandlePtr returnValue(
         new  SFInt32::EditHandle(
@@ -868,18 +868,18 @@ EditFieldHandlePtr AnimationBase::editHandleCycling        (void)
     return returnValue;
 }
 
-GetFieldHandlePtr AnimationBase::getHandleScale           (void) const
+GetFieldHandlePtr TBAnimationBase::getHandleScale           (void) const
 {
     SFReal32::GetHandlePtr returnValue(
         new  SFReal32::GetHandle(
              &_sfScale,
              this->getType().getFieldDesc(ScaleFieldId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr AnimationBase::editHandleScale          (void)
+EditFieldHandlePtr TBAnimationBase::editHandleScale          (void)
 {
     SFReal32::EditHandlePtr returnValue(
         new  SFReal32::EditHandle(
@@ -893,18 +893,18 @@ EditFieldHandlePtr AnimationBase::editHandleScale          (void)
     return returnValue;
 }
 
-GetFieldHandlePtr AnimationBase::getHandleOffset          (void) const
+GetFieldHandlePtr TBAnimationBase::getHandleOffset          (void) const
 {
     SFReal32::GetHandlePtr returnValue(
         new  SFReal32::GetHandle(
              &_sfOffset,
              this->getType().getFieldDesc(OffsetFieldId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr AnimationBase::editHandleOffset         (void)
+EditFieldHandlePtr TBAnimationBase::editHandleOffset         (void)
 {
     SFReal32::EditHandlePtr returnValue(
         new  SFReal32::EditHandle(
@@ -918,18 +918,18 @@ EditFieldHandlePtr AnimationBase::editHandleOffset         (void)
     return returnValue;
 }
 
-GetFieldHandlePtr AnimationBase::getHandleSpan            (void) const
+GetFieldHandlePtr TBAnimationBase::getHandleSpan            (void) const
 {
     SFReal32::GetHandlePtr returnValue(
         new  SFReal32::GetHandle(
              &_sfSpan,
              this->getType().getFieldDesc(SpanFieldId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr AnimationBase::editHandleSpan           (void)
+EditFieldHandlePtr TBAnimationBase::editHandleSpan           (void)
 {
     SFReal32::EditHandlePtr returnValue(
         new  SFReal32::EditHandle(
@@ -943,18 +943,18 @@ EditFieldHandlePtr AnimationBase::editHandleSpan           (void)
     return returnValue;
 }
 
-GetFieldHandlePtr AnimationBase::getHandleCycles          (void) const
+GetFieldHandlePtr TBAnimationBase::getHandleCycles          (void) const
 {
     SFReal32::GetHandlePtr returnValue(
         new  SFReal32::GetHandle(
              &_sfCycles,
              this->getType().getFieldDesc(CyclesFieldId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-EditFieldHandlePtr AnimationBase::editHandleCycles         (void)
+EditFieldHandlePtr TBAnimationBase::editHandleCycles         (void)
 {
     SFReal32::EditHandlePtr returnValue(
         new  SFReal32::EditHandle(
@@ -969,83 +969,83 @@ EditFieldHandlePtr AnimationBase::editHandleCycles         (void)
 }
 
 
-GetEventHandlePtr AnimationBase::getHandleAnimationStartedSignal(void) const
+GetEventHandlePtr TBAnimationBase::getHandleAnimationStartedSignal(void) const
 {
     GetEventHandlePtr returnValue(
         new  GetTypedEventHandle<AnimationStartedEventType>(
              const_cast<AnimationStartedEventType *>(&_AnimationStartedEvent),
              _producerType.getEventDescription(AnimationStartedEventId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-GetEventHandlePtr AnimationBase::getHandleAnimationStoppedSignal(void) const
+GetEventHandlePtr TBAnimationBase::getHandleAnimationStoppedSignal(void) const
 {
     GetEventHandlePtr returnValue(
         new  GetTypedEventHandle<AnimationStoppedEventType>(
              const_cast<AnimationStoppedEventType *>(&_AnimationStoppedEvent),
              _producerType.getEventDescription(AnimationStoppedEventId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-GetEventHandlePtr AnimationBase::getHandleAnimationPausedSignal(void) const
+GetEventHandlePtr TBAnimationBase::getHandleAnimationPausedSignal(void) const
 {
     GetEventHandlePtr returnValue(
         new  GetTypedEventHandle<AnimationPausedEventType>(
              const_cast<AnimationPausedEventType *>(&_AnimationPausedEvent),
              _producerType.getEventDescription(AnimationPausedEventId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-GetEventHandlePtr AnimationBase::getHandleAnimationUnpausedSignal(void) const
+GetEventHandlePtr TBAnimationBase::getHandleAnimationUnpausedSignal(void) const
 {
     GetEventHandlePtr returnValue(
         new  GetTypedEventHandle<AnimationUnpausedEventType>(
              const_cast<AnimationUnpausedEventType *>(&_AnimationUnpausedEvent),
              _producerType.getEventDescription(AnimationUnpausedEventId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-GetEventHandlePtr AnimationBase::getHandleAnimationEndedSignal(void) const
+GetEventHandlePtr TBAnimationBase::getHandleAnimationEndedSignal(void) const
 {
     GetEventHandlePtr returnValue(
         new  GetTypedEventHandle<AnimationEndedEventType>(
              const_cast<AnimationEndedEventType *>(&_AnimationEndedEvent),
              _producerType.getEventDescription(AnimationEndedEventId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
-GetEventHandlePtr AnimationBase::getHandleAnimationCycledSignal(void) const
+GetEventHandlePtr TBAnimationBase::getHandleAnimationCycledSignal(void) const
 {
     GetEventHandlePtr returnValue(
         new  GetTypedEventHandle<AnimationCycledEventType>(
              const_cast<AnimationCycledEventType *>(&_AnimationCycledEvent),
              _producerType.getEventDescription(AnimationCycledEventId),
-             const_cast<AnimationBase *>(this)));
+             const_cast<TBAnimationBase *>(this)));
 
     return returnValue;
 }
 
 
 #ifdef OSG_MT_CPTR_ASPECT
-void AnimationBase::execSyncV(      FieldContainer    &oFrom,
+void TBAnimationBase::execSyncV(      FieldContainer    &oFrom,
                                         ConstFieldMaskArg  whichField,
                                         AspectOffsetStore &oOffsets,
                                         ConstFieldMaskArg  syncMode,
                                   const UInt32             uiSyncInfo)
 {
-    Animation *pThis = static_cast<Animation *>(this);
+    TBAnimation *pThis = static_cast<TBAnimation *>(this);
 
-    pThis->execSync(static_cast<Animation *>(&oFrom),
+    pThis->execSync(static_cast<TBAnimation *>(&oFrom),
                     whichField,
                     oOffsets,
                     syncMode,
@@ -1055,7 +1055,7 @@ void AnimationBase::execSyncV(      FieldContainer    &oFrom,
 
 
 
-void AnimationBase::resolveLinks(void)
+void TBAnimationBase::resolveLinks(void)
 {
     Inherited::resolveLinks();
 

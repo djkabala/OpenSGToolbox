@@ -64,16 +64,16 @@
 
 OSG_BEGIN_NAMESPACE
 
-class Animator;
+class TBAnimator;
 
-OSG_GEN_CONTAINERPTR(Animator);
+OSG_GEN_CONTAINERPTR(TBAnimator);
 
 /*! \ingroup GrpTBAnimationFieldTraits
     \ingroup GrpLibOSGTBAnimation
  */
 template <>
-struct FieldTraits<Animator *> :
-    public FieldTraitsFCPtrBase<Animator *>
+struct FieldTraits<TBAnimator *> :
+    public FieldTraitsFCPtrBase<TBAnimator *>
 {
   private:
 
@@ -81,7 +81,7 @@ struct FieldTraits<Animator *> :
 
   public:
 
-    typedef FieldTraits<Animator *>  Self;
+    typedef FieldTraits<TBAnimator *>  Self;
 
     enum                        { Convertible = NotConvertible };
 
@@ -90,89 +90,89 @@ struct FieldTraits<Animator *> :
     template<typename RefCountPolicy> inline
     static const Char8    *getSName     (void);
 
-//    static const char *getSName(void) { return "SFAnimatorPtr"; }
+//    static const char *getSName(void) { return "SFTBAnimatorPtr"; }
     template<typename RefCountPolicy> inline
     static const Char8    *getMName     (void);
 
-//    static const char *getMName(void) { return "MFAnimatorPtr"; }
+//    static const char *getMName(void) { return "MFTBAnimatorPtr"; }
 };
 
 template<> inline
-const Char8 *FieldTraits<Animator *, 0>::getSName<RecordedRefCountPolicy>(void)
+const Char8 *FieldTraits<TBAnimator *, 0>::getSName<RecordedRefCountPolicy>(void)
 {
-    return "SFRecAnimatorPtr"; 
+    return "SFRecTBAnimatorPtr"; 
 }
 
 template<> inline
-const Char8 *FieldTraits<Animator *, 0>::getSName<UnrecordedRefCountPolicy>(void)
+const Char8 *FieldTraits<TBAnimator *, 0>::getSName<UnrecordedRefCountPolicy>(void)
 {
-    return "SFUnrecAnimatorPtr"; 
+    return "SFUnrecTBAnimatorPtr"; 
 }
 
 template<> inline
-const Char8 *FieldTraits<Animator *, 0>::getSName<WeakRefCountPolicy>(void)
+const Char8 *FieldTraits<TBAnimator *, 0>::getSName<WeakRefCountPolicy>(void)
 {
-    return "SFWeakAnimatorPtr"; 
+    return "SFWeakTBAnimatorPtr"; 
 }
 
 template<> inline
-const Char8 *FieldTraits<Animator *, 0>::getSName<NoRefCountPolicy>(void)
+const Char8 *FieldTraits<TBAnimator *, 0>::getSName<NoRefCountPolicy>(void)
 {
-    return "SFUnrefdAnimatorPtr"; 
+    return "SFUnrefdTBAnimatorPtr"; 
 }
 
 template<> inline
-const Char8 *FieldTraits<Animator *, 0>::getMName<RecordedRefCountPolicy>(void)
+const Char8 *FieldTraits<TBAnimator *, 0>::getMName<RecordedRefCountPolicy>(void)
 {
-    return "MFRecAnimatorPtr"; 
+    return "MFRecTBAnimatorPtr"; 
 }
 
 template<> inline
-const Char8 *FieldTraits<Animator *, 0>::getMName<UnrecordedRefCountPolicy>(void)
+const Char8 *FieldTraits<TBAnimator *, 0>::getMName<UnrecordedRefCountPolicy>(void)
 {
-    return "MFUnrecAnimatorPtr"; 
+    return "MFUnrecTBAnimatorPtr"; 
 }
 
 template<> inline
-const Char8 *FieldTraits<Animator *, 0>::getMName<WeakRefCountPolicy>(void)
+const Char8 *FieldTraits<TBAnimator *, 0>::getMName<WeakRefCountPolicy>(void)
 {
-    return "MFWeakAnimatorPtr"; 
+    return "MFWeakTBAnimatorPtr"; 
 }
 
 template<> inline
-const Char8 *FieldTraits<Animator *, 0>::getMName<NoRefCountPolicy>(void)
+const Char8 *FieldTraits<TBAnimator *, 0>::getMName<NoRefCountPolicy>(void)
 {
-    return "MFUnrefdAnimatorPtr"; 
+    return "MFUnrefdTBAnimatorPtr"; 
 }
 
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 /*! \ingroup GrpTBAnimationFieldSFields */
-typedef PointerSField<Animator *,
-                      RecordedRefCountPolicy  > SFRecAnimatorPtr;
+typedef PointerSField<TBAnimator *,
+                      RecordedRefCountPolicy  > SFRecTBAnimatorPtr;
 /*! \ingroup GrpTBAnimationFieldSFields */
-typedef PointerSField<Animator *,
-                      UnrecordedRefCountPolicy> SFUnrecAnimatorPtr;
+typedef PointerSField<TBAnimator *,
+                      UnrecordedRefCountPolicy> SFUnrecTBAnimatorPtr;
 /*! \ingroup GrpTBAnimationFieldSFields */
-typedef PointerSField<Animator *,
-                      WeakRefCountPolicy      > SFWeakAnimatorPtr;
+typedef PointerSField<TBAnimator *,
+                      WeakRefCountPolicy      > SFWeakTBAnimatorPtr;
 /*! \ingroup GrpTBAnimationFieldSFields */
-typedef PointerSField<Animator *,
-                      NoRefCountPolicy        > SFUncountedAnimatorPtr;
+typedef PointerSField<TBAnimator *,
+                      NoRefCountPolicy        > SFUncountedTBAnimatorPtr;
 
 
 /*! \ingroup GrpTBAnimationFieldMFields */
-typedef PointerMField<Animator *,
-                      RecordedRefCountPolicy  > MFRecAnimatorPtr;
+typedef PointerMField<TBAnimator *,
+                      RecordedRefCountPolicy  > MFRecTBAnimatorPtr;
 /*! \ingroup GrpTBAnimationFieldMFields */
-typedef PointerMField<Animator *,
-                      UnrecordedRefCountPolicy> MFUnrecAnimatorPtr;
+typedef PointerMField<TBAnimator *,
+                      UnrecordedRefCountPolicy> MFUnrecTBAnimatorPtr;
 /*! \ingroup GrpTBAnimationFieldMFields */
-typedef PointerMField<Animator *,
-                      WeakRefCountPolicy      > MFWeakAnimatorPtr;
+typedef PointerMField<TBAnimator *,
+                      WeakRefCountPolicy      > MFWeakTBAnimatorPtr;
 /*! \ingroup GrpTBAnimationFieldMFields */
-typedef PointerMField<Animator *,
-                      NoRefCountPolicy        > MFUncountedAnimatorPtr;
+typedef PointerMField<TBAnimator *,
+                      NoRefCountPolicy        > MFUncountedTBAnimatorPtr;
 
 
 
@@ -180,38 +180,38 @@ typedef PointerMField<Animator *,
 #else // these are the doxygen hacks
 
 /*! \ingroup GrpTBAnimationFieldSFields \ingroup GrpLibOSGTBAnimation */
-struct SFRecAnimatorPtr : 
-    public PointerSField<Animator *,
+struct SFRecTBAnimatorPtr : 
+    public PointerSField<TBAnimator *,
                          RecordedRefCountPolicy> {};
 /*! \ingroup GrpTBAnimationFieldSFields \ingroup GrpLibOSGTBAnimation */
-struct SFUnrecAnimatorPtr : 
-    public PointerSField<Animator *,
+struct SFUnrecTBAnimatorPtr : 
+    public PointerSField<TBAnimator *,
                          UnrecordedRefCountPolicy> {};
 /*! \ingroup GrpTBAnimationFieldSFields \ingroup GrpLibOSGTBAnimation */
 struct SFWeakAnimatorPtr :
-    public PointerSField<Animator *,
+    public PointerSField<TBAnimator *,
                          WeakRefCountPolicy> {};
 /*! \ingroup GrpTBAnimationFieldSFields \ingroup GrpLibOSGTBAnimation */
-struct SFUncountedAnimatorPtr :
-    public PointerSField<Animator *,
+struct SFUncountedTBAnimatorPtr :
+    public PointerSField<TBAnimator *,
                          NoRefCountPolicy> {};
 
 
 /*! \ingroup GrpTBAnimationFieldMFields \ingroup GrpLibOSGTBAnimation */
-struct MFRecAnimatorPtr :
-    public PointerMField<Animator *,
+struct MFRecTBAnimatorPtr :
+    public PointerMField<TBAnimator *,
                          RecordedRefCountPolicy  > {};
 /*! \ingroup GrpTBAnimationFieldMFields \ingroup GrpLibOSGTBAnimation */
-struct MFUnrecAnimatorPtr :
-    public PointerMField<Animator *,
+struct MFUnrecTBAnimatorPtr :
+    public PointerMField<TBAnimator *,
                          UnrecordedRefCountPolicy> {};
 /*! \ingroup GrpTBAnimationFieldMFields \ingroup GrpLibOSGTBAnimation */
-struct MFWeakAnimatorPtr :
-    public PointerMField<Animator *,
+struct MFWeakTBAnimatorPtr :
+    public PointerMField<TBAnimator *,
                          WeakRefCountPolicy      > {};
 /*! \ingroup GrpTBAnimationFieldMFields \ingroup GrpLibOSGTBAnimation */
-struct MFUncountedAnimatorPtr :
-    public PointerMField<Animator *,
+struct MFUncountedTBAnimatorPtr :
+    public PointerMField<TBAnimator *,
                          NoRefCountPolicy        > {};
 
 

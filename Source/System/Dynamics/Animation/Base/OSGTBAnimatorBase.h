@@ -51,8 +51,8 @@
 \*****************************************************************************/
 
 
-#ifndef _OSGANIMATORBASE_H_
-#define _OSGANIMATORBASE_H_
+#ifndef _OSGTBANIMATORBASE_H_
+#define _OSGTBANIMATORBASE_H_
 #ifdef __sgi
 #pragma once
 #endif
@@ -66,15 +66,15 @@
 #include "OSGFieldContainer.h" // Parent
 
 
-#include "OSGAnimatorFields.h"
+#include "OSGTBAnimatorFields.h"
 
 OSG_BEGIN_NAMESPACE
 
-class Animator;
+class TBAnimator;
 
 //! \brief Animator Base Class.
 
-class OSG_TBANIMATION_DLLMAPPING AnimatorBase : public FieldContainer
+class OSG_TBANIMATION_DLLMAPPING TBAnimatorBase : public FieldContainer
 {
   public:
 
@@ -84,7 +84,7 @@ class OSG_TBANIMATION_DLLMAPPING AnimatorBase : public FieldContainer
     typedef Inherited::TypeObject TypeObject;
     typedef TypeObject::InitPhase InitPhase;
 
-    OSG_GEN_INTERNALPTR(Animator);
+    OSG_GEN_INTERNALPTR(TBAnimator);
     
     
 
@@ -137,15 +137,15 @@ class OSG_TBANIMATION_DLLMAPPING AnimatorBase : public FieldContainer
     /*! \name                   Constructors                               */
     /*! \{                                                                 */
 
-    AnimatorBase(void);
-    AnimatorBase(const AnimatorBase &source);
+    TBAnimatorBase(void);
+    TBAnimatorBase(const TBAnimatorBase &source);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
     /*! \name                   Destructors                                */
     /*! \{                                                                 */
 
-    virtual ~AnimatorBase(void);
+    virtual ~TBAnimatorBase(void);
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -171,7 +171,7 @@ class OSG_TBANIMATION_DLLMAPPING AnimatorBase : public FieldContainer
                                  ConstFieldMaskArg  syncMode  ,
                            const UInt32             uiSyncInfo);
 
-            void execSync (      AnimatorBase *pFrom,
+            void execSync (      TBAnimatorBase *pFrom,
                                  ConstFieldMaskArg  whichField,
                                  AspectOffsetStore &oOffsets,
                                  ConstFieldMaskArg  syncMode  ,
@@ -206,10 +206,10 @@ class OSG_TBANIMATION_DLLMAPPING AnimatorBase : public FieldContainer
     /*---------------------------------------------------------------------*/
 
     // prohibit default functions (move to 'public' if you need one)
-    void operator =(const AnimatorBase &source);
+    void operator =(const TBAnimatorBase &source);
 };
 
-typedef AnimatorBase *AnimatorBaseP;
+typedef TBAnimatorBase *TBAnimatorBaseP;
 
 OSG_END_NAMESPACE
 

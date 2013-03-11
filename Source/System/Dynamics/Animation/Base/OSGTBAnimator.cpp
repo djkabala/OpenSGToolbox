@@ -45,7 +45,7 @@
 
 #include <OSGConfig.h>
 
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 
 OSG_BEGIN_NAMESPACE
 
@@ -97,7 +97,7 @@ OSG_BEGIN_NAMESPACE
  *                           Class methods                                 *
 \***************************************************************************/
 
-void Animator::initMethod(InitPhase ePhase)
+void TBAnimator::initMethod(InitPhase ePhase)
 {
     Inherited::initMethod(ePhase);
 
@@ -117,30 +117,30 @@ void Animator::initMethod(InitPhase ePhase)
 
 /*----------------------- constructors & destructors ----------------------*/
 
-Animator::Animator(void) :
+TBAnimator::TBAnimator(void) :
     Inherited()
 {
 }
 
-Animator::Animator(const Animator &source) :
+TBAnimator::TBAnimator(const TBAnimator &source) :
     Inherited(source)
 {
 }
 
-Animator::~Animator(void)
+TBAnimator::~TBAnimator(void)
 {
 }
 
 /*----------------------------- class specific ----------------------------*/
 
-void Animator::changed(ConstFieldMaskArg whichField, 
+void TBAnimator::changed(ConstFieldMaskArg whichField, 
                             UInt32            origin,
                             BitVector         details)
 {
     Inherited::changed(whichField, origin, details);
 }
 
-void Animator::dump(      UInt32    ,
+void TBAnimator::dump(      UInt32    ,
                          const BitVector ) const
 {
     SLOG << "Dump Animator NI" << std::endl;

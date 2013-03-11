@@ -55,33 +55,33 @@ OSG_BEGIN_NAMESPACE
 
 //! access the type of the class
 inline
-OSG::FieldContainerType &AnimationBase::getClassType(void)
+OSG::FieldContainerType &TBAnimationBase::getClassType(void)
 {
     return _type;
 }
 
 //! access the numerical type of the class
 inline
-OSG::UInt32 AnimationBase::getClassTypeId(void)
+OSG::UInt32 TBAnimationBase::getClassTypeId(void)
 {
     return _type.getId();
 }
 //! access the producer type of the class
 inline
-const EventProducerType &AnimationBase::getProducerClassType(void)
+const EventProducerType &TBAnimationBase::getProducerClassType(void)
 {
     return _producerType;
 }
 
 //! access the producer type id of the class
 inline
-UInt32 AnimationBase::getProducerClassTypeId(void)
+UInt32 TBAnimationBase::getProducerClassTypeId(void)
 {
     return _producerType.getId();
 }
 
 inline
-OSG::UInt16 AnimationBase::getClassGroupId(void)
+OSG::UInt16 TBAnimationBase::getClassGroupId(void)
 {
     return _type.getGroupId();
 }
@@ -91,7 +91,7 @@ OSG::UInt16 AnimationBase::getClassGroupId(void)
 //! Get the value of the Animation::_sfCycling field.
 
 inline
-Int32 &AnimationBase::editCycling(void)
+Int32 &TBAnimationBase::editCycling(void)
 {
     editSField(CyclingFieldMask);
 
@@ -100,14 +100,14 @@ Int32 &AnimationBase::editCycling(void)
 
 //! Get the value of the Animation::_sfCycling field.
 inline
-      Int32  AnimationBase::getCycling(void) const
+      Int32  TBAnimationBase::getCycling(void) const
 {
     return _sfCycling.getValue();
 }
 
 //! Set the value of the Animation::_sfCycling field.
 inline
-void AnimationBase::setCycling(const Int32 value)
+void TBAnimationBase::setCycling(const Int32 value)
 {
     editSField(CyclingFieldMask);
 
@@ -116,7 +116,7 @@ void AnimationBase::setCycling(const Int32 value)
 //! Get the value of the Animation::_sfScale field.
 
 inline
-Real32 &AnimationBase::editScale(void)
+Real32 &TBAnimationBase::editScale(void)
 {
     editSField(ScaleFieldMask);
 
@@ -125,14 +125,14 @@ Real32 &AnimationBase::editScale(void)
 
 //! Get the value of the Animation::_sfScale field.
 inline
-      Real32  AnimationBase::getScale(void) const
+      Real32  TBAnimationBase::getScale(void) const
 {
     return _sfScale.getValue();
 }
 
 //! Set the value of the Animation::_sfScale field.
 inline
-void AnimationBase::setScale(const Real32 value)
+void TBAnimationBase::setScale(const Real32 value)
 {
     editSField(ScaleFieldMask);
 
@@ -141,7 +141,7 @@ void AnimationBase::setScale(const Real32 value)
 //! Get the value of the Animation::_sfOffset field.
 
 inline
-Real32 &AnimationBase::editOffset(void)
+Real32 &TBAnimationBase::editOffset(void)
 {
     editSField(OffsetFieldMask);
 
@@ -150,14 +150,14 @@ Real32 &AnimationBase::editOffset(void)
 
 //! Get the value of the Animation::_sfOffset field.
 inline
-      Real32  AnimationBase::getOffset(void) const
+      Real32  TBAnimationBase::getOffset(void) const
 {
     return _sfOffset.getValue();
 }
 
 //! Set the value of the Animation::_sfOffset field.
 inline
-void AnimationBase::setOffset(const Real32 value)
+void TBAnimationBase::setOffset(const Real32 value)
 {
     editSField(OffsetFieldMask);
 
@@ -166,7 +166,7 @@ void AnimationBase::setOffset(const Real32 value)
 //! Get the value of the Animation::_sfSpan field.
 
 inline
-Real32 &AnimationBase::editSpan(void)
+Real32 &TBAnimationBase::editSpan(void)
 {
     editSField(SpanFieldMask);
 
@@ -175,14 +175,14 @@ Real32 &AnimationBase::editSpan(void)
 
 //! Get the value of the Animation::_sfSpan field.
 inline
-      Real32  AnimationBase::getSpan(void) const
+      Real32  TBAnimationBase::getSpan(void) const
 {
     return _sfSpan.getValue();
 }
 
 //! Set the value of the Animation::_sfSpan field.
 inline
-void AnimationBase::setSpan(const Real32 value)
+void TBAnimationBase::setSpan(const Real32 value)
 {
     editSField(SpanFieldMask);
 
@@ -191,7 +191,7 @@ void AnimationBase::setSpan(const Real32 value)
 //! Get the value of the Animation::_sfCycles field.
 
 inline
-Real32 &AnimationBase::editCycles(void)
+Real32 &TBAnimationBase::editCycles(void)
 {
     editSField(CyclesFieldMask);
 
@@ -200,14 +200,14 @@ Real32 &AnimationBase::editCycles(void)
 
 //! Get the value of the Animation::_sfCycles field.
 inline
-      Real32  AnimationBase::getCycles(void) const
+      Real32  TBAnimationBase::getCycles(void) const
 {
     return _sfCycles.getValue();
 }
 
 //! Set the value of the Animation::_sfCycles field.
 inline
-void AnimationBase::setCycles(const Real32 value)
+void TBAnimationBase::setCycles(const Real32 value)
 {
     editSField(CyclesFieldMask);
 
@@ -217,7 +217,7 @@ void AnimationBase::setCycles(const Real32 value)
 
 #ifdef OSG_MT_CPTR_ASPECT
 inline
-void AnimationBase::execSync (      AnimationBase *pFrom,
+void TBAnimationBase::execSync (      TBAnimationBase *pFrom,
                                         ConstFieldMaskArg  whichField,
                                         AspectOffsetStore &oOffsets,
                                         ConstFieldMaskArg  syncMode,
@@ -244,300 +244,300 @@ void AnimationBase::execSync (      AnimationBase *pFrom,
 
 
 inline
-const Char8 *AnimationBase::getClassname(void)
+const Char8 *TBAnimationBase::getClassname(void)
 {
-    return "Animation";
+    return "TBAnimation";
 }
 
 inline
-UInt32 AnimationBase::getNumProducedEvents(void) const
+UInt32 TBAnimationBase::getNumProducedEvents(void) const
 {
     return getProducerType().getNumEventDescs();
 }
 
 inline
-const EventDescription *AnimationBase::getProducedEventDescription(const std::string &ProducedEventName) const
+const EventDescription *TBAnimationBase::getProducedEventDescription(const std::string &ProducedEventName) const
 {
     return getProducerType().findEventDescription(ProducedEventName);
 }
 
 inline
-const EventDescription *AnimationBase::getProducedEventDescription(UInt32 ProducedEventId) const
+const EventDescription *TBAnimationBase::getProducedEventDescription(UInt32 ProducedEventId) const
 {
     return getProducerType().getEventDescription(ProducedEventId);
 }
 
 inline
-UInt32 AnimationBase::getProducedEventId(const std::string &ProducedEventName) const
+UInt32 TBAnimationBase::getProducedEventId(const std::string &ProducedEventName) const
 {
     return getProducerType().getProducedEventId(ProducedEventName);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationStarted(const AnimationStartedEventType::slot_type &listener, 
+boost::signals2::connection  TBAnimationBase::connectAnimationStarted(const AnimationStartedEventType::slot_type &listener, 
                                                                                boost::signals2::connect_position at)
 {
     return _AnimationStartedEvent.connect(listener, at);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationStarted(const AnimationStartedEventType::group_type &group,
+boost::signals2::connection  TBAnimationBase::connectAnimationStarted(const AnimationStartedEventType::group_type &group,
                                                     const AnimationStartedEventType::slot_type &listener, boost::signals2::connect_position at)
 {
     return _AnimationStartedEvent.connect(group, listener, at);
 }
 
 inline
-void  AnimationBase::disconnectAnimationStarted(const AnimationStartedEventType::group_type &group)
+void  TBAnimationBase::disconnectAnimationStarted(const AnimationStartedEventType::group_type &group)
 {
     _AnimationStartedEvent.disconnect(group);
 }
 
 inline
-void  AnimationBase::disconnectAllSlotsAnimationStarted(void)
+void  TBAnimationBase::disconnectAllSlotsAnimationStarted(void)
 {
     _AnimationStartedEvent.disconnect_all_slots();
 }
 
 inline
-bool  AnimationBase::isEmptyAnimationStarted(void) const
+bool  TBAnimationBase::isEmptyAnimationStarted(void) const
 {
     return _AnimationStartedEvent.empty();
 }
 
 inline
-UInt32  AnimationBase::numSlotsAnimationStarted(void) const
+UInt32  TBAnimationBase::numSlotsAnimationStarted(void) const
 {
     return _AnimationStartedEvent.num_slots();
 }
 
 inline
-void AnimationBase::produceAnimationStarted(AnimationStartedEventDetailsType* const e)
+void TBAnimationBase::produceAnimationStarted(AnimationStartedEventDetailsType* const e)
 {
     produceEvent(AnimationStartedEventId, e);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationStopped(const AnimationStoppedEventType::slot_type &listener, 
+boost::signals2::connection  TBAnimationBase::connectAnimationStopped(const AnimationStoppedEventType::slot_type &listener, 
                                                                                boost::signals2::connect_position at)
 {
     return _AnimationStoppedEvent.connect(listener, at);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationStopped(const AnimationStoppedEventType::group_type &group,
+boost::signals2::connection  TBAnimationBase::connectAnimationStopped(const AnimationStoppedEventType::group_type &group,
                                                     const AnimationStoppedEventType::slot_type &listener, boost::signals2::connect_position at)
 {
     return _AnimationStoppedEvent.connect(group, listener, at);
 }
 
 inline
-void  AnimationBase::disconnectAnimationStopped(const AnimationStoppedEventType::group_type &group)
+void  TBAnimationBase::disconnectAnimationStopped(const AnimationStoppedEventType::group_type &group)
 {
     _AnimationStoppedEvent.disconnect(group);
 }
 
 inline
-void  AnimationBase::disconnectAllSlotsAnimationStopped(void)
+void  TBAnimationBase::disconnectAllSlotsAnimationStopped(void)
 {
     _AnimationStoppedEvent.disconnect_all_slots();
 }
 
 inline
-bool  AnimationBase::isEmptyAnimationStopped(void) const
+bool  TBAnimationBase::isEmptyAnimationStopped(void) const
 {
     return _AnimationStoppedEvent.empty();
 }
 
 inline
-UInt32  AnimationBase::numSlotsAnimationStopped(void) const
+UInt32  TBAnimationBase::numSlotsAnimationStopped(void) const
 {
     return _AnimationStoppedEvent.num_slots();
 }
 
 inline
-void AnimationBase::produceAnimationStopped(AnimationStoppedEventDetailsType* const e)
+void TBAnimationBase::produceAnimationStopped(AnimationStoppedEventDetailsType* const e)
 {
     produceEvent(AnimationStoppedEventId, e);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationPaused(const AnimationPausedEventType::slot_type &listener, 
+boost::signals2::connection  TBAnimationBase::connectAnimationPaused(const AnimationPausedEventType::slot_type &listener, 
                                                                                boost::signals2::connect_position at)
 {
     return _AnimationPausedEvent.connect(listener, at);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationPaused(const AnimationPausedEventType::group_type &group,
+boost::signals2::connection  TBAnimationBase::connectAnimationPaused(const AnimationPausedEventType::group_type &group,
                                                     const AnimationPausedEventType::slot_type &listener, boost::signals2::connect_position at)
 {
     return _AnimationPausedEvent.connect(group, listener, at);
 }
 
 inline
-void  AnimationBase::disconnectAnimationPaused(const AnimationPausedEventType::group_type &group)
+void  TBAnimationBase::disconnectAnimationPaused(const AnimationPausedEventType::group_type &group)
 {
     _AnimationPausedEvent.disconnect(group);
 }
 
 inline
-void  AnimationBase::disconnectAllSlotsAnimationPaused(void)
+void  TBAnimationBase::disconnectAllSlotsAnimationPaused(void)
 {
     _AnimationPausedEvent.disconnect_all_slots();
 }
 
 inline
-bool  AnimationBase::isEmptyAnimationPaused(void) const
+bool  TBAnimationBase::isEmptyAnimationPaused(void) const
 {
     return _AnimationPausedEvent.empty();
 }
 
 inline
-UInt32  AnimationBase::numSlotsAnimationPaused(void) const
+UInt32  TBAnimationBase::numSlotsAnimationPaused(void) const
 {
     return _AnimationPausedEvent.num_slots();
 }
 
 inline
-void AnimationBase::produceAnimationPaused(AnimationPausedEventDetailsType* const e)
+void TBAnimationBase::produceAnimationPaused(AnimationPausedEventDetailsType* const e)
 {
     produceEvent(AnimationPausedEventId, e);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationUnpaused(const AnimationUnpausedEventType::slot_type &listener, 
+boost::signals2::connection  TBAnimationBase::connectAnimationUnpaused(const AnimationUnpausedEventType::slot_type &listener, 
                                                                                boost::signals2::connect_position at)
 {
     return _AnimationUnpausedEvent.connect(listener, at);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationUnpaused(const AnimationUnpausedEventType::group_type &group,
+boost::signals2::connection  TBAnimationBase::connectAnimationUnpaused(const AnimationUnpausedEventType::group_type &group,
                                                     const AnimationUnpausedEventType::slot_type &listener, boost::signals2::connect_position at)
 {
     return _AnimationUnpausedEvent.connect(group, listener, at);
 }
 
 inline
-void  AnimationBase::disconnectAnimationUnpaused(const AnimationUnpausedEventType::group_type &group)
+void  TBAnimationBase::disconnectAnimationUnpaused(const AnimationUnpausedEventType::group_type &group)
 {
     _AnimationUnpausedEvent.disconnect(group);
 }
 
 inline
-void  AnimationBase::disconnectAllSlotsAnimationUnpaused(void)
+void  TBAnimationBase::disconnectAllSlotsAnimationUnpaused(void)
 {
     _AnimationUnpausedEvent.disconnect_all_slots();
 }
 
 inline
-bool  AnimationBase::isEmptyAnimationUnpaused(void) const
+bool  TBAnimationBase::isEmptyAnimationUnpaused(void) const
 {
     return _AnimationUnpausedEvent.empty();
 }
 
 inline
-UInt32  AnimationBase::numSlotsAnimationUnpaused(void) const
+UInt32  TBAnimationBase::numSlotsAnimationUnpaused(void) const
 {
     return _AnimationUnpausedEvent.num_slots();
 }
 
 inline
-void AnimationBase::produceAnimationUnpaused(AnimationUnpausedEventDetailsType* const e)
+void TBAnimationBase::produceAnimationUnpaused(AnimationUnpausedEventDetailsType* const e)
 {
     produceEvent(AnimationUnpausedEventId, e);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationEnded(const AnimationEndedEventType::slot_type &listener, 
+boost::signals2::connection  TBAnimationBase::connectAnimationEnded(const AnimationEndedEventType::slot_type &listener, 
                                                                                boost::signals2::connect_position at)
 {
     return _AnimationEndedEvent.connect(listener, at);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationEnded(const AnimationEndedEventType::group_type &group,
+boost::signals2::connection  TBAnimationBase::connectAnimationEnded(const AnimationEndedEventType::group_type &group,
                                                     const AnimationEndedEventType::slot_type &listener, boost::signals2::connect_position at)
 {
     return _AnimationEndedEvent.connect(group, listener, at);
 }
 
 inline
-void  AnimationBase::disconnectAnimationEnded(const AnimationEndedEventType::group_type &group)
+void  TBAnimationBase::disconnectAnimationEnded(const AnimationEndedEventType::group_type &group)
 {
     _AnimationEndedEvent.disconnect(group);
 }
 
 inline
-void  AnimationBase::disconnectAllSlotsAnimationEnded(void)
+void  TBAnimationBase::disconnectAllSlotsAnimationEnded(void)
 {
     _AnimationEndedEvent.disconnect_all_slots();
 }
 
 inline
-bool  AnimationBase::isEmptyAnimationEnded(void) const
+bool  TBAnimationBase::isEmptyAnimationEnded(void) const
 {
     return _AnimationEndedEvent.empty();
 }
 
 inline
-UInt32  AnimationBase::numSlotsAnimationEnded(void) const
+UInt32  TBAnimationBase::numSlotsAnimationEnded(void) const
 {
     return _AnimationEndedEvent.num_slots();
 }
 
 inline
-void AnimationBase::produceAnimationEnded(AnimationEndedEventDetailsType* const e)
+void TBAnimationBase::produceAnimationEnded(AnimationEndedEventDetailsType* const e)
 {
     produceEvent(AnimationEndedEventId, e);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationCycled(const AnimationCycledEventType::slot_type &listener, 
+boost::signals2::connection  TBAnimationBase::connectAnimationCycled(const AnimationCycledEventType::slot_type &listener, 
                                                                                boost::signals2::connect_position at)
 {
     return _AnimationCycledEvent.connect(listener, at);
 }
 
 inline
-boost::signals2::connection  AnimationBase::connectAnimationCycled(const AnimationCycledEventType::group_type &group,
+boost::signals2::connection  TBAnimationBase::connectAnimationCycled(const AnimationCycledEventType::group_type &group,
                                                     const AnimationCycledEventType::slot_type &listener, boost::signals2::connect_position at)
 {
     return _AnimationCycledEvent.connect(group, listener, at);
 }
 
 inline
-void  AnimationBase::disconnectAnimationCycled(const AnimationCycledEventType::group_type &group)
+void  TBAnimationBase::disconnectAnimationCycled(const AnimationCycledEventType::group_type &group)
 {
     _AnimationCycledEvent.disconnect(group);
 }
 
 inline
-void  AnimationBase::disconnectAllSlotsAnimationCycled(void)
+void  TBAnimationBase::disconnectAllSlotsAnimationCycled(void)
 {
     _AnimationCycledEvent.disconnect_all_slots();
 }
 
 inline
-bool  AnimationBase::isEmptyAnimationCycled(void) const
+bool  TBAnimationBase::isEmptyAnimationCycled(void) const
 {
     return _AnimationCycledEvent.empty();
 }
 
 inline
-UInt32  AnimationBase::numSlotsAnimationCycled(void) const
+UInt32  TBAnimationBase::numSlotsAnimationCycled(void) const
 {
     return _AnimationCycledEvent.num_slots();
 }
 
 inline
-void AnimationBase::produceAnimationCycled(AnimationCycledEventDetailsType* const e)
+void TBAnimationBase::produceAnimationCycled(AnimationCycledEventDetailsType* const e)
 {
     produceEvent(AnimationCycledEventId, e);
 }
 
-OSG_GEN_CONTAINERPTR(Animation);
+OSG_GEN_CONTAINERPTR(TBAnimation);
 
 OSG_END_NAMESPACE
 

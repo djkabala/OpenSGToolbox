@@ -49,7 +49,6 @@
 #include <map>
 #include "OSGThread.h"
 #include "OSGRenderAction.h"
-#include "OSGPathType.h"
 #include <boost/function.hpp>
 
 #include "OSGWindowEventDetails.h"
@@ -156,6 +155,9 @@ class OSG_SYSTEM_DLLMAPPING WindowEventProducer : public WindowEventProducerBase
 
     //Set the Window size
     virtual void setSize(Vec2us Size) = 0;
+
+	virtual void setSize(UInt16 width,
+                                 UInt16 height);
 
     //Get the Window size
     virtual Vec2f getSize(void) const = 0;
@@ -314,7 +316,7 @@ class OSG_SYSTEM_DLLMAPPING WindowEventProducer : public WindowEventProducerBase
 
     DisplayCallbackFunc _DisplayCallbackFunc;
     ReshapeCallbackFunc _ReshapeCallbackFunc;
-    RenderAction *      _RenderAction;
+    RenderActionRefPtr      _RenderAction;
 
     void internalDraw(void);
     void internalReshape(Vec2f size);

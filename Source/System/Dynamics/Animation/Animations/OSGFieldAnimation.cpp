@@ -45,7 +45,7 @@
 
 #include <OSGConfig.h>
 
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 #include "OSGFieldAnimation.h"
 //#include "OSGKeyframeAnimator.h"
 
@@ -209,8 +209,8 @@ void FieldAnimation::internalUpdate(Real32 t, const Real32 prev_t)
 
     //Update the Field Container
     if( getAnimator()->animate(
-                               static_cast<Animator::InterpolationType>(getInterpolationType()), 
-                               static_cast<Animator::ValueReplacementPolicy>(getReplacementPolicy()),
+                               static_cast<TBAnimator::InterpolationType>(getInterpolationType()), 
+                               static_cast<TBAnimator::ValueReplacementPolicy>(getReplacementPolicy()),
                                (getCycling() < 0) || (getCycling() > getCycles()), 
                                t,
                                prev_t,

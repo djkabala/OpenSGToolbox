@@ -63,9 +63,9 @@
 
 //#include "OSGBaseTypes.h"
 
-#include "OSGAnimation.h" // Parent
+#include "OSGTBAnimation.h" // Parent
 
-#include "OSGAnimationFields.h"         // Animations type
+#include "OSGTBAnimationFields.h"         // Animations type
 
 #include "OSGAnimationGroupFields.h"
 
@@ -75,12 +75,12 @@ class AnimationGroup;
 
 //! \brief AnimationGroup Base Class.
 
-class OSG_TBANIMATION_DLLMAPPING AnimationGroupBase : public Animation
+class OSG_TBANIMATION_DLLMAPPING AnimationGroupBase : public TBAnimation
 {
   public:
 
-    typedef Animation Inherited;
-    typedef Animation ParentContainer;
+    typedef TBAnimation Inherited;
+    typedef TBAnimation ParentContainer;
 
     typedef Inherited::TypeObject TypeObject;
     typedef TypeObject::InitPhase InitPhase;
@@ -104,7 +104,7 @@ class OSG_TBANIMATION_DLLMAPPING AnimationGroupBase : public Animation
     static const OSG::BitVector NextFieldMask =
         (TypeTraits<BitVector>::One << NextFieldId);
         
-    typedef MFUnrecAnimationPtr MFAnimationsType;
+    typedef MFUnrecTBAnimationPtr MFAnimationsType;
 
     /*---------------------------------------------------------------------*/
     /*! \name                    Class Get                                 */
@@ -129,11 +129,11 @@ class OSG_TBANIMATION_DLLMAPPING AnimationGroupBase : public Animation
     /*! \name                    Field Get                                 */
     /*! \{                                                                 */
 
-            const MFUnrecAnimationPtr *getMFAnimations     (void) const;
-                  MFUnrecAnimationPtr *editMFAnimations     (void);
+            const MFUnrecTBAnimationPtr *getMFAnimations     (void) const;
+                  MFUnrecTBAnimationPtr *editMFAnimations     (void);
 
 
-                  Animation * getAnimations     (const UInt32 index) const;
+                  TBAnimation * getAnimations     (const UInt32 index) const;
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/
@@ -151,10 +151,10 @@ class OSG_TBANIMATION_DLLMAPPING AnimationGroupBase : public Animation
     /*! \name                Ptr MField Set                                */
     /*! \{                                                                 */
 
-    void pushToAnimations           (Animation * const value   );
-    void assignAnimations          (const MFUnrecAnimationPtr &value);
+    void pushToAnimations           (TBAnimation * const value   );
+    void assignAnimations          (const MFUnrecTBAnimationPtr &value);
     void removeFromAnimations (UInt32               uiIndex );
-    void removeObjFromAnimations(Animation * const value   );
+    void removeObjFromAnimations(TBAnimation * const value   );
     void clearAnimations            (void                         );
 
     /*! \}                                                                 */
@@ -210,7 +210,7 @@ class OSG_TBANIMATION_DLLMAPPING AnimationGroupBase : public Animation
     /*! \name                      Fields                                  */
     /*! \{                                                                 */
 
-    MFUnrecAnimationPtr _mfAnimations;
+    MFUnrecTBAnimationPtr _mfAnimations;
 
     /*! \}                                                                 */
     /*---------------------------------------------------------------------*/

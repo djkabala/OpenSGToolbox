@@ -222,7 +222,7 @@ class OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComboBox : public ComboBoxBase
     /*! \}                                                                 */
 
     //Factory method which sets the ActionEvent source's properties according to values from the Action instance.
-    void configurePropertiesFromAction(Action a);
+    void configurePropertiesFromAction( const Action& a);
 
     //Notifies all listeners that have registered interest for notification on this event type.
     void produceActionPerformed(void);

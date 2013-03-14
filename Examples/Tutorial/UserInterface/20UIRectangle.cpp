@@ -227,18 +227,18 @@ int main(int argc, char **argv)
         TutorialWindow->initWindow();
 
         // Create the SimpleSceneManager helper
-        SimpleSceneManager sceneManager;
-        TutorialWindow->setDisplayCallback(boost::bind(display, &sceneManager));
-        TutorialWindow->setReshapeCallback(boost::bind(reshape, _1, &sceneManager));
+        SimpleSceneManagerRefPtr sceneManager = SimpleSceneManager::create();
+        TutorialWindow->setDisplayCallback(boost::bind(display, sceneManager));
+        TutorialWindow->setReshapeCallback(boost::bind(reshape, _1, sceneManager));
 
-        TutorialWindow->connectMousePressed(boost::bind(mousePressed, _1, &sceneManager));
-        TutorialWindow->connectMouseReleased(boost::bind(mouseReleased, _1, &sceneManager));
-        TutorialWindow->connectMouseDragged(boost::bind(mouseDragged, _1, &sceneManager));
-        TutorialWindow->connectMouseWheelMoved(boost::bind(mouseWheelMoved, _1, &sceneManager));
+        TutorialWindow->connectMousePressed(boost::bind(mousePressed, _1, sceneManager));
+        TutorialWindow->connectMouseReleased(boost::bind(mouseReleased, _1, sceneManager));
+        TutorialWindow->connectMouseDragged(boost::bind(mouseDragged, _1, sceneManager));
+        TutorialWindow->connectMouseWheelMoved(boost::bind(mouseWheelMoved, _1, sceneManager));
         TutorialWindow->connectKeyPressed(boost::bind(keyPressed, _1));
 
         // Tell the Manager what to manage
-        sceneManager.setWindow(TutorialWindow);
+        sceneManager->setWindow(TutorialWindow);
 
         // Make Torus Node (creates Torus in background of scene)
         NodeRecPtr TorusGeometryNode = makeTorus(90, 270, 16, 16);
@@ -349,14 +349,14 @@ int main(int argc, char **argv)
 
 
         // Tell the Manager what to manage
-        sceneManager.setRoot(scene);
-        //sceneManager.setRoot(ExampleUIRectangleNode);
+        sceneManager->setRoot(scene);
+        //sceneManager->setRoot(ExampleUIRectangleNode);
 
         // Show the whole Scene
-        sceneManager.showAll();
+        sceneManager->showAll();
 
         //Create the Documentation Foreground and add it to the viewport
-        SimpleScreenDoc TheSimpleScreenDoc(&sceneManager, TutorialWindow);
+        SimpleScreenDoc TheSimpleScreenDoc(sceneManager, TutorialWindow);
 
 
         //Open Window
@@ -570,7 +570,7 @@ SimpleScreenDoc::SimpleScreenDoc(SimpleSceneManager*  SceneManager,
     //Animation
     _ShowDocFadeOutAnimation = FieldAnimation::create();
     _ShowDocFadeOutAnimation->setAnimator(TheAnimator);
-    _ShowDocFadeOutAnimation->setInterpolationType(Animator::LINEAR_INTERPOLATION);
+    _ShowDocFadeOutAnimation->setInterpolationType(TBAnimator::LINEAR_INTERPOLATION);
     _ShowDocFadeOutAnimation->setCycling(1);
     _ShowDocFadeOutAnimation->setAnimatedField(_DocShowForeground,
                                                SimpleTextForeground::ColorFieldId);

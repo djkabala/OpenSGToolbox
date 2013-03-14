@@ -61,10 +61,10 @@ bool OSG_CONTRIBUSERINTERFACE_DLLMAPPING isContainedClipBounds(const Pnt2f& Poin
 bool OSG_CONTRIBUSERINTERFACE_DLLMAPPING isContainedBounds(const Pnt2f& Point, const Pnt2f& TopLeft, const Pnt2f& BottomRight);
 
 Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING DrawingSurfaceToComponent(const Pnt2f& DrawingSurfacePoint, const Component* Comp);
-Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING ViewportToWindow(const Pnt2f& ViewportPoint, const Viewport* TheViewport);
+Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING ViewportToWindow(const Pnt2f& ViewportPoint, Int32 x, Int32 y, Int32 w, Int32 h );
 Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING ViewportToComponent(const Pnt2f& ViewportPoint, const Component* Comp, const Viewport* TheViewport);
 Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComponentToViewport(const Pnt2f& ComponentPoint, const Component* Comp, const Viewport* TheViewport);
-Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComponentToWindow(const Pnt2f& ComponentPoint, const Component* Comp, const Viewport* TheViewport);
+Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComponentToWindow(const Pnt2f& ComponentPoint, const Component* Comp, Int32 x, Int32 y, Int32 w, Int32 h );
 Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING ViewportToDrawingSurface(const Pnt2f& ViewportPoint, const UIDrawingSurface* DrawingSurface, const Viewport* TheViewport);
 Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING DrawingSurfaceToViewport(const Pnt2f& DrawingSurfacePoint, const UIDrawingSurface* DrawingSurface, const Viewport* TheViewport);
 Pnt2f OSG_CONTRIBUSERINTERFACE_DLLMAPPING ComponentToDrawingSurface(const Pnt2f& ComponentPoint, const Component* Comp);

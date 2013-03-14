@@ -357,7 +357,7 @@ void SkeletonBlendedGeometry::addJointBlending(UInt32 VertexIndex, Node* const T
     getWeightIndexes()->push_back(JointIndex);
 
     //Weight Index
-    getWeightIndexes()->push_back(getWeights()->getSize());
+    getWeightIndexes()->push_back(getWeights()->size());
 
     getWeights()->push_back(Pnt1f(BlendAmount));
 }
@@ -384,7 +384,7 @@ void SkeletonBlendedGeometry::addJointBlending(UInt32 VertexIndex,
     getWeightIndexes()->push_back(JointIndex);
 
     //Weight Index
-    getWeightIndexes()->push_back(getWeights()->getSize());
+    getWeightIndexes()->push_back(getWeights()->size());
 
     getWeights()->push_back(Pnt1f(BlendAmount));
 }
@@ -549,7 +549,7 @@ Action::ResultE SkeletonBlendedGeometry::intersectEnter(Action *action)
     ia->setLine(Line(pos, dir), ia->getMaxDist());
     ia->scale(dir.length());
 
-    return Inherited::intersect(action);
+    return Inherited::intersectEnter(action);
 }
 
 Action::ResultE SkeletonBlendedGeometry::intersectLeave(Action *action)
@@ -586,7 +586,7 @@ Action::ResultE SkeletonBlendedGeometry::renderEnter(Action *action)
 
     pAction->pushMatrix(mMat);
 
-    Action::ResultE Result(Inherited::renderActionEnterHandler(action));
+    Action::ResultE Result(Inherited::renderEnter(action));
     if(Result != Action::Continue)
     {
         pAction->popVisibility();
@@ -597,7 +597,7 @@ Action::ResultE SkeletonBlendedGeometry::renderEnter(Action *action)
 
 Action::ResultE SkeletonBlendedGeometry::renderLeave(Action *action)
 {
-    Action::ResultE Result(Inherited::renderActionLeaveHandler(action));
+    Action::ResultE Result(Inherited::renderLeave(action));
 
     RenderAction *pAction = 
         dynamic_cast<RenderAction *>(action);

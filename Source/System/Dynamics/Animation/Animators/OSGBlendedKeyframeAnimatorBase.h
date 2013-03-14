@@ -63,7 +63,7 @@
 
 //#include "OSGBaseTypes.h"
 
-#include "OSGAnimator.h" // Parent
+#include "OSGTBAnimator.h" // Parent
 
 #include "OSGKeyframeSequenceFields.h"  // KeyframeSequences type
 #include "OSGSysFields.h"               // BlendAmounts type
@@ -76,12 +76,12 @@ class BlendedKeyframeAnimator;
 
 //! \brief BlendedKeyframeAnimator Base Class.
 
-class OSG_TBANIMATION_DLLMAPPING BlendedKeyframeAnimatorBase : public Animator
+class OSG_TBANIMATION_DLLMAPPING BlendedKeyframeAnimatorBase : public TBAnimator
 {
   public:
 
-    typedef Animator Inherited;
-    typedef Animator ParentContainer;
+    typedef TBAnimator Inherited;
+    typedef TBAnimator ParentContainer;
 
     typedef Inherited::TypeObject TypeObject;
     typedef TypeObject::InitPhase InitPhase;

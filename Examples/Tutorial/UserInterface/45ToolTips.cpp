@@ -50,7 +50,7 @@ OSG_USING_NAMESPACE
 // Forward declaration so we can have the interesting stuff upfront
 void display(SimpleSceneManager *mgr);
 void reshape(Vec2f Size, SimpleSceneManager *mgr);
-AnimationTransitPtr createFadeInAnimation(Component* CompToAnimate);
+TBAnimationTransitPtr createFadeInAnimation(Component* CompToAnimate);
 
 //Ctrl+q handler
 void keyTyped(KeyEventDetails* const details)
@@ -131,14 +131,14 @@ void handleToolTipDeactivated(ComponentEventDetails* const details)
 
 void handleFadeInToolTipActivated(ComponentEventDetails* const details,
                                   WindowEventProducer* const TutorialWindow,
-                                  Animation* const FadeInAnimation)
+                                  TBAnimation* const FadeInAnimation)
 {
     FadeInAnimation->attachUpdateProducer(TutorialWindow);
     FadeInAnimation->start();
 }
 
 void handleFadeInToolTipDeactivated(ComponentEventDetails* const details,
-                                    Animation* const FadeInAnimation)
+                                    TBAnimation* const FadeInAnimation)
 {
     FadeInAnimation->stop();
 }
@@ -154,12 +154,12 @@ int main(int argc, char **argv)
         TutorialWindow->initWindow();
 
         // Create the SimpleSceneManager helper
-        SimpleSceneManager sceneManager;
-        TutorialWindow->setDisplayCallback(boost::bind(display, &sceneManager));
-        TutorialWindow->setReshapeCallback(boost::bind(reshape, _1, &sceneManager));
+        SimpleSceneManagerRefPtr sceneManager = SimpleSceneManager::create();
+        TutorialWindow->setDisplayCallback(boost::bind(display, sceneManager));
+        TutorialWindow->setReshapeCallback(boost::bind(reshape, _1, sceneManager));
 
         // Tell the Manager what to manage
-        sceneManager.setWindow(TutorialWindow);
+        sceneManager->setWindow(TutorialWindow);
 
         TutorialWindow->connectKeyTyped(boost::bind(keyTyped, _1));
 
@@ -214,7 +214,7 @@ int main(int argc, char **argv)
         FadeInButton->setToolTipText("Fade In ToolTip");
 
         //Create the Fade in animation
-        AnimationRecPtr FadeInAnimation =
+        TBAnimationRecPtr FadeInAnimation =
             createFadeInAnimation(FadeInButton->getToolTip());
 
         FadeInButton->connectToolTipActivated(boost::bind(handleFadeInToolTipActivated,
@@ -254,17 +254,17 @@ int main(int argc, char **argv)
 
         TutorialUIForeground->setDrawingSurface(TutorialDrawingSurface);
 
-        sceneManager.setRoot(scene);
+        sceneManager->setRoot(scene);
 
         // Add the UI Foreground Object to the Scene
-        ViewportRefPtr TutorialViewport = sceneManager.getWindow()->getPort(0);
+        ViewportRefPtr TutorialViewport = sceneManager->getWindow()->getPort(0);
         TutorialViewport->addForeground(TutorialUIForeground);
 
         //Create the Documentation Foreground and add it to the viewport
-        SimpleScreenDoc TheSimpleScreenDoc(&sceneManager, TutorialWindow);
+        SimpleScreenDoc TheSimpleScreenDoc(sceneManager, TutorialWindow);
 
         // Show the whole Scene
-        sceneManager.showAll();
+        sceneManager->showAll();
 
 
         //Open Window
@@ -299,7 +299,7 @@ void reshape(Vec2f Size, SimpleSceneManager *mgr)
     mgr->resize(Size.x(), Size.y());
 }
 
-AnimationTransitPtr createFadeInAnimation(Component* CompToAnimate)
+TBAnimationTransitPtr createFadeInAnimation(Component* CompToAnimate)
 {
     //Number Keyframe Sequence
     KeyframeNumberSequenceRecPtr OpacityKeyframes = KeyframeNumberSequenceReal32::create();
@@ -313,11 +313,11 @@ AnimationTransitPtr createFadeInAnimation(Component* CompToAnimate)
     //Animation
     FieldAnimationRecPtr TheAnimation = FieldAnimation::create();
     TheAnimation->setAnimator(TheAnimator);
-    TheAnimation->setInterpolationType(Animator::LINEAR_INTERPOLATION);
+    TheAnimation->setInterpolationType(TBAnimator::LINEAR_INTERPOLATION);
     TheAnimation->setCycling(1);
     TheAnimation->setAnimatedField(CompToAnimate, Component::OpacityFieldId);
 
-    return AnimationTransitPtr(TheAnimation);
+    return TBAnimationTransitPtr(TheAnimation);
 }
 
 
@@ -371,7 +371,7 @@ SimpleScreenDoc::SimpleScreenDoc(SimpleSceneManager*  SceneManager,
     //Animation
     _ShowDocFadeOutAnimation = FieldAnimation::create();
     _ShowDocFadeOutAnimation->setAnimator(TheAnimator);
-    _ShowDocFadeOutAnimation->setInterpolationType(Animator::LINEAR_INTERPOLATION);
+    _ShowDocFadeOutAnimation->setInterpolationType(TBAnimator::LINEAR_INTERPOLATION);
     _ShowDocFadeOutAnimation->setCycling(1);
     _ShowDocFadeOutAnimation->setAnimatedField(_DocShowForeground,
                                                SimpleTextForeground::ColorFieldId);

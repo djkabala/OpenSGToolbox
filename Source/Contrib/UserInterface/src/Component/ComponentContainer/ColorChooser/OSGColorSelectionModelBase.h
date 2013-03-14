@@ -74,6 +74,8 @@
 
 #include "OSGChangeEventDetailsFields.h"
 
+#include "OSGWindowEventProducerBase.h"
+
 OSG_BEGIN_NAMESPACE
 
 class ColorSelectionModel;

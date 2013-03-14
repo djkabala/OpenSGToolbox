@@ -63,9 +63,9 @@
 
 //#include "OSGBaseTypes.h"
 
-#include "OSGAnimation.h" // Parent
+#include "OSGTBAnimation.h" // Parent
 
-#include "OSGAnimatorFields.h"          // Animator type
+#include "OSGTBAnimatorFields.h"          // Animator type
 #include "OSGFieldContainerFields.h"    // Container type
 #include "OSGSysFields.h"               // FieldId type
 #include "OSGBaseFields.h"              // FieldName type
@@ -78,12 +78,12 @@ class FieldAnimation;
 
 //! \brief FieldAnimation Base Class.
 
-class OSG_TBANIMATION_DLLMAPPING FieldAnimationBase : public Animation
+class OSG_TBANIMATION_DLLMAPPING FieldAnimationBase : public TBAnimation
 {
   public:
 
-    typedef Animation Inherited;
-    typedef Animation ParentContainer;
+    typedef TBAnimation Inherited;
+    typedef TBAnimation ParentContainer;
 
     typedef Inherited::TypeObject TypeObject;
     typedef TypeObject::InitPhase InitPhase;
@@ -125,7 +125,7 @@ class OSG_TBANIMATION_DLLMAPPING FieldAnimationBase : public Animation
     static const OSG::BitVector NextFieldMask =
         (TypeTraits<BitVector>::One << NextFieldId);
         
-    typedef SFUnrecAnimatorPtr SFAnimatorType;
+    typedef SFUnrecTBAnimatorPtr SFTBAnimatorType;
     typedef SFUnrecFieldContainerPtr SFContainerType;
     typedef SFUInt32          SFFieldIdType;
     typedef SFString          SFFieldNameType;
@@ -156,8 +156,8 @@ class OSG_TBANIMATION_DLLMAPPING FieldAnimationBase : public Animation
     /*! \name                    Field Get                                 */
     /*! \{                                                                 */
 
-            const SFUnrecAnimatorPtr  *getSFAnimator       (void) const;
-                  SFUnrecAnimatorPtr  *editSFAnimator       (void);
+            const SFUnrecTBAnimatorPtr  *getSFAnimator       (void) const;
+                  SFUnrecTBAnimatorPtr  *editSFAnimator       (void);
 
                   SFUInt32            *editSFInterpolationType(void);
             const SFUInt32            *getSFInterpolationType (void) const;
@@ -166,7 +166,7 @@ class OSG_TBANIMATION_DLLMAPPING FieldAnimationBase : public Animation
             const SFUInt32            *getSFReplacementPolicy (void) const;
 
 
-                  Animator * getAnimator       (void) const;
+                  TBAnimator * getAnimator       (void) const;
 
                   UInt32              &editInterpolationType(void);
                   UInt32               getInterpolationType (void) const;
@@ -179,7 +179,7 @@ class OSG_TBANIMATION_DLLMAPPING FieldAnimationBase : public Animation
     /*! \name                    Field Set                                 */
     /*! \{                                                                 */
 
-            void setAnimator       (Animator * const value);
+            void setAnimator       (TBAnimator * const value);
             void setInterpolationType(const UInt32 value);
             void setReplacementPolicy(const UInt32 value);
 
@@ -246,7 +246,7 @@ class OSG_TBANIMATION_DLLMAPPING FieldAnimationBase : public Animation
     /*! \name                      Fields                                  */
     /*! \{                                                                 */
 
-    SFUnrecAnimatorPtr _sfAnimator;
+    SFUnrecTBAnimatorPtr _sfAnimator;
     SFUnrecFieldContainerPtr _sfContainer;
     SFUInt32          _sfFieldId;
     SFString          _sfFieldName;

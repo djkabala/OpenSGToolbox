@@ -10,7 +10,7 @@
 #include "OSGBaseTypes.h"
 
 #include "OSGInterpolations.h"
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 #include <boost/function.hpp>
 
 OSG_BEGIN_NAMESPACE

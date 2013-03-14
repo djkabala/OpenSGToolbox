@@ -124,9 +124,9 @@ Pnt2f ViewportToComponent(const Pnt2f& ViewportPoint, const Component* Comp, con
     return DrawingSurfaceToComponent(ViewportToDrawingSurface(ViewportPoint, Comp->getParentWindow()->getParentDrawingSurface(), TheViewport), Comp);
 }
 
-Pnt2f ViewportToWindow(const Pnt2f& ViewportPoint, const Viewport* TheViewport)
+Pnt2f ViewportToWindow(const Pnt2f& vpPoint, Int32 x, Int32 y, Int32 w, Int32 h )
 {
-    return Pnt2f(ViewportPoint.x() + TheViewport->getPixelLeft(), (TheViewport->getPixelTop() - TheViewport->getPixelBottom()) - ViewportPoint.y());
+    return Pnt2f( vpPoint.x() + x, h - vpPoint.y());
 }
 
 Pnt2f ComponentToViewport(const Pnt2f& ComponentPoint, const Component* Comp, const Viewport* TheViewport)
@@ -134,9 +134,9 @@ Pnt2f ComponentToViewport(const Pnt2f& ComponentPoint, const Component* Comp, co
     return DrawingSurfaceToViewport(ComponentToDrawingSurface(ComponentPoint, Comp), Comp->getParentWindow()->getParentDrawingSurface(), TheViewport);
 }
 
-Pnt2f ComponentToWindow(const Pnt2f& ComponentPoint, const Component* Comp, const Viewport* TheViewport)
+Pnt2f ComponentToWindow(const Pnt2f& ComponentPoint, const Component* Comp, Int32 x, Int32 y, Int32 w, Int32 h )
 {
-    return ViewportToWindow(ComponentToViewport(ComponentPoint, Comp, TheViewport), TheViewport);
+    return ViewportToWindow(ComponentToViewport(ComponentPoint, Comp, nullptr), x, y, w, h );
 }
 
 Pnt2f DrawingSurfaceToComponent(const Pnt2f& DrawingSurfacePoint, const Component* Comp)

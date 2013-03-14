@@ -227,8 +227,8 @@ class OSG_BASE_DLLMAPPING EventProducerFactoryBase : public FactoryBase
 
 #if defined(WIN32)
 #    if !defined(OSG_COMPILE_TYPEFACTORY)
-//OSG_BASE_EXPIMP_TMPL 
-//template class OSG_BASE_DLLMAPPING SingletonHolder<EventProducerFactoryBase>;
+OSG_BASE_EXPIMP_TMPL 
+template class OSG_BASE_DLLMAPPING SingletonHolder<EventProducerFactoryBase>;
 #    endif
 #endif
 

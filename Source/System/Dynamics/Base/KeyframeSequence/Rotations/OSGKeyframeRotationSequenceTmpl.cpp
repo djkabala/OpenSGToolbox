@@ -47,7 +47,7 @@
 
 #include "OSGKeyframeRotationSequenceTmplFuncs.ins"
 #include "OSGKeyframeRotationSequenceTmpl.ins"
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 #include "OSGKeyframeInterpolations.h"
 
 OSG_USING_NAMESPACE
@@ -87,15 +87,15 @@ void KeyframeRotationSequenceQuaternionDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::SPHERICAL_LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::NORMALIZED_LINEAR_INTERPOLATION] = nlerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = squadKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::SPHERICAL_LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::NORMALIZED_LINEAR_INTERPOLATION] = nlerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = squadKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -103,15 +103,15 @@ void KeyframeRotationSequenceQuaternionfxDescBase::initMethod(InitPhase ePhase)
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::SPHERICAL_LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::NORMALIZED_LINEAR_INTERPOLATION] = nlerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = squadKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::SPHERICAL_LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::NORMALIZED_LINEAR_INTERPOLATION] = nlerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = squadKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastReplacement<StoredType>;
     }
 }
 
@@ -120,7 +120,7 @@ void KeyframeRotationSequenceQuaternionfxDescBase::initMethod(InitPhase ePhase)
     //if(ePhase == TypeObject::SystemPost)
     //{
         //_interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        //_interpolationFuncs[Animator::LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
+        //_interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
         //_interpolationFuncs[Animator::SPHERICAL_LINEAR_INTERPOLATION] = slerpKeyframeSequence<StoredType>;
         //_interpolationFuncs[Animator::NORMALIZED_LINEAR_INTERPOLATION] = nlerpKeyframeSequence<StoredType>;
         //_interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = squadKeyframeSequence<StoredType>;

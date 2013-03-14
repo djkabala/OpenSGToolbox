@@ -47,7 +47,7 @@
 
 #include "OSGKeyframeTransformationSequenceTmplFuncs.ins"
 #include "OSGKeyframeTransformationSequenceTmpl.ins"
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 #include "OSGKeyframeInterpolations.h"
 
 OSG_USING_NAMESPACE
@@ -87,13 +87,13 @@ void KeyframeTransformationSequenceMatrix4fDescBase::initMethod(InitPhase ePhase
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteMatrixReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteMatrixReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastMatrixReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteMatrixReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteMatrixReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastMatrixReplacement<StoredType>;
     }
 }
 
@@ -101,13 +101,13 @@ void KeyframeTransformationSequenceMatrix4fxDescBase::initMethod(InitPhase ePhas
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteMatrixReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteMatrixReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastMatrixReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteMatrixReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteMatrixReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastMatrixReplacement<StoredType>;
     }
 }
 
@@ -115,13 +115,13 @@ void KeyframeTransformationSequenceMatrix4dDescBase::initMethod(InitPhase ePhase
 {
     if(ePhase == TypeObject::SystemPost)
     {
-        _interpolationFuncs[Animator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
-        _interpolationFuncs[Animator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::STEP_INTERPOLATION]   = stepKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::LINEAR_INTERPOLATION] = lerpKeyframeSequence<StoredType>;
+        _interpolationFuncs[TBAnimator::CUBIC_INTERPOLATION]  = splineKeyframeSequence<StoredType>;
 
-        _replacementFuncs[Animator::OVERWRITE]            = overwriteMatrixReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteMatrixReplacement<StoredType>;
-        _replacementFuncs[Animator::ADDITIVE_SINCE_LAST]  = additiveSinceLastMatrixReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::OVERWRITE]            = overwriteMatrixReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_ABSOLUTE]    = additiveAbsoluteMatrixReplacement<StoredType>;
+        _replacementFuncs[TBAnimator::ADDITIVE_SINCE_LAST]  = additiveSinceLastMatrixReplacement<StoredType>;
     }
 }
 

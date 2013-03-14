@@ -45,7 +45,7 @@
 
 #include <OSGConfig.h>
 
-#include "OSGAnimator.h"
+#include "OSGTBAnimator.h"
 #include "OSGKeyframeSequence.h"
 
 OSG_BEGIN_NAMESPACE

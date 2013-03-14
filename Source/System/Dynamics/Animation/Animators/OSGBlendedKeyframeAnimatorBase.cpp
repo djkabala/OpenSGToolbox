@@ -116,7 +116,7 @@ OSG_BEGIN_NAMESPACE
 \***************************************************************************/
 
 #if !defined(OSG_DO_DOC) || defined(OSG_DOC_DEV)
-DataType FieldTraits<BlendedKeyframeAnimator *>::_type("BlendedKeyframeAnimatorPtr", "AnimatorPtr");
+DataType FieldTraits<BlendedKeyframeAnimator *>::_type("BlendedKeyframeAnimatorPtr", "TBAnimatorPtr");
 #endif
 
 OSG_FIELDTRAITS_GETTYPE(BlendedKeyframeAnimator *)

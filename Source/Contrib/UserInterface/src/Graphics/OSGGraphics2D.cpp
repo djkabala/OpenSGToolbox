@@ -52,7 +52,7 @@
 #include "OSGTextureBaseChunk.h"
 #include "OSGDepthChunk.h"
 #include "OSGPrimeMaterial.h"
-
+#include "OSGRenderAction.h"
 OSG_BEGIN_NAMESPACE
 
 // Documentation for this class is emitted in the
@@ -296,7 +296,7 @@ void Graphics2D::drawQuad(const Pnt2f& p1, const Pnt2f& p2, const Pnt2f& p3, con
     StateUnrecPtr state = NULL;
     if(Material != NULL)
     {
-        state = Material->finalize(MaterialMapKey(),getDrawEnv()->getWindow())->getState();
+		state = Material->finalize(MaterialMapKey(), nullptr , getDrawEnv()->getWindow())->getState();
 
         state->activate(getDrawEnv());
     }

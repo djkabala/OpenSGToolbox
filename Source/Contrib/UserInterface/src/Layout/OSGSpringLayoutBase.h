@@ -65,9 +65,9 @@
 
 #include "OSGLayout.h" // Parent
 
-#include "OSGFieldContainerMapType.h"   // Constraints type
-
 #include "OSGSpringLayoutFields.h"
+#include "OSGFieldContainerMapFieldTraits.h"
+#include "OSGFieldContainerMapFields.h"
 
 OSG_BEGIN_NAMESPACE
 

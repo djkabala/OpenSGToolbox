@@ -58,7 +58,7 @@
 
 
 
-#include "OSGAnimation.h"               // Animations Class
+#include "OSGTBAnimation.h"               // Animations Class
 
 #include "OSGAnimationGroupBase.h"
 #include "OSGAnimationGroup.h"
@@ -93,7 +93,7 @@ OSG_BEGIN_NAMESPACE
 \***************************************************************************/
 
 #if !defined(OSG_DO_DOC) || defined(OSG_DOC_DEV)
-DataType FieldTraits<AnimationGroup *>::_type("AnimationGroupPtr", "AnimationPtr");
+DataType FieldTraits<AnimationGroup *>::_type("AnimationGroupPtr", "TBAnimationPtr");
 #endif
 
 OSG_FIELDTRAITS_GETTYPE(AnimationGroup *)
@@ -115,8 +115,8 @@ void AnimationGroupBase::classDescInserter(TypeObject &oType)
     FieldDescriptionBase *pDesc = NULL;
 
 
-    pDesc = new MFUnrecAnimationPtr::Description(
-        MFUnrecAnimationPtr::getClassType(),
+    pDesc = new MFUnrecTBAnimationPtr::Description(
+        MFUnrecTBAnimationPtr::getClassType(),
         "Animations",
         "",
         AnimationsFieldId, AnimationsFieldMask,
@@ -189,12 +189,12 @@ UInt32 AnimationGroupBase::getContainerSize(void) const
 
 
 //! Get the AnimationGroup::_mfAnimations field.
-const MFUnrecAnimationPtr *AnimationGroupBase::getMFAnimations(void) const
+const MFUnrecTBAnimationPtr *AnimationGroupBase::getMFAnimations(void) const
 {
     return &_mfAnimations;
 }
 
-MFUnrecAnimationPtr *AnimationGroupBase::editMFAnimations     (void)
+MFUnrecTBAnimationPtr *AnimationGroupBase::editMFAnimations     (void)
 {
     editMField(AnimationsFieldMask, _mfAnimations);
 
@@ -203,18 +203,18 @@ MFUnrecAnimationPtr *AnimationGroupBase::editMFAnimations     (void)
 
 
 
-void AnimationGroupBase::pushToAnimations(Animation * const value)
+void AnimationGroupBase::pushToAnimations(TBAnimation * const value)
 {
     editMField(AnimationsFieldMask, _mfAnimations);
 
     _mfAnimations.push_back(value);
 }
 
-void AnimationGroupBase::assignAnimations(const MFUnrecAnimationPtr &value)
+void AnimationGroupBase::assignAnimations(const MFUnrecTBAnimationPtr &value)
 {
-    MFUnrecAnimationPtr::const_iterator elemIt  =
+    MFUnrecTBAnimationPtr::const_iterator elemIt  =
         value.begin();
-    MFUnrecAnimationPtr::const_iterator elemEnd =
+    MFUnrecTBAnimationPtr::const_iterator elemEnd =
         value.end  ();
 
     static_cast<AnimationGroup *>(this)->clearAnimations();
@@ -237,7 +237,7 @@ void AnimationGroupBase::removeFromAnimations(UInt32 uiIndex)
     }
 }
 
-void AnimationGroupBase::removeObjFromAnimations(Animation * const value)
+void AnimationGroupBase::removeObjFromAnimations(TBAnimation * const value)
 {
     Int32 iElemIdx = _mfAnimations.findIndex(value);
 
@@ -440,9 +440,9 @@ void AnimationGroupBase::onCreate(const AnimationGroup *source)
     {
         AnimationGroup *pThis = static_cast<AnimationGroup *>(this);
 
-        MFUnrecAnimationPtr::const_iterator AnimationsIt  =
+        MFUnrecTBAnimationPtr::const_iterator AnimationsIt  =
             source->_mfAnimations.begin();
-        MFUnrecAnimationPtr::const_iterator AnimationsEnd =
+        MFUnrecTBAnimationPtr::const_iterator AnimationsEnd =
             source->_mfAnimations.end  ();
 
         while(AnimationsIt != AnimationsEnd)
@@ -456,8 +456,8 @@ void AnimationGroupBase::onCreate(const AnimationGroup *source)
 
 GetFieldHandlePtr AnimationGroupBase::getHandleAnimations      (void) const
 {
-    MFUnrecAnimationPtr::GetHandlePtr returnValue(
-        new  MFUnrecAnimationPtr::GetHandle(
+    MFUnrecTBAnimationPtr::GetHandlePtr returnValue(
+        new  MFUnrecTBAnimationPtr::GetHandle(
              &_mfAnimations,
              this->getType().getFieldDesc(AnimationsFieldId),
              const_cast<AnimationGroupBase *>(this)));
@@ -467,8 +467,8 @@ GetFieldHandlePtr AnimationGroupBase::getHandleAnimations      (void) const
 
 EditFieldHandlePtr AnimationGroupBase::editHandleAnimations     (void)
 {
-    MFUnrecAnimationPtr::EditHandlePtr returnValue(
-        new  MFUnrecAnimationPtr::EditHandle(
+    MFUnrecTBAnimationPtr::EditHandlePtr returnValue(
+        new  MFUnrecTBAnimationPtr::EditHandle(
              &_mfAnimations,
              this->getType().getFieldDesc(AnimationsFieldId),
              this));

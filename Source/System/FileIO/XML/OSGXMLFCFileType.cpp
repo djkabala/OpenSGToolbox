@@ -69,9 +69,9 @@
 #include <sstream>
 #include <utility>
 #include <boost/lexical_cast.hpp>
-#include "rapidxml.h"
-#include "rapidxml_iterators.h"
-#include "rapidxml_print.h"
+#include "rapidxml.hpp"
+#include "rapidxml_iterators.hpp"
+#include "rapidxml_print.hpp"
 
 #include "OSGSceneFileHandler.h"
 
@@ -1062,7 +1062,7 @@ bool XMLFCFileType::write(const FCPtrStore &Containers, std::ostream &OutputStre
         //(XMLHandlerMapItor->second.second)(*FCItor,OutputStream);
     }
 
-    rapidxml::print(OutputStream, doc, rapidxml::print_newline_attributes);
+    rapidxml::print(OutputStream, doc);
 
     return true;
 }

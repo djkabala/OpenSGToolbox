@@ -43,7 +43,6 @@
 #endif
 
 #include "OSGXMLLookAndFeelBase.h"
-#include "OSGPathType.h"
 #include "OSGFCFileHandler.h"
 
 OSG_BEGIN_NAMESPACE
